@@ -39,6 +39,7 @@
 					<h3><label for="order[]"><?php print $pluginDetails[basename($plugin)]['Name']; ?></label></h3>
 					<div class="inside">
 					  <input type="hidden" id="old_order_<?php print $count; ?>" value="<?php print $count; ?>">
+					  <input type="hidden" name="start_order[]" id="start_order_<?php print $count; ?>" value="<?php print $count; ?>">
 					  <select name="order[]" id="order_<?php print $count; ?>" onchange="uniqueOrder('order_<?php print $count; ?>');">
 					    <?php
 						for ($i = 1; $i<=sizeof($plugins); $i++) {

@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com/dev/wordpress/plugin-organizer
 Description: A plugin for specifying the load order of your plugins.
-Version: 0.1.1
+Version: 0.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */
@@ -15,6 +15,7 @@ add_action('admin_menu', array($PluginOrganizer, 'PO_admin_menu'));
 add_filter("plugin_action_links", array($PluginOrganizer, 'PO_plugin_page'), 10, 2);
 add_action('admin_head', array($PluginOrganizer, 'PO_ajax_request'));
 add_action('wp_ajax_plugin_organizer',  array($PluginOrganizer, 'PO_save_order'));
+add_action('all_plugins',  array($PluginOrganizer, 'PO_reorder_plugins'));
 
 class Plugin_Organizer {
 	function PO_admin_menu() {
@@ -27,27 +28,11 @@ class Plugin_Organizer {
 		
 		if (isset($_POST['submit']) && $_POST['submit'] == "Save Order") {
 			$newPlugArray = $_POST['order'];
+			$startOrderArray = $_POST['start_order'];
 			if (sizeof(array_unique($newPlugArray)) == sizeof($_POST['order'])) {
-				$newPluginOrder = array();
-				$sorted = 0;
-				while($sorted == 0) {
-					$sorted = 1;
-					for($i=0; $i<sizeof($_POST['order']) - 1; $i++) {
-						if (isset($_POST['order'][$i+1]) && $_POST['order'][$i+1] < $_POST['order'][$i]) {
-							$sorted = 0;
-							$tmpVal = $_POST['order'][$i+1];
-							$_POST['order'][$i+1] = $_POST['order'][$i];
-							$_POST['order'][$i] = $tmpVal;
-							$tmpVal = $plugins[$i+1];
-							$plugins[$i+1] = $plugins[$i];
-							$plugins[$i] = $tmpVal;
-						}
-					}
-				}
-				foreach ($_POST['order'] as $key=>$pos) {
-					$newPluginOrder[] = $plugins[$key];
-				}
-				update_option("active_plugins", $newPluginOrder);
+				array_multisort($startOrderArray, $newPlugArray);
+				array_multisort($newPlugArray, $plugins);
+				update_option("active_plugins", $plugins);
 				
 				$plugins = get_option("active_plugins");
 			} else {
@@ -115,7 +100,6 @@ class Plugin_Organizer {
 					}
 				}
 				
-				alert(orderList);
 				jQuery.post(encodeURI(ajaxurl + '?action=plugin_organizer'), { orderList: orderList, startOrder: startOrderList }, function (result) {
 					alert(result);
 				});
@@ -144,6 +128,24 @@ class Plugin_Organizer {
 		}
 		print $returnStatus;
 		die();
+	}
+
+	function PO_reorder_plugins($allPluginList) {
+		$plugins = get_option("active_plugins");
+		$activePlugins = Array();
+		$inactivePlugins = Array();
+		$newPluginList = Array();
+		foreach ($allPluginList as $key=>$val) {
+			if (in_array($key, $plugins)) {
+				$activePlugins[$key] = $val;
+			} else {
+				$inactivePlugins[$key] = $val;
+			}
+		}
+		array_multisort($plugins, $activePlugins);
+
+		$newPluginList = array_merge($activePlugins, $inactivePlugins);	
+		return $newPluginList;
 	}
 }
 
