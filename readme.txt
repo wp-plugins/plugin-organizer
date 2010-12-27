@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin
 Requires at least: 3.0
 Tested up to: 3.0.3
-Stable tag: 0.2
+Stable tag: 0.3
 
 This plugin allows you to change the order that your plugins are loaded.
 
@@ -23,10 +23,15 @@ This plugin allows you to change the order that your plugins are loaded.
 
 == Screenshots ==
 
-http://www.jsterup.com/wp-content/uploads/2010/12/PO_screen_1.jpg
-http://www.jsterup.com/wp-content/uploads/2010/12/PO_screen_2.jpg
+http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_1.jpg
+http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_2.jpg
 
 == Changelog ==
+
+= 0.3 =
+Added ajax requests to the settings page so both forms now use ajax.
+Added nonce checking to the ajax requests.  
+Requires user to have activate_plugins capability.
 
 = 0.2 =
 Made function to reorder the plugins on plugin admin page in the order they will be loaded.
