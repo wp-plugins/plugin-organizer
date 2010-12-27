@@ -151,15 +151,18 @@ class Plugin_Organizer {
 		$activePlugins = Array();
 		$inactivePlugins = Array();
 		$newPluginList = Array();
+		$activePluginOrder = Array();
+		
 		foreach ($allPluginList as $key=>$val) {
 			if (in_array($key, $plugins)) {
 				$activePlugins[$key] = $val;
+				$activePluginOrder[] = array_search($key, $plugins);
 			} else {
 				$inactivePlugins[$key] = $val;
 			}
 		}
-		array_multisort($plugins, $activePlugins);
-
+		array_multisort($activePluginOrder, $activePlugins);
+		
 		$newPluginList = array_merge($activePlugins, $inactivePlugins);	
 		return $newPluginList;
 	}
