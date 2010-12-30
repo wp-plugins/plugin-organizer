@@ -23,8 +23,8 @@ This plugin allows you to change the order that your plugins are loaded.
 
 == Screenshots ==
 
-http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_1.jpg
-http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_2.jpg
+1. Plugin admin page example.
+2. Settins page example.
 
 == Changelog ==
 
