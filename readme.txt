@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin
 Requires at least: 3.0
 Tested up to: 3.0.4
-Stable tag: 0.4
+Stable tag: 0.4.1
 
 This plugin allows you to change the order that your plugins are loaded.  It also adds grouping to the plugin admin age.
 
@@ -24,12 +24,12 @@ This plugin allows you to change the order that your plugins are loaded.  It als
 == Screenshots ==
 
 1. Plugin admin page example.
-http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_1.jpg
-
 2. Settins page example.
-http://www.nebraskadigital.com/wp-content/uploads/2010/12/PO_screen_2.jpg
 
 == Changelog ==
+
+= 0.4.1 =
+Fixed empty items in plugin list.
 
 = 0.4 =
 Added grouping to the plugin admin page.
