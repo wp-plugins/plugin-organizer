@@ -57,7 +57,7 @@ class PluginOrganizer {
 		global $wpdb, $POAbsPath;
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$members = array();
-			$plugins = get_option("_transient_plugin_slugs");
+			$plugins = get_plugins();
 			if ($_POST['createGroup'] == "Create Group") {
 				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['new_group_name'], "group_members"=>$wpdb->prepare(serialize(array()))));
 				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$wpdb->insert_id, ARRAY_A);
@@ -140,6 +140,9 @@ class PluginOrganizer {
 					var revertHtml = jQuery('#plugingroupdiv .inside').html();
 					jQuery('#plugingroupdiv .inside').html('<div style="width: 100%;text-align: center;"><img src="<?php print $POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
 					
+					if (groupList.length == 0) {
+						groupList[0]="EMPTY";
+					}
 					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: PO_nonce, group_name: group_name }, function (result) {
 						alert(result);
 						jQuery('#plugingroupdiv .inside').html(revertHtml);

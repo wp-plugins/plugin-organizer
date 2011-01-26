@@ -22,10 +22,9 @@
 				<br><br>
 				<?php
 				$count = 1;
-				foreach ($plugins as $plugin) {
-					$pluginDetails = get_plugins("/" . dirname($plugin));
+				foreach ($plugins as $key=>$plugin) {
 					?>
-					<input type="checkbox" name="group[]" id="group_member_<?php print $count; ?>" value="<?php print $pluginDetails[basename($plugin)]['Name']; ?>" <?php print (in_array($pluginDetails[basename($plugin)]['Name'], $members)) ? 'checked="checked"': ''; ?>> <?php print $pluginDetails[basename($plugin)]['Name']; ?><br>
+					<input type="checkbox" name="group[]" id="group_member_<?php print $count; ?>" value="<?php print $plugin['Name']; ?>" <?php print (in_array($plugin['Name'], $members)) ? 'checked="checked"': ''; ?>> <?php print $plugin['Name']; ?><br>
 					<?php
 					$count++;
 				}
