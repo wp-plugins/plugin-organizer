@@ -1,18 +1,3 @@
-<script type="text/javascript" language="javascript">
-	function uniqueOrder(currentId) {
-		var newVal = jQuery("#" + currentId).val();
-		var oldVal = jQuery("#old_" + currentId).val();
-		var selections = jQuery('select[name^=order]');
-		for (var i=0; i<selections.length; i++) {
-			if (selections[i].id != currentId && selections[i].value == newVal) {
-				selections[i].value = oldVal;
-				jQuery("#old_" + selections[i].id).val(oldVal);
-			}
-		}
-		jQuery("#old_" + currentId).val(newVal);
-
-	}
-</script>
 <div id="theme-options-wrap">
     <div class="icon32" id="icon-options-general"> <br /> </div>
 
