@@ -29,7 +29,7 @@ This plugin allows you to change the order that your plugins are loaded.  It als
 == Changelog ==
 
 = 0.4.1 =
-Fixed empty items in plugin list.
+Fixed empty items in plugin list. 
 
 = 0.4 =
 Added grouping to the plugin admin page.
