@@ -17,6 +17,18 @@ class PluginOrganizer {
 		if ($row->count == 0) {
 			$this->PO_create_default_group();
 		}
+
+
+		$sql = "CREATE TABLE ".$wpdb->prefix."PO_disabled_plugins (
+			post_id bigint(20) unsigned NOT NULL,
+			permalink longtext NOT NULL default '',
+			plugin_list longtext NOT NULL default '',
+			UNIQUE KEY post_id (post_id)
+			) ENGINE=innoDB  DEFAULT CHARACTER SET=utf8  DEFAULT COLLATE=utf8_unicode_ci;";
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_disabled_plugins'") != $wpdb->prefix."PO_disabled_plugins") {
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			dbDelta($sql);
+		}
 		
 	}
 	
@@ -33,15 +45,33 @@ class PluginOrganizer {
 			$this->PO_activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'PO_edit_list'));
-			add_action('admin_head-'.$plugin_page, array($this, 'PO_ajax_load_order'));
+			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'PO_settings_page'));
 			add_action('admin_head-plugins.php', array($this, 'PO_ajax_load_order'));
+			add_action('admin_head-plugins.php', array($this, 'PO_ajax_plugin_page'));
+			$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'PO_edit_list'));
+			add_action('admin_head-'.$plugin_page, array($this, 'PO_ajax_plugin_group'));
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Groups', 'Groups', 'activate_plugins', 'PO_Groups', array($this, 'PO_group_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'PO_ajax_plugin_group'));
 		}
 
 	}
 
+	function PO_settings_page() {
+		global $POAbsPath;
+		
+		if ( current_user_can( 'activate_plugins' ) ) {
+			if ($_POST['submit'] == "Save Settings" && wp_verify_nonce( $_POST['PO_noncename'], plugin_basename(__FILE__) )) {
+				if (preg_match("/^(1|0)$/", $_POST['selective_load'])) {
+					update_option("PO_disable_plugins", $_POST['selective_load']);
+				}
+			}
+			$PO_noncename = wp_create_nonce( plugin_basename(__FILE__) );
+			require_once($POAbsPath . "/tpl/settings.php");
+		} else {
+			wp_die("You dont have permissions to access this page.");
+		}
+	}
+	
 	function PO_edit_list() {
 		global $POAbsPath;
 		if ( current_user_can( 'activate_plugins' ) ) {
@@ -161,7 +191,7 @@ class PluginOrganizer {
 		}	
 	}
 	
-	function PO_ajax_load_order() {
+	function PO_ajax_plugin_page() {
 		global $POUrlPath, $wpdb;
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
@@ -179,6 +209,17 @@ class PluginOrganizer {
 					jQuery('.tablenav .actions').html(jQuery('.tablenav .actions').html()+groupDropdown);
 					
 				});
+			</script>
+			<?php
+		}
+	}
+	
+	function PO_ajax_load_order() {
+		global $POUrlPath, $wpdb;
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+			?>
+			<script type="text/javascript" language="javascript">
 				function uniqueOrder(currentId) {
 					var newVal = jQuery("#" + currentId).val();
 					var oldVal = jQuery("#old_" + currentId).val();
@@ -323,5 +364,98 @@ class PluginOrganizer {
 		print $returnStatus;
 		die();
 	}
+
+
+
+	function PO_disable_plugin_box() {
+		if ( current_user_can( 'activate_plugins' ) ) {
+			add_meta_box(
+			'disable_plugins',
+			'Disable Plugins',
+			array($this, 'PO_get_disable_plugin_box'),
+			'post',
+			'normal',
+			'high' 
+			);
+
+			add_meta_box(
+			'disable_plugins',
+			'Disable Plugins',
+			array($this, 'PO_get_disable_plugin_box'),
+			'page',
+			'normal',
+			'high' 
+			);
+		}
+	}
+
+	function PO_get_disable_plugin_box($content, $content2) {
+		global $wpdb, $post_id;
+		$disabledPlugins = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_disabled_plugins WHERE post_id = ".$post_id, ARRAY_A);
+		$pluginList = unserialize($disabledPlugins['plugin_list']);
+		if (!is_array($pluginList)) {
+			$pluginList = array();
+		}
+		$plugins = get_plugins();
+		?>
+		<script type="text/javascript" language="javascript">
+			function checkAllPlugins() {
+				jQuery("input[name=disabledPlugins\[\]]").each(function() {  
+					this.checked = jQuery("#selectAllPlugins").attr("checked");  
+				});  
+			}
+		</script>
+		<input type="checkbox" id="selectAllPlugins" name="selectAllPlugins" value="" onclick="checkAllPlugins();">Select All<br><br>
+		<?php
+		foreach ($plugins as $key=>$plugin) {
+			if (in_array($key, $pluginList)) {
+				?>
+				<input type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print $plugin['Name']; ?><br>
+				<?php
+			} else {
+				?>
+				<input type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>"><?php print $plugin['Name']; ?><br>
+				<?php
+			}
+		}
+			
+	}
+
+	function PO_save_disable_plugin_box($post_id) {
+		global $wpdb;
+		if ( (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id)) 
+			return $post_id;
+
+
+		if ( !current_user_can( 'edit_page', $post_id ) || !current_user_can( 'activate_plugins' ) ) {
+			return $post_id;
+		}
+
+		if (isset($_POST['disabledPlugins'])) {
+			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
+			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_disabled_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			if ($postCount['count'] > 0) {
+				 $wpdb->update($wpdb->prefix."PO_disabled_plugins", array("plugin_list"=>$wpdb->prepare(serialize($_POST['disabledPlugins']))), array("post_id"=>$post_id));
+			} else {
+				$wpdb->insert($wpdb->prefix."PO_disabled_plugins", array("plugin_list"=>$wpdb->prepare(serialize($_POST['disabledPlugins'])), "permalink"=>$preparedUrl, "post_id"=>$post_id));
+			}
+		} else {
+			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
+			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_disabled_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			if ($postCount['count'] > 0) {
+				$wpdb->query("DELETE FROM ".$wpdb->prefix."PO_disabled_plugins WHERE post_id = ".$post_id);
+			}
+		}
+			
+	}
+
+	function PO_delete_disabled_plugins($post_id) {
+		global $wpdb;
+		if ( !current_user_can( 'edit_page', $post_id ) ) {
+			return $post_id;
+		}
+		$wpdb->query("DELETE FROM ".$wpdb->prefix."PO_disabled_plugins WHERE post_id = ".$post_id);
+	}
+
 }
 ?>

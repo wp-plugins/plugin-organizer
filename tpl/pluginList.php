@@ -40,7 +40,7 @@
 				}
 			  ?>
 			  <div class="inside">
-            	<input type=hidden name="page" value="Plugin_Organizer">
+            	<input type=hidden name="page" value="PO_load_order">
 				<input type=button name=submit value="Save Order" onmousedown="submitPluginLoadOrder();">
               </div>
             </div>
