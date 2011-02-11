@@ -29,6 +29,10 @@ NOTE: To enable selective plugin loading you must move the /wp-content/plugins/p
 
 
 == Frequently Asked Questions ==
+Q. Does this only apply to WP MU or all types of WP installs?
+"NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it."
+
+A. The mu-plugins folder contains "Must Use" plugins that are loaded before regular plugins. The mu is not related to WordPress MU. This was added to regular WordPress in 3.0 I believe. I only placed this one class in the MU folder because I wanted to have my plugin run as a normal plugin so it could be disabled if needed. 
 
 == Screenshots ==
 
