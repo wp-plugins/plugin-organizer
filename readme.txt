@@ -9,7 +9,6 @@ Stable tag: 0.5
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by page or post.
-3. Adds grouping to the plugin admin age.
 
 == Description ==
 
@@ -72,3 +71,8 @@ improved the ajax requests on the plugin admin page.
 
 = 0.1 =
 Initial version.
+
+== Upgrade Notice ==
+
+= 0.5 =
+Added functionality to selectively disable plugins by post or page.
