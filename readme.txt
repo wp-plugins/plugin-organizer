@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.0
-Tested up to: 3.0.4
-Stable tag: 0.5
+Tested up to: 3.0.5
+Stable tag: 0.6
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -33,6 +33,13 @@ Q. Does this only apply to WP MU or all types of WP installs?
 
 A. The mu-plugins folder contains "Must Use" plugins that are loaded before regular plugins. The mu is not related to WordPress MU. This was added to regular WordPress in 3.0 I believe. I only placed this one class in the MU folder because I wanted to have my plugin run as a normal plugin so it could be disabled if needed. 
 
+
+Q. In what instance would this plugin be useful?
+
+A. 
+  Example 1: If you have a large number of plugins and don't want them all to load for every page you can disable the unneeded plugins for each individual page.  Or you can globally disable them and enable them for each post or page you will need them on.
+  Example 2: If you have plugins that conflict with eachother then you can disable the plugins that are conflicting for each indivdual post or page.
+
 == Screenshots ==
 
 1. Plugin admin page example.
@@ -40,6 +47,11 @@ A. The mu-plugins folder contains "Must Use" plugins that are loaded before regu
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.6 =
+Added functionality to disable plugins globally and selectively enable them for posts and pages.
+Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
+New databse layout.  Will be created when plugin is activated.
 
 = 0.5 =
 Added functionality to selectively disable plugins by post or page.  
@@ -74,5 +86,7 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 0.5 =
-Added functionality to selectively disable plugins by post or page.
+= 0.6 =
+Added functionality to disable plugins globally and selectively enable them for posts and pages.
+Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
+New databse layout.  Will be created when plugin is activated.

@@ -28,10 +28,17 @@
 				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to /wp-content/mu-plugins before it will take effect.  If you don't have an mu-plugins folder you need to create it.
 				<br>
 				<input type=hidden name="page" value="Plugin_Organizer">
+				<input type=submit name=submit value="Save Settings">
               </div>
             </div>
-			<input type=submit name=submit value="Save Settings">
 	      </form>
+		  <br><br>
+		  <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
+			  <div class="inside">
+				<input type=button name="redo-permalinks" value="Recreate Permalinks" onmousedown="submitRedoPermalinks();">
+			  </div>
+			</div>
 	    </div>
       </div>
     </div>
