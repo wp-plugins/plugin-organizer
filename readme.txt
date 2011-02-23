@@ -26,7 +26,6 @@ This plugin allows you to do the following:
 
 NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins.  If the mu-plugins directory does not exist you can create it.
 
-
 == Frequently Asked Questions ==
 Q. Does this only apply to WP MU or all types of WP installs?
 "NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it."
