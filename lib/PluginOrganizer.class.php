@@ -392,7 +392,6 @@ class PluginOrganizer {
 			if (is_array($_POST['disabledList'])) {
 				$disabledPlugins = $_POST['disabledList'];
 				update_option("PO_disabled_plugins", $disabledPlugins);
-				print_r($_POST['disabledList']);
 				$returnStatus = "Global plugin list has been saved.";
 			} else {
 				$returnStatus = "Did not recieve the proper variables.  No changes made.";
