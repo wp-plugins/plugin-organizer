@@ -52,8 +52,8 @@ class PluginOrganizer {
 			copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
-		if (get_option("PO_version_num") != "0.6") {
-			update_option("PO_version_num", "0.6");
+		if (get_option("PO_version_num") != "0.7") {
+			update_option("PO_version_num", "0.7");
 		}
 	}
 	
@@ -184,7 +184,7 @@ class PluginOrganizer {
 
 	function get_order_select($count, $plugins) {
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$orderSelect = "<select name=\"order[]\" id=\"order_" . $count . "\" onchange=\"uniqueOrder('order_" . $count . "');\">";
+			$orderSelect = "<select class=\"plugin_order_select\" name=\"order[]\" id=\"order_" . $count . "\" onchange=\"uniqueOrder('order_" . $count . "');\">";
 				for ($i = 0; $i<sizeof($plugins); $i++) {
 					$orderSelect .= "<option value=\"" . $i . "\" " . (($i == $count) ? "selected=\"selected\"" : "") . ">" . ($i+1) . "</option>";
 				}
@@ -204,14 +204,13 @@ class PluginOrganizer {
 			?>
 			<script type="text/javascript" language="javascript">
 				function submitPluginGroup(group_id){
-					var pluginList = jQuery('input[name=group[]]');
 					var groupList = new Array();
 					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
-					for (var i=0; i<pluginList.length; i++) {
-						if (pluginList[i].checked) {
-							groupList[groupList.length] = pluginList[i].value;
+					jQuery('.group_member_check').each(function() {
+						if (this.checked) {
+							groupList[groupList.length] = this.value;
 						}
-					}
+					});
 					var group_name=jQuery('#group_name').val();
 					var revertHtml = jQuery('#plugingroupdiv .inside').html();
 					jQuery('#plugingroupdiv .inside').html('<div style="width: 100%;text-align: center;"><img src="<?php print $POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
@@ -223,13 +222,13 @@ class PluginOrganizer {
 						alert(result);
 						jQuery('#plugingroupdiv .inside').html(revertHtml);
 						//var pluginList = jQuery('input[name=group[]]');
-						for (var i=0; i<pluginList.length; i++) {
-							if (groupList.indexOf(pluginList[i].value) != -1) {
-								jQuery("#"+pluginList[i].id).attr('checked', true);
+						jQuery('.group_member_check').each(function() {
+							if (groupList.indexOf(this.value) != -1) {
+								jQuery("#"+this.id).attr('checked', true);
 							} else {
-								jQuery("#"+pluginList[i].id).attr('checked', false);
+								jQuery("#"+this.id).attr('checked', false);
 							}
-						}
+						});
 					});
 				}
 			</script>
@@ -244,14 +243,13 @@ class PluginOrganizer {
 			?>
 			<script type="text/javascript" language="javascript">
 				function submitGlobalPlugins(){
-					var pluginList = jQuery('input[name=disabledPlugins[]]');
 					var disabledList = new Array();
 					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
-					for (var i=0; i<pluginList.length; i++) {
-						if (pluginList[i].checked) {
-							disabledList[disabledList.length] = pluginList[i].value;
+					jQuery('.disabled_plugin_check').each(function() {
+						if (this.checked) {
+							disabledList[disabledList.length] = this.value;
 						}
-					}
+					});
 					var revertHtml = jQuery('#pluginListdiv').html();
 					jQuery('#pluginListdiv').html('<div style="width: 100%;text-align: center;"><img src="<?php print $POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
 					
@@ -262,13 +260,13 @@ class PluginOrganizer {
 						alert(result);
 						jQuery('#pluginListdiv').html(revertHtml);
 						//var pluginList = jQuery('input[name=group[]]');
-						for (var i=0; i<pluginList.length; i++) {
-							if (disabledList.indexOf(pluginList[i].value) != -1) {
-								jQuery("#"+pluginList[i].id).attr('checked', true);
+						jQuery('.disabled_plugin_check').each(function() {
+							if (disabledList.indexOf(this.value) != -1) {
+								jQuery("#"+this.id).attr('checked', true);
 							} else {
-								jQuery("#"+pluginList[i].id).attr('checked', false);
+								jQuery("#"+this.id).attr('checked', false);
 							}
-						}
+						});
 					});
 				}
 			</script>
@@ -283,7 +281,7 @@ class PluginOrganizer {
 			?>
 			<script type="text/javascript" language="javascript">
 				jQuery(document).ready(function () {
-					var groupDropdown = '<select name="PO_group" onchange="syncGroupIds(this);">';
+					var groupDropdown = '<select name="PO_group_view" onchange="syncGroupIds(this);">';
 					<?php
 						foreach ($groups as $group) {
 							print "groupDropdown += '<option value=\"" . $group->group_id . "\">" . $group->group_name . "</option>';\n";
@@ -308,25 +306,23 @@ class PluginOrganizer {
 				function uniqueOrder(currentId) {
 					var newVal = jQuery("#" + currentId).val();
 					var oldVal = jQuery("#old_" + currentId).val();
-					var selections = jQuery('select[name=order[]]');
-					for (var i=0; i<selections.length; i++) {
-						if (selections[i].id != currentId && selections[i].value == newVal) {
-							selections[i].value = oldVal;
-							jQuery("#old_" + selections[i].id).val(oldVal);
+					jQuery('.plugin_order_select').each(function() {
+						if (this.id != currentId && this.value == newVal) {
+							this.value = oldVal;
+							jQuery("#old_" + this.id).val(oldVal);
 						}
-					}
+					});
 					jQuery("#old_" + currentId).val(newVal);
 
 				}
 				function submitPluginLoadOrder(){
-					var selections = jQuery('select[name=order[]]');
 					var orderList = new Array();
 					var startOrderList = new Array();
 					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
-					for (var i=0; i<selections.length; i++) {
-						orderList[orderList.length] = selections[i].value;
-						startOrderList[startOrderList.length] = jQuery("#start_" + selections[i].id).val();
-					}
+					jQuery('.plugin_order_select').each(function() {
+						orderList[orderList.length] = this.value;
+						startOrderList[startOrderList.length] = jQuery("#start_" + this.id).val();
+					});
 					var load_element = '';
 					var revertHtml = '';
 					if (jQuery('#all-plugins-table .plugins').length) {
@@ -341,18 +337,20 @@ class PluginOrganizer {
 					
 					
 					jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: PO_nonce }, function (result) {
-						if (result == "The plugin load order has been changed.") {
-							for (var i=0; i<selections.length; i++) {
-								jQuery("#start_" + selections[i].id).val(selections[i].value);
-							}
-						}
 						alert(result);
 						load_element.html(revertHtml);
+						if (result == "The plugin load order has been changed.") {
+							jQuery('.plugin_order_select').each(function() {
+								var orderIndex = orderList.shift();
+								jQuery("#" + this.id).val(orderIndex);
+								jQuery("#start_" + this.id).val(orderIndex);
+							});
+						}
 					});
 				}
 				function syncGroupIds(element) {
 					var selectedIndex = element.options['selectedIndex'];
-					var selections = jQuery('select[name=PO_group]');
+					var selections = jQuery('select[name=PO_group_view]');
 					for (var i=0; i<selections.length; i++) {
 						selections[i].options['selectedIndex'] = selectedIndex;
 					}
@@ -394,6 +392,7 @@ class PluginOrganizer {
 			if (is_array($_POST['disabledList'])) {
 				$disabledPlugins = $_POST['disabledList'];
 				update_option("PO_disabled_plugins", $disabledPlugins);
+				print_r($_POST['disabledList']);
 				$returnStatus = "Global plugin list has been saved.";
 			} else {
 				$returnStatus = "Did not recieve the proper variables.  No changes made.";
@@ -443,8 +442,8 @@ class PluginOrganizer {
 		$newPluginList = Array();
 		$activePluginOrder = Array();
 		
-		if (is_numeric($_POST['PO_group'])) {
-			$group = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$_POST['PO_group'], ARRAY_A);
+		if (is_numeric($_POST['PO_group_view'])) {
+			$group = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$_POST['PO_group_view'], ARRAY_A);
 			$members = unserialize($group['group_members']);
 			foreach ($allPluginList as $key=>$val) {
 				if (in_array($val['Name'], $members)) {
@@ -551,7 +550,7 @@ class PluginOrganizer {
 		</style>
 		<script type="text/javascript" language="javascript">
 			function checkAllDisablePlugins() {
-				jQuery("input[name=disabledPlugins\[\]]").each(function() {  
+				jQuery(".disabled_plugin_check").each(function() {  
 					this.checked = jQuery("#selectAllDisablePlugins").attr("checked");  
 				});  
 			}
@@ -561,11 +560,11 @@ class PluginOrganizer {
 		foreach ($plugins as $key=>$plugin) {
 			if (in_array($key, $pluginList)) {
 				?>
-				<input class="<?php print $checkBoxClass; ?>" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 				<?php
 			} else {
 				?>
-				<input class="<?php print $checkBoxClass; ?>" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 				<?php
 			}
 		}
@@ -594,7 +593,7 @@ class PluginOrganizer {
 		</style>
 		<script type="text/javascript" language="javascript">
 			function checkAllEnablePlugins() {
-				jQuery("input[name=enabledPlugins\[\]]").each(function() {  
+				jQuery(".enabled_plugin_check").each(function() {  
 					this.checked = jQuery("#selectAllEnablePlugins").attr("checked");  
 				});  
 			}
@@ -605,11 +604,11 @@ class PluginOrganizer {
 			if (in_array($key, $globalPlugins)) {
 				if (in_array($key, $pluginList)) {
 					?>
-					<input class="<?php print $checkBoxClass; ?>" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 					<?php
 				} else {
 					?>
-					<input class="<?php print $checkBoxClass; ?>" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 					<?php
 				}
 			}

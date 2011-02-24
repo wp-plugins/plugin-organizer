@@ -24,7 +24,7 @@
 				$count = 1;
 				foreach ($plugins as $key=>$plugin) {
 					?>
-					<input type="checkbox" name="group[]" id="group_member_<?php print $count; ?>" value="<?php print $plugin['Name']; ?>" <?php print (in_array($plugin['Name'], $members)) ? 'checked="checked"': ''; ?>> <?php print $plugin['Name']; ?><br>
+					<input type="checkbox" class="group_member_check" name="group[]" id="group_member_<?php print $count; ?>" value="<?php print $plugin['Name']; ?>" <?php print (in_array($plugin['Name'], $members)) ? 'checked="checked"': ''; ?>> <?php print $plugin['Name']; ?><br>
 					<?php
 					$count++;
 				}

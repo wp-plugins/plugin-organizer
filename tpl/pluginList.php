@@ -25,7 +25,7 @@
 					<div class="inside">
 					  <input type="hidden" id="old_order_<?php print $count; ?>" value="<?php print $count; ?>">
 					  <input type="hidden" name="start_order[]" id="start_order_<?php print $count; ?>" value="<?php print $count; ?>">
-					  <select name="order[]" id="order_<?php print $count; ?>" onchange="uniqueOrder('order_<?php print $count; ?>');">
+					  <select class="plugin_order_select" name="order[]" id="order_<?php print $count; ?>" onchange="uniqueOrder('order_<?php print $count; ?>');">
 					    <?php
 						for ($i = 1; $i<=sizeof($plugins); $i++) {
 							?>
