@@ -1,5 +1,6 @@
 <?php
 class PluginOrganizer {
+	var $pluginPageActions = "1";
 	function activate() {
 		global $wpdb, $POAbsPath;
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_groups (
@@ -52,8 +53,8 @@ class PluginOrganizer {
 			copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
-		if (get_option("PO_version_num") != "0.7") {
-			update_option("PO_version_num", "0.7");
+		if (get_option("PO_version_num") != "0.7.1") {
+			update_option("PO_version_num", "0.7.1");
 		}
 	}
 	
@@ -436,6 +437,18 @@ class PluginOrganizer {
 	function reorder_plugins($allPluginList) {
 		global $wpdb;
 		$plugins = get_option("active_plugins");
+		if (is_admin() && $this->pluginPageActions == 1) {
+			$perPage = get_user_option("plugins_per_page");
+			if (!is_numeric($perPage)) {
+				$perPage = 20;
+			}
+			if (sizeOf($plugins) > $perPage) {
+				remove_filter("plugin_action_links", array($this, 'plugin_page'), 10, 2);
+				remove_action('all_plugins',  array($this, 'reorder_plugins'));
+				$this->pluginPageActions = 0;
+				return $allPluginList;
+			}
+		}
 		$activePlugins = Array();
 		$inactivePlugins = Array();
 		$newPluginList = Array();
