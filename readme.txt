@@ -92,6 +92,9 @@ Initial version.
 
 == Upgrade Notice ==
 
+= 0.7.1 =
+Fixing plugin admin page.  Could cause plugins to be disabled in old version.
+
 = 0.7 =
 Fixes for jQuery 1.4.4
 
