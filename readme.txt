@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
 Tested up to: 3.1
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -47,6 +47,11 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.7.2 =
+Fixed bug that reordered plugins back to default when plugins were activated or deactivated.
+Fixed jQuery loading indicator on plugin admin.
+Fixed Bulk Actions on plugin admin
 
 = 0.7.1 =
 Removed display of plugin load order functions on plugin admin if the view is paged.  To view load order functions on plugin admin you must display all active plugins on one page.
@@ -91,6 +96,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 0.7.2 =
+Bug fixes for plugin admin page.  Plugin order could be lost on activation or deactivation.  Top bulk actions fixed.
 
 = 0.7.1 =
 Fixing plugin admin page.  Could cause plugins to be disabled in old version.

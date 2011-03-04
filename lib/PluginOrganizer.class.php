@@ -53,8 +53,8 @@ class PluginOrganizer {
 			copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
-		if (get_option("PO_version_num") != "0.7.1") {
-			update_option("PO_version_num", "0.7.1");
+		if (get_option("PO_version_num") != "0.7.2") {
+			update_option("PO_version_num", "0.7.2");
 		}
 	}
 	
@@ -282,15 +282,18 @@ class PluginOrganizer {
 			?>
 			<script type="text/javascript" language="javascript">
 				jQuery(document).ready(function () {
-					var groupDropdown = '<select name="PO_group_view" onchange="syncGroupIds(this);">';
+					var groupDropdown = '<div class="alignleft actions"><select name="PO_group_view" onchange="syncGroupIds(this);">';
 					<?php
 						foreach ($groups as $group) {
 							print "groupDropdown += '<option value=\"" . $group->group_id . "\">" . $group->group_name . "</option>';\n";
 						}
 					?>
 					groupDropdown += '</select>';
-					groupDropdown += '<input type="submit" name="group_plugins" value="View Group">';
-					jQuery('.tablenav .actions').html(jQuery('.tablenav .actions').html()+groupDropdown);
+					groupDropdown += '<input type="submit" name="group_plugins" value="View Group"></div><br class="clear">';
+					jQuery('.tablenav.top .clear').remove();
+					jQuery('.tablenav.top').html(jQuery('.tablenav.top').html()+groupDropdown);
+					jQuery('.tablenav.bottom .clear').remove();
+					jQuery('.tablenav.bottom').html(jQuery('.tablenav.bottom').html()+groupDropdown);
 					
 				});
 			</script>
@@ -326,8 +329,8 @@ class PluginOrganizer {
 					});
 					var load_element = '';
 					var revertHtml = '';
-					if (jQuery('#all-plugins-table .plugins').length) {
-						load_element = jQuery('#all-plugins-table .plugins');
+					if (jQuery('#the-list').length) {
+						load_element = jQuery('#the-list');
 						revertHtml = load_element.html();
 						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $POUrlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 					} else {
@@ -419,7 +422,7 @@ class PluginOrganizer {
 					array_multisort($startOrderArray, $newPlugArray);
 					array_multisort($newPlugArray, $plugins);
 					update_option("active_plugins", $plugins);
-					
+					update_option("PO_plugin_order", $plugins);
 					$returnStatus = "The plugin load order has been changed.";
 				} else {
 					$returnStatus = "The order values were not unique so no changes were made.";
@@ -720,6 +723,28 @@ class PluginOrganizer {
 			print "All permalinks were updated successfully.";
 		}
 		die();
+	}
+
+	function recreate_plugin_order() {
+		$plugins = get_option("active_plugins");
+		$pluginOrder = get_option("PO_plugin_order");
+		$newPlugArray = $plugins;
+		$activePlugins = $plugins;
+		if (is_array($pluginOrder) && sizeof(array_diff_assoc($plugins, $pluginOrder)) > 0) {
+			$newPlugins = array_diff($plugins, $pluginOrder);
+			foreach ($newPlugins as $newPlug) {
+				$pluginOrder[] = $newPlug;
+			}
+			$pluginLoadOrder = Array();
+			$activePlugins = array();
+			foreach ($plugins as $val) {
+				$activePlugins[] = $val;
+				$pluginLoadOrder[] = array_search($val, $pluginOrder);
+			}
+			array_multisort($pluginLoadOrder, $activePlugins);
+			update_option("active_plugins", $activePlugins);
+			update_option("PO_plugin_order", $activePlugins);
+		}
 	}
 }
 ?>
