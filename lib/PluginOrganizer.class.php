@@ -42,19 +42,19 @@ class PluginOrganizer {
 
 		}
 		if (!file_exists(ABSPATH . "wp-content/mu-plugins/")) {
-			mkdir(ABSPATH . "wp-content/mu-plugins/");
+			@mkdir(ABSPATH . "wp-content/mu-plugins/");
 		}
 
 		if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
-			unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+			@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
 		if (file_exists(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php")) {
-			copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+			@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
-		if (get_option("PO_version_num") != "0.7.2") {
-			update_option("PO_version_num", "0.7.2");
+		if (get_option("PO_version_num") != "0.7.3") {
+			update_option("PO_version_num", "0.7.3");
 		}
 	}
 	

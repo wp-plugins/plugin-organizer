@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.nebraskadigital.com/2010/12/27/plugin-organizer/
 Description: A plugin for specifying the load order of your plugins.
-Version: 0.7.2
+Version: 0.7.3
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */
