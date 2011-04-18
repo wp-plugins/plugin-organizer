@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
-Tested up to: 3.1
-Stable tag: 0.7.3
+Tested up to: 3.1.1
+Stable tag: 0.8
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -28,6 +28,14 @@ NOTE: To enable selective plugin loading you must move the /wp-content/plugins/p
 
 
 == Frequently Asked Questions ==
+Q. Does this plugin work with wordpress multi-site?
+
+A. Yes it has been tested on several multi-site installs.  Both subdomain and sub folder types.
+
+Q. Does this plugin work with custom post types?
+
+A. Yes it has been tested with custom post types.  You can add support for your custom post types on the settings page.
+
 Q. Does this only apply to WP MU or all types of WP installs?
 "NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful."
 
@@ -48,6 +56,9 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.8 =
+Adding custom post type support.
 
 = 0.7.3 =
 Fixed activation errors when mu-plugins folder is not writable.
@@ -100,6 +111,12 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 0.8 =
+Adding custom post type support.
+
+= 0.7.3 =
+Fixed activation errors when mu-plugins folder is not writable.
 
 = 0.7.2 =
 Bug fixes for plugin admin page.  Plugin order could be lost on activation or deactivation.  Top bulk actions fixed.

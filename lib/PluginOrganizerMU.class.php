@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://www.nebraskadigital.com/2010/12/27/plugin-organizer/
 Description: This is part of the Plugin Organizer plugin.  It enables the selective loading of plugins per post or page.
-Version: 0.7.3
+Version: 0.8
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */
@@ -14,7 +14,7 @@ class PluginOrganizerMU {
 		global $wpdb;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && !is_admin()) {
-			if (get_option("PO_version_num") != "0.7.3") {
+			if (get_option("PO_version_num") != "0.8") {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 			} else {

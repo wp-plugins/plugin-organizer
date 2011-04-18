@@ -53,8 +53,12 @@ class PluginOrganizer {
 			@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 		
-		if (get_option("PO_version_num") != "0.7.3") {
-			update_option("PO_version_num", "0.7.3");
+		if (!is_array(get_option("PO_custom_post_type_support"))) {
+			update_option("PO_custom_post_type_support", array("post", "page"));
+		}
+		
+		if (get_option("PO_version_num") != "0.8") {
+			update_option("PO_version_num", "0.8");
 		}
 	}
 	
@@ -72,7 +76,7 @@ class PluginOrganizer {
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
-			add_action('admin_head-'.$plugin_page, array($this, 'ajax_redo_permalinks'));
+			add_action('admin_head-'.$plugin_page, array($this, 'ajax_PO_settings'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_load_order'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_plugin_page'));
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
@@ -365,7 +369,7 @@ class PluginOrganizer {
 		}	
 	}
 
-	function ajax_redo_permalinks() {
+	function ajax_PO_settings() {
 		global $POUrlPath;
 		if ( current_user_can( 'activate_plugins' ) ) {
 			?>
@@ -378,6 +382,32 @@ class PluginOrganizer {
 					jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: PO_nonce }, function (result) {
 						alert(result);
 						load_element.html(revertHtml);
+					});
+				}
+
+				function submitPostTypeSupport() {
+					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
+					var PO_cutom_post_type = new Array();
+					jQuery('.PO_cutom_post_type').each(function() {
+						if (this.checked) {
+							PO_cutom_post_type[PO_cutom_post_type.length] = this.value;
+						}
+					});
+					var load_element = jQuery('#PO-custom-post-type-div .inside');
+					var revertHtml = load_element.html();
+					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_post_type_support'), { 'PO_cutom_post_type[]': PO_cutom_post_type, PO_nonce: PO_nonce }, function (result) {
+						alert(result);
+						load_element.html(revertHtml);
+						jQuery('.PO_cutom_post_type').each(function() {
+							var valFound = false;
+							for(i=0; i<PO_cutom_post_type.length; i++) {
+								if (this.value == PO_cutom_post_type[i]) {
+									valFound = true;
+								}
+							}
+							this.checked = valFound;
+						});
 					});
 				}
 			</script>
@@ -510,41 +540,28 @@ class PluginOrganizer {
 
 	function disable_plugin_box() {
 		if ( current_user_can( 'activate_plugins' ) ) {
-			add_meta_box(
-			'enable_plugins',
-			'Enable Plugins',
-			array($this, 'get_enable_plugin_box'),
-			'post',
-			'normal',
-			'high' 
-			);
-
-			add_meta_box(
-			'enable_plugins',
-			'Enable Plugins',
-			array($this, 'get_enable_plugin_box'),
-			'page',
-			'normal',
-			'high' 
-			);
-			
-			add_meta_box(
-			'disable_plugins',
-			'Disable Plugins',
-			array($this, 'get_disable_plugin_box'),
-			'post',
-			'normal',
-			'high' 
-			);
-
-			add_meta_box(
-			'disable_plugins',
-			'Disable Plugins',
-			array($this, 'get_disable_plugin_box'),
-			'page',
-			'normal',
-			'high' 
-			);
+			$supportedPostTypes = get_option("PO_custom_post_type_support");
+			if (is_array($supportedPostTypes)) {
+				foreach ($supportedPostTypes as $postType) {
+					add_meta_box(
+					'enable_plugins',
+					'Enable Plugins',
+					array($this, 'get_enable_plugin_box'),
+					$postType,
+					'normal',
+					'high' 
+					);
+					add_meta_box(
+					'disable_plugins',
+					'Disable Plugins',
+					array($this, 'get_disable_plugin_box'),
+					$postType,
+					'normal',
+					'high' 
+					);
+					
+				}
+			}
 		}
 	}
 
@@ -721,6 +738,22 @@ class PluginOrganizer {
 			print $failedCount . " permalinks failed to update!";
 		} else {
 			print "All permalinks were updated successfully.";
+		}
+		die();
+	}
+
+	function add_custom_post_type_support() {
+		global $wpdb;
+		$failedCount = 0;
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		update_option("PO_custom_post_type_support", $_POST['PO_cutom_post_type']);
+		if (sizeof(array_diff(get_option("PO_custom_post_type_support"), $_POST['PO_cutom_post_type'])) == 0) {
+			print "Post types saved.";
+		} else {
+			print "Saving post types failed!";
 		}
 		die();
 	}
