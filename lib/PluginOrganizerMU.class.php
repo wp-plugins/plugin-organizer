@@ -14,7 +14,7 @@ class PluginOrganizerMU {
 		global $wpdb;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && !is_admin()) {
-			if (get_option("PO_version_num") != "0.8") {
+			if (get_option("PO_version_num") != "0.8.1") {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 			} else {

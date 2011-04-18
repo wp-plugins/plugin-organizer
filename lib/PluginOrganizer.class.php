@@ -57,8 +57,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "0.8") {
-			update_option("PO_version_num", "0.8");
+		if (get_option("PO_version_num") != "0.8.1") {
+			update_option("PO_version_num", "0.8.1");
 		}
 	}
 	
