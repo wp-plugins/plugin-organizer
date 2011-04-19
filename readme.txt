@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
 Tested up to: 3.1.1
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -28,6 +28,10 @@ NOTE: To enable selective plugin loading you must move the /wp-content/plugins/p
 
 
 == Frequently Asked Questions ==
+Q. How do I enable the selective plugin loading functionality?
+
+A. Go to the Plugin Organizer settings page and check the enable radio button under selective plugin loading.  Then visit your homepage.  Finally return to the Plugin Organizer settings page and see if the enable radio button is still checked.  If it is not then you are running an old version of the MU component.  Copy the PluginOrganizerMU.class.php file to the mu-plugins folder then deactivate and reactivate the plugin.  Repeat these steps to ensure that the plugin is working.  Remember that you will need to update the PluginOrganizerMU.class.php file whenever the plugin is updated and check your settings afterward.
+
 Q. Does this plugin work with wordpress multi-site?
 
 A. Yes it has been tested on several multi-site installs.  Both subdomain and sub folder types.
@@ -56,6 +60,10 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.8.2 =
+Fixing wrong version number on plugins page.
+Adding FAQ's
 
 = 0.8.1 =
 Added missing tpl/globalPlugins.php file.
