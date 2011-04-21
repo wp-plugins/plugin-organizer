@@ -1,6 +1,11 @@
 <?php
 class PluginOrganizer {
 	var $pluginPageActions = "1";
+	function __construct() {
+		if (get_option("PO_version_num") != "0.8.3") {
+			$this->activate();
+		}
+	}
 	function activate() {
 		global $wpdb, $POAbsPath;
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_groups (
@@ -57,8 +62,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "0.8.2") {
-			update_option("PO_version_num", "0.8.2");
+		if (get_option("PO_version_num") != "0.8.3") {
+			update_option("PO_version_num", "0.8.3");
 		}
 	}
 	

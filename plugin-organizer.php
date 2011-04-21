@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.nebraskadigital.com/2010/12/27/plugin-organizer/
 Description: A plugin for specifying the load order of your plugins.
-Version: 0.8.2
+Version: 0.8.3
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */
@@ -31,6 +31,7 @@ add_action('wp_ajax_PO_post_type_support',  array($PluginOrganizer, 'add_custom_
 if (get_option("PO_disable_plugins") == "1") {
 	add_action('admin_menu', array($PluginOrganizer, 'disable_plugin_box'));
 	add_action('save_post', array($PluginOrganizer, 'save_disable_plugin_box'));
+	add_action('save_post', array($PluginOrganizer, 'save_enable_plugin_box'));
 }
 add_action('delete_post', array($PluginOrganizer, 'delete_plugin_lists'));
 

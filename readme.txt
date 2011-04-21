@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
 Tested up to: 3.1.1
-Stable tag: 0.8.2
+Stable tag: 0.8.3
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -60,6 +60,10 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.8.3 =
+Fixing a bug with globaly disabled plugins not being enabled on individual posts
+Fixing bug with version number not updating when plugin is updated.
 
 = 0.8.2 =
 Fixing wrong version number on plugins page.
