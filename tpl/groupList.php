@@ -14,11 +14,11 @@
     <div id="groupstuff" class="metabox-holder">
       <div id="group-body">
         <div id="group-body-content">
-	      <form method=post name="po_edit_plugin_group" action="" enctype="multipart/form-data">
+	      <form method=post id="po_edit_plugin_group" name="po_edit_plugin_group" action="">
 	        <div id="plugingroupdiv" class="stuffbox" style="width: 98%">
               <h3><label for="group[]">Group Details</label></h3>
 			  <div id="group_details" class="inside">
-            	Group Name: <input type="text" id="group_name" name="group_name" value="<?php print $currGroup['group_name']; ?>">
+            	<label id="group_nameLabel" for="group_name">Group Name</label>: <input type="text" id="group_name" name="group_name" value="<?php print $currGroup['group_name']; ?>">
 				<br><br>
 				<?php
 				$count = 1;
@@ -31,13 +31,13 @@
 				?>
 				<br>
 				<input type=hidden name="page" value="PO_Groups">
-				<input type=button name=submit value="Save Group" onmousedown="submitPluginGroup('<?php print $currGroup['group_id']; ?>');">
+				<input type=button id="saveGroup" name=submit value="Save Group" onmousedown="submitPluginGroup('<?php print $currGroup['group_id']; ?>');">
 				<br>
 			  </div>
             </div>
 	      </form>
 
-		  <form method=post name="po_switch_plugin_group" action="" enctype="multipart/form-data">
+		  <form method=post name="po_switch_plugin_group" action="">
 	        <div id="pluginselectdiv" class="stuffbox" style="width: 98%">
               <h3><label for="PO_group">Select Group To Edit</label></h3>
 			    <select name="PO_group">
@@ -52,15 +52,15 @@
             </div>
 	      </form>
 
-		  <form method=post name="po_create_plugin_group" action="" enctype="multipart/form-data">
+		  <form method=post id="po_create_plugin_group" name="po_create_plugin_group" action="">
 	        <div id="newgroupdiv" class="stuffbox" style="width: 98%">
-              <h3><label for="new_group_name">Create New Group</label></h3>
+              <h3><label id="new_group_nameLabel" for="new_group_name">Create New Group</label></h3>
 			    <input type="text" name="new_group_name">
 				<input type=hidden name="page" value="PO_Groups">
-				<input type=submit name="createGroup" value="Create Group">
+				<input type=submit id="createGroup" name="createGroup" value="Create Group">
             </div>
 	      </form>
-		  <form method=post name="po_delete_plugin_group" action="" enctype="multipart/form-data">
+		  <form method=post name="po_delete_plugin_group" action="">
 	        <div id="delgroupdiv" class="stuffbox" style="width: 98%">
               <h3><label for="del_group_name">Delete Group</label></h3>
 			    <select name="PO_group">

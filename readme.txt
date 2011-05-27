@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
-Tested up to: 3.1.1
-Stable tag: 0.8.3
+Tested up to: 3.1.3
+Stable tag: 0.9
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -60,6 +60,10 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 0.9 =
+Added admin area for entering arbitrary URL's to allow plugin management for url's that don't have a post tied to them.
+Added some form validation for the admin screens.
 
 = 0.8.3 =
 Fixing a bug with globaly disabled plugins not being enabled on individual posts
@@ -126,6 +130,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 0.9 =
+Added plugin management for url's that don't have a post tied to them.
 
 = 0.8.1 =
 Added missing tpl/globalPlugins.php file.
