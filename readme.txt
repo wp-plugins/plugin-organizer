@@ -156,3 +156,4 @@ Fixes for jQuery 1.4.4
 Added functionality to disable plugins globally and selectively enable them for posts and pages.
 Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
 New databse layout.  Will be created when plugin is activated.
+
