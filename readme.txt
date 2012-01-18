@@ -3,9 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
 Requires at least: 3.1
-Tested up to: 3.1.3
-Stable tag: 0.9
-
+Tested up to: 3.3.1
+Stable tag: 1.0
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -61,6 +60,11 @@ A.
 3. Post edit page example with disable plugins meta box.
 
 == Changelog ==
+
+= 1.0 =
+Added ability to disable plugins in the admin using the Arbitrary URL admin page.
+Fixed some flow issues and html problems on the PO admin pages.
+Properly escaped all queries
 
 = 0.9 =
 Added admin area for entering arbitrary URL's to allow plugin management for url's that don't have a post tied to them.
@@ -132,6 +136,11 @@ Initial version.
 
 == Upgrade Notice ==
 
+= 1.0 =
+Added ability to disable plugins in the admin using the Arbitrary URL admin page.
+Fixed some flow issues and html problems on the PO admin pages.
+Properly escaped all queries
+
 = 0.9 =
 Added plugin management for url's that don't have a post tied to them.
 
@@ -157,4 +166,3 @@ Fixes for jQuery 1.4.4
 Added functionality to disable plugins globally and selectively enable them for posts and pages.
 Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
 New databse layout.  Will be created when plugin is activated.
-

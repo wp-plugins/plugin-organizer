@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Plugin Organizer
-Plugin URI: http://www.nebraskadigital.com/2010/12/27/plugin-organizer/
+Plugin URI: http://wpmason.com/plugin-organizer/
 Description: A plugin for specifying the load order of your plugins.
-Version: 0.9
+Version: 1.0
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */

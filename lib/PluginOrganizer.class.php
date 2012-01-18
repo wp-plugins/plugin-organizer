@@ -9,7 +9,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "0.9") {
+		if (get_option("PO_version_num") != "1.0") {
 			$this->activate();
 		}
 	}
@@ -81,8 +81,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "0.9") {
-			update_option("PO_version_num", "0.9");
+		if (get_option("PO_version_num") != "1.0") {
+			update_option("PO_version_num", "1.0");
 		}
 	}
 	
@@ -161,25 +161,32 @@ class PluginOrganizer {
 			$members = array();
 			$plugins = get_plugins();
 			if ($_POST['createGroup'] == "Create Group") {
-				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['new_group_name'], "group_members"=>$wpdb->prepare(serialize(array()))));
+				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['new_group_name'], "group_members"=>serialize(array())));
 				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$wpdb->insert_id, ARRAY_A);
 				$members = unserialize($currGroup['group_members']);
 			} else if ($_POST['deleteGroup'] == "Delete Group" && is_numeric($_POST['PO_group'])) {
-				$wpdb->query("DELETE FROM ".$wpdb->prefix."PO_groups WHERE group_id=".$wpdb->prepare($_POST['PO_group']));
-				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".get_option('PO_default_group'), ARRAY_A);
+				$deleteGroupQuery = "DELETE FROM ".$wpdb->prefix."PO_groups WHERE group_id=%d";
+				$wpdb->query($wpdb->prepare($deleteGroupQuery, $_POST['PO_group']));
+				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
 				if (!isset($currGroup['group_id'])) {
 					$this->create_default_group();
-					$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".get_option('PO_default_group'), ARRAY_A);
+					$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+					$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
+				
 				}
 				$members = unserialize($currGroup['group_members']);
 			} else if (is_numeric($_POST['PO_group'])) {
-				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$_POST['PO_group'], ARRAY_A);
+				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, $_POST['PO_group']), ARRAY_A);
 				$members = unserialize($currGroup['group_members']);
 			} else {
-				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".get_option('PO_default_group'), ARRAY_A);
+				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
 				if (!isset($currGroup['group_id'])) {
 					$this->create_default_group();
-					$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".get_option('PO_default_group'), ARRAY_A);
+					$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+					$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
 				}
 				$members = unserialize($currGroup['group_members']);
 			}
@@ -228,11 +235,6 @@ class PluginOrganizer {
 		global $wpdb, $POAbsPath;
 		if ( current_user_can( 'activate_plugins' ) ) {
 			if ($_REQUEST['url_admin_page'] == "add") {
-				if ($_POST['add_url'] == '1' && $this->validate_field("permalink")) {
-					$preparedUrl = $wpdb->prepare($_POST['permalink']);
-					$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>$wpdb->prepare(serialize($_POST['disabledPlugins'])),"enabled_plugins"=>$wpdb->prepare(serialize($_POST['enabledPlugins'])), "permalink"=>$preparedUrl));
-					$errMsg = "URL successfully added to the database.";
-				}
 
 				$plugins = get_plugins();
 				$activePlugins = get_option("active_plugins");
@@ -243,18 +245,41 @@ class PluginOrganizer {
 				
 				require_once($POAbsPath . "/tpl/urlAdd.php");
 			} else if ($_REQUEST['url_admin_page'] == "edit") {
-				if (is_numeric($_REQUEST['url_id'])) {
+				if ($_POST['add_url'] == '1' && $this->validate_field("permalink")) {
+					$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
+					$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
+					$urlCount = $getDupUrlResult[0]['count'];
+					if ($urlCount != 0) {
+						$errMsg = "That URL already exists in the database.";
+						$plugins = get_plugins();
+						$activePlugins = get_option("active_plugins");
+						$globalPlugins = get_option("PO_disabled_plugins");
+						if (!is_array($globalPlugins)) {
+							$globalPlugins = array();
+						}
+						
+						require_once($POAbsPath . "/tpl/urlAdd.php");
+						return "";
+					} else {
+						$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink']));
+						$urlId = $wpdb->insert_id;
+						if (!is_numeric($urlId)) {
+							$urlId = 0;
+						}
+						$errMsg = "URL successfully added to the database.";
+					}
+				} else if (is_numeric($_REQUEST['url_id'])) {
 					$urlId = $_REQUEST['url_id'];
 				} else {
 					$urlId = 0;
 				}
 				if ($_POST['edit_url'] == '1' && $urlId != 0 && $this->validate_field("permalink")) {
-					$preparedUrl = $wpdb->prepare($_POST['permalink']);
-					$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>$wpdb->prepare(serialize($_POST['disabledPlugins'])),"enabled_plugins"=>$wpdb->prepare(serialize($_POST['enabledPlugins'])), "permalink"=>$preparedUrl), array("url_id"=>$urlId));
-					$errMsg = "$preparedUrl URL successfully edited.";
+					$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink']), array("url_id"=>$urlId));
+					$errMsg = "URL successfully edited.";
 				}
 				
-				$urlDetails = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id = '".$urlId."'", ARRAY_A);
+				$urlDetailQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id = %d";
+				$urlDetails = $wpdb->get_row($wpdb->prepare($urlDetailQuery, $urlId), ARRAY_A);
 				$disabledPlugins = unserialize($urlDetails['disabled_plugins']);
 				$enabledPlugins = unserialize($urlDetails['enabled_plugins']);
 				if (!is_array($disabledPlugins)) {
@@ -273,7 +298,8 @@ class PluginOrganizer {
 			} else {
 				if (is_numeric($_REQUEST['url_id']) && $_REQUEST['delete_url'] == 1) {
 					$urlId = $_REQUEST['url_id'];
-					$deleteUrl = $wpdb->get_results("DELETE FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id=".$urlId);
+					$deleteUrlQuery = "DELETE FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id=%d";
+					$deleteUrl = $wpdb->get_results($wpdb->prepare($deleteUrlQuery, $urlId));
 				}
 				$urlList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
 				require_once($POAbsPath . "/tpl/urlList.php");
@@ -644,7 +670,8 @@ class PluginOrganizer {
 		$activePluginOrder = Array();
 		
 		if (is_numeric($_POST['PO_group_view'])) {
-			$group = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$_POST['PO_group_view'], ARRAY_A);
+			$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
+			$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_POST['PO_group_view']), ARRAY_A);
 			$members = unserialize($group['group_members']);
 			foreach ($allPluginList as $key=>$val) {
 				if (in_array($val['Name'], $members)) {
@@ -680,7 +707,7 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugins = get_option("active_plugins");
 			if (is_array($_POST['groupList']) && is_numeric($_POST['PO_group']) && $this->validate_field("group_name")) {
-				$wpdb->update($wpdb->prefix."PO_groups", array("group_members"=>$wpdb->prepare(serialize($_POST['groupList'])), 'group_name'=>$_POST['group_name']), array('group_id'=>$_POST['PO_group']));
+				$wpdb->update($wpdb->prefix."PO_groups", array("group_members"=>serialize($_POST['groupList']), 'group_name'=>$_POST['group_name']), array('group_id'=>$_POST['PO_group']));
 				$returnStatus = "The plugin group has been saved.";
 			} else {
 				$returnStatus = "Did not recieve the proper variables.  No changes made.";
@@ -721,9 +748,14 @@ class PluginOrganizer {
 		}
 	}
 
-	function get_disable_plugin_box($content, $content2) {
-		global $wpdb, $post_id;
-		$postPlugins = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+	function get_disable_plugin_box($post) {
+		global $wpdb;
+		if ($post->ID != "" && is_numeric($post->ID)) {
+			$postPluginsQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginsQuery, $post->ID), ARRAY_A);
+		} else {
+			$postPlugins = array();
+		}
 		$pluginList = unserialize($postPlugins['disabled_plugins']);
 		if (!is_array($pluginList)) {
 			$pluginList = array();
@@ -763,10 +795,15 @@ class PluginOrganizer {
 	}
 
 
-	function get_enable_plugin_box($content, $content2) {
-		global $wpdb, $post_id;
+	function get_enable_plugin_box($post) {
+		global $wpdb;
 		$globalPlugins = get_option('PO_disabled_plugins');
-		$postPlugins = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+		if (is_numeric($post->ID)) {
+			$postPluginsQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginsQuery, $post->ID), ARRAY_A);
+		} else {
+			$postPlugins = array();
+		}
 		$pluginList = unserialize($postPlugins['enabled_plugins']);
 		if (!is_array($pluginList)) {
 			$pluginList = array();
@@ -822,16 +859,16 @@ class PluginOrganizer {
 		}
 
 		if (isset($_POST['disabledPlugins'])) {
-			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
-			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			$postCountQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postCount = $wpdb->get_row($wpdb->prepare($postCountQuery, $post_id), ARRAY_A);
 			if ($postCount['count'] > 0) {
-				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>$wpdb->prepare(serialize($_POST['disabledPlugins']))), array("post_id"=>$post_id));
+				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins'])), array("post_id"=>$post_id));
 			} else {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>$wpdb->prepare(serialize($_POST['disabledPlugins'])), "permalink"=>$preparedUrl, "post_id"=>$post_id));
+				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']), "permalink"=>get_permalink($post_id), "post_id"=>$post_id));
 			}
 		} else {
-			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
-			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			$postCountQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postCount = $wpdb->get_row($wpdb->prepare($postCountQuery, $post_id), ARRAY_A);
 			if ($postCount['count'] > 0) {
 				$wpdb->update($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>""), array("post_id"=>$post_id));
 			}
@@ -852,16 +889,16 @@ class PluginOrganizer {
 		}
 
 		if (isset($_POST['enabledPlugins'])) {
-			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
-			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			$postCountQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postCount = $wpdb->get_row($wpdb->prepare($postCountQuery, $post_id), ARRAY_A);
 			if ($postCount['count'] > 0) {
-				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>$wpdb->prepare(serialize($_POST['enabledPlugins']))), array("post_id"=>$post_id));
+				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>serialize($_POST['enabledPlugins'])), array("post_id"=>$post_id));
 			} else {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>$wpdb->prepare(serialize($_POST['enabledPlugins'])), "permalink"=>$preparedUrl, "post_id"=>$post_id));
+				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>get_permalink($post_id), "post_id"=>$post_id));
 			}
 		} else {
-			$preparedUrl = $wpdb->prepare(get_permalink($post_id));
-			$postCount = $wpdb->get_row("SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id, ARRAY_A);
+			$postCountQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$postCount = $wpdb->get_row($wpdb->prepare($postCountQuery, $post_id), ARRAY_A);
 			if ($postCount['count'] > 0) {
 				$wpdb->update($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>""), array("post_id"=>$post_id));
 			}
@@ -875,7 +912,8 @@ class PluginOrganizer {
 			return $post_id;
 		}
 		if (is_numeric($post_id)) {
-			$wpdb->query("DELETE FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = ".$post_id);
+			$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
+			$wpdb->query($wpdb->prepare($deletePluginQuery, $post_id));
 		}
 	}
 
@@ -888,9 +926,8 @@ class PluginOrganizer {
 		}
 		$posts = $wpdb->get_results("SELECT post_id, permalink FROM ".$wpdb->prefix."PO_post_plugins", ARRAY_A);
 		foreach ($posts as $post) {
-			$preparedUrl = $wpdb->prepare(get_permalink($post['post_id']));
 			if ($preparedUrl != $post['permalink']) {
-				if(!$wpdb->update($wpdb->prefix."PO_post_plugins", array("permalink"=>$preparedUrl), array("post_id"=>$post['post_id']))) {
+				if(!$wpdb->update($wpdb->prefix."PO_post_plugins", array("permalink"=>get_permalink($post['post_id'])), array("post_id"=>$post['post_id']))) {
 					$failedCount++;
 				}
 			}

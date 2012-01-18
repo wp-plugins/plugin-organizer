@@ -3,7 +3,7 @@
 		color: #FF0033;
 	}
 </style>
-<div id="theme-options-wrap">
+<div class="wrap" id="theme-options-wrap">
     <div class="icon32" id="icon-options-general"> <br /> </div>
 
     <h2>Global Plugins</h2>
@@ -40,6 +40,5 @@
 	    </div>
       </div>
     </div>
-  </div>
 </div>
 

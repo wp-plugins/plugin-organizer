@@ -19,7 +19,7 @@
     <div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">
-	      <form method=post id="po_url_form" name="po_url_add" action="" enctype="multipart/form-data">
+	      <form method=post id="po_url_form" name="po_url_add" action="<?php print admin_url('admin.php'); ?>?page=PO_url_admin" enctype="multipart/form-data">
 	        <div id="po_permalink_div" class="stuffbox" style="width: 98%">
               <h3><label id="permalinkLabel" for="permalink">URL</label></h3>
 			  <div class="inside">
@@ -59,14 +59,12 @@
 			    ?>
               </div>
             </div>
-			<input type=hidden name="page" value="PO_url_admin">
 			<input type=hidden name="add_url" value="1">
-			<input type=hidden name="url_admin_page" value="add">
+			<input type=hidden name="url_admin_page" value="edit">
 			<input type=submit id="PO_submit_url" name=submit value="Save URL">
 	      </form>
 	    </div>
       </div>
     </div>
-  </div>
 </div>
 
