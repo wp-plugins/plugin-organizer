@@ -24,7 +24,6 @@
               <?php
 				$count = 1;
 				foreach ($plugins as $key=>$plugin) {
-					$pluginDetails = get_plugins("/" . dirname($plugin));
 					?>
 					<input type="checkbox" class="disabled_plugin_check" name="disabledPlugins[]" id="disabled_plugin_<?php print $count; ?>" value="<?php print $key; ?>" <?php print (in_array($key, $disabledPlugins)) ? 'checked="checked"': ''; ?>><?php print (in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 					<?php
