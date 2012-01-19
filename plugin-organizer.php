@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://wpmason.com/plugin-organizer/
 Description: A plugin for specifying the load order of your plugins.
-Version: 1.0
+Version: 1.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 */

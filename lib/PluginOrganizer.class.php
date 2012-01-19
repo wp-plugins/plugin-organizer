@@ -9,7 +9,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "1.0") {
+		if (get_option("PO_version_num") != "1.1") {
 			$this->activate();
 		}
 	}
@@ -55,16 +55,7 @@ class PluginOrganizer {
 			dbDelta($sql);
 		}
 
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_disabled_plugins'") == $wpdb->prefix."PO_disabled_plugins") {
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			$disabledPlugins = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_disabled_plugins", ARRAY_A);
-			foreach ($disabledPlugins as $row) {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>$row['plugin_list'], "permalink"=>$row['permalink'], "post_id"=>$row['post_id']));
-			}
-			
-			$wpdb->query("DROP TABLE ".$wpdb->prefix."PO_disabled_plugins;");
 
-		}
 		if (!file_exists(ABSPATH . "wp-content/mu-plugins/")) {
 			@mkdir(ABSPATH . "wp-content/mu-plugins/");
 		}
@@ -81,8 +72,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "1.0") {
-			update_option("PO_version_num", "1.0");
+		if (get_option("PO_version_num") != "1.1") {
+			update_option("PO_version_num", "1.1");
 		}
 	}
 	
@@ -132,12 +123,16 @@ class PluginOrganizer {
 		global $POAbsPath;
 		
 		if ( current_user_can( 'activate_plugins' ) ) {
-			if ($_POST['submit'] == "Save Settings" && wp_verify_nonce( $_POST['PO_noncename'], plugin_basename(__FILE__) )) {
-				if (preg_match("/^(1|0)$/", $_POST['selective_load'])) {
-					update_option("PO_disable_plugins", $_POST['selective_load']);
+			if ($_POST['submit'] == "Save Settings" && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+				if (preg_match("/^(1|0)$/", $_POST['PO_disable_plugins'])) {
+					update_option("PO_disable_plugins", $_POST['PO_disable_plugins']);
+				}
+
+				if (preg_match("/^(1|0)$/", $_POST['PO_admin_disable_plugins'])) {
+					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
 				}
 			}
-			$PO_noncename = wp_create_nonce( plugin_basename(__FILE__) );
+			$PO_nonce = wp_create_nonce( plugin_basename(__FILE__) );
 			require_once($POAbsPath . "/tpl/settings.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");

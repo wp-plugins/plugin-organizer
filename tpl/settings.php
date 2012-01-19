@@ -16,17 +16,25 @@
         <div id="post-body-content">
 	      <form method=post name="po_general_settings" action="" enctype="multipart/form-data">
 	        <?php 
-			echo '<input type="hidden" name="PO_noncename" id="PO_noncename" value="' . $PO_noncename . '" />';
+			echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $PO_nonce . '" />';
 			?>			
 			<div id="general-settings-div" class="stuffbox" style="width: 98%">
               <h3><label for="order[]">Selective Plugin Loading</label></h3>
 			  <div class="inside">
-            	<?php $selectiveLoad = get_option("PO_disable_plugins"); ?>
-				<input type="radio" name="selective_load" value="1" <?php print ($selectiveLoad == "1")? "checked='checked'":""; ?>> Enable<br>
-				<input type="radio" name="selective_load" value="0" <?php print ($selectiveLoad != "1")? "checked='checked'":""; ?>> Disable
-				<br>
+            	<strong>Selective Plugin Loading:</strong><br />
+				<?php $selectiveLoad = get_option("PO_disable_plugins"); ?>
+				<input type="radio" name="PO_disable_plugins" value="1" <?php print ($selectiveLoad == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_disable_plugins" value="0" <?php print ($selectiveLoad != "1")? "checked='checked'":""; ?>> Disable
+				<br />
 				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to /wp-content/mu-plugins before it will take effect.  If you don't have an mu-plugins folder you need to create it.
-				<br>
+				<br /><br /><br />
+				<strong>Admin Areas:</strong><br />
+				<?php $selectiveAdminLoad = get_option("PO_admin_disable_plugins"); ?>
+				<input type="radio" name="PO_admin_disable_plugins" value="1" <?php print ($selectiveAdminLoad == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_admin_disable_plugins" value="0" <?php print ($selectiveAdminLoad != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				NOTE:  When this option is enabled plugins will be disabled on the admin pages. The first option must be enabled before this one will take affect.
+				<br />
 				<input type=hidden name="page" value="Plugin_Organizer" />
 				<input type=submit name=submit value="Save Settings" />
               </div>
