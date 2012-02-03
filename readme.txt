@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: foomagoo
 Donate link: 
-Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, turn off plugins for post, turn off plugins for page
+Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type, plugin organiser
 Requires at least: 3.1
 Tested up to: 3.3.1
 Stable tag: 1.1
