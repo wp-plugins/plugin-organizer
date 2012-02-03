@@ -8,19 +8,19 @@ Stable tag: 1.1
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
-2. Selectively disable plugins by page or post.
+2. Selectively disable plugins by any post type or wordpress managed URL.
 
 == Description ==
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
-2. Selectively disable plugins by page or post.
+2. Selectively disable plugins by any post type or wordpress managed URL.
 3. Adds grouping to the plugin admin age.
 
 == Installation ==
 
 1. Extract the downloaded Zip file.
-2. Upload the 'plugin_organizer' directory to the `/wp-content/plugins/` directory
+2. Upload the 'plugin-organizer' directory to the `/wp-content/plugins/` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
 4. You can either use the menu item under settings in the WordPress admin called Organize Plugins or there will be a drop down list for each plugin in the plugin admin page to select the load order.
 
@@ -56,8 +56,12 @@ A.
 == Screenshots ==
 
 1. Plugin admin page example.
-2. Settins page example.
-3. Post edit page example with disable plugins meta box.
+2. Settings page example.
+3. Alternative load order page.
+4. Plugin grouping page.
+5. Global plugins page.
+6. URL admin page.
+7. Page edit screen.
 
 == Changelog ==
 
