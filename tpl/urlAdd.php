@@ -3,8 +3,8 @@
 		color: #FF0033;
 	}
 </style>
-<div id="theme-options-wrap">
-    <div class="icon32" id="icon-options-general"> <br /> </div>
+<div id="wrap">
+    <div class="icon32" id="icon-link-manager"> <br /> </div>
 
     <h2>Create URL</h2>
     <p>Enter the url and disable or enable plugins by checking the checkboxes.</p>

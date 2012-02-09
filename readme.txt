@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: foomagoo
 Donate link: 
-Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type, plugin organiser
+Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.3.1
-Stable tag: 1.1
+Stable tag: 1.2
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -16,6 +16,11 @@ This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
 3. Adds grouping to the plugin admin age.
+
+Icons provided by http://www.iconizer.net
+Icon Set: http://www.userinterfaceicons.com/download.php
+Icon Set: http://www.fatcow.com/free-icons/
+Icon Set: http://bogo-d.deviantart.com/
 
 == Installation ==
 
@@ -64,6 +69,10 @@ A.
 7. Page edit screen.
 
 == Changelog ==
+
+= 1.2 =
+Removed a conditional and some whitespace from the main plugin file becasue it may have been causing issues with activation.  
+Adding menu and header icons to pretty up the plugin.
 
 = 1.1 =
 Added option to settings page so the selective plugin loading can be enabled or disabled for the admin pages.
@@ -142,6 +151,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 1.2 =
+Removed a conditional and some whitespace from the main plugin file becasue it may have been causing issues with activation.  
 
 = 1.1 =
 Added option to settings page so the selective plugin loading can be enabled or disabled for the admin pages seperately to prevent problems.

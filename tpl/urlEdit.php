@@ -3,8 +3,8 @@
 		color: #FF0033;
 	}
 </style>
-<div id="theme-options-wrap">
-    <div class="icon32" id="icon-options-general"> <br /> </div>
+<div id="wrap">
+    <div class="icon32" id="icon-link-manager"> <br /> </div>
 
     <h2>Arbitrary URL's</h2>
     <p>This is a list of URL's that don't have a post tied to them.  Click the edit link for the url you would like to modify.</p>

@@ -1,4 +1,4 @@
-<div id="theme-options-wrap">
+<div id="wrap">
     <div class="icon32" id="icon-options-general"> <br /> </div>
 
     <h2>Plugin Load Order</h2>

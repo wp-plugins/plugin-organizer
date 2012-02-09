@@ -1,5 +1,5 @@
 <div id="PO-group-wrap">
-    <div class="icon32" id="group-general"> <br /> </div>
+    <div class="icon32" id="icon-po-group"> <br /> </div>
 
     <h2><?php print $currGroup['group_name']; ?></h2>
     <p>Select the plugins you would like to display in this group.</p>

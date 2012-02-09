@@ -72,8 +72,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "1.1") {
-			update_option("PO_version_num", "1.1");
+		if (get_option("PO_version_num") != "1.2") {
+			update_option("PO_version_num", "1.2");
 		}
 	}
 	
@@ -95,23 +95,28 @@ class PluginOrganizer {
 	}
 	
 	function admin_menu() {
-		global $wpdb;
+		global $wpdb, $POUrlPath;
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
+			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $POUrlPath."/image/po-icon-16x16.png");
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_PO_settings'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_load_order'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_plugin_page'));
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_load_order'));
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Groups', 'Groups', 'activate_plugins', 'PO_Groups', array($this, 'group_page'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_plugin_group'));
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_global_plugins'));
 
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'URL Admin', 'URL Admin', 'activate_plugins', 'PO_url_admin', array($this, 'url_admin'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_url_admin'));
 
 			
@@ -119,6 +124,24 @@ class PluginOrganizer {
 
 	}
 
+	function admin_styles() {
+		global $POUrlPath;
+		?>
+		<style type="text/css">
+			#icon-po-settings {
+				background: url("<?php print $POUrlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
+			}
+			#icon-po-group {
+				background: url("<?php print $POUrlPath; ?>/image/po-group-32x32.png") no-repeat scroll 0px 0px transparent;
+			}
+			#icon-po-global {
+				background: url("<?php print $POUrlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
+			}
+			
+		</style>
+		<?php
+	}
+		
 	function settings_page() {
 		global $POAbsPath;
 		

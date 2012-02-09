@@ -1,5 +1,5 @@
-<div id="theme-options-wrap">
-    <div class="icon32" id="icon-options-general"> <br /> </div>
+<div id="wrap">
+    <div class="icon32" id="icon-po-settings"> <br /> </div>
 
     <h2>Settings</h2>
     <p>Genral Settings</p>

@@ -3,8 +3,8 @@
 		color: #FF0033;
 	}
 </style>
-<div class="wrap" id="theme-options-wrap">
-    <div class="icon32" id="icon-options-general"> <br /> </div>
+<div class="wrap" id="wrap">
+    <div class="icon32" id="icon-po-global"> <br /> </div>
 
     <h2>Global Plugins</h2>
     <p>Select the plugins you would like to disable site wide.  This will allow you to not load the plugin on any page unless it is specifically allowed in the post or page.</p>
