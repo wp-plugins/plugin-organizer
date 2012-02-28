@@ -1,18 +1,17 @@
 <?php
 /*
 Plugin Name: Plugin Organizer
-Plugin URI: http://wpmason.com/plugin-organizer/
+Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 1.2
+Version: 1.2.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
+License: GPL2
 */
-$POAbsPath = WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__));
-$POUrlPath = plugins_url("", __FILE__);
-require_once($POAbsPath . "/lib/PluginOrganizer.class.php");
+require_once(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/lib/PluginOrganizer.class.php");
 
 
-$PluginOrganizer = new PluginOrganizer();
+$PluginOrganizer = new PluginOrganizer(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)), plugins_url("", __FILE__));
 
 register_activation_hook(__FILE__,array($PluginOrganizer, 'activate'));
 
