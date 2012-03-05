@@ -2,18 +2,19 @@
 class PluginOrganizer {
 	var $pluginPageActions = "1";
 	var $regex;
-	var $POAbsPath;
-	var $POUrlPath;
-	function __construct($POAbsPath, $POUrlPath) {
-		$this->POAbsPath = $POAbsPath;
-		$this->POUrlPath = $POUrlPath;
+	var $absPath;
+	var $urlPath;
+	var $nonce;
+	function __construct($absPath, $urlPath) {
+		$this->absPath = $absPath;
+		$this->urlPath = $urlPath;
 		$this->regex = array(
 			"permalink" => "/^((https?):((\/\/)|(\\\\))+[\w\d:#@%\/;$()~_?\+-=\\\.&]*)$/",
 			"group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "1.2.1") {
+		if (get_option("PO_version_num") != "1.2.2") {
 			$this->activate();
 		}
 	}
@@ -23,8 +24,8 @@ class PluginOrganizer {
 			group_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			group_name varchar(255) NOT NULL default '',
 			group_members longtext DEFAULT NULL,
-			UNIQUE KEY PO_group_id (group_id)
-			) ENGINE=innoDB  DEFAULT CHARACTER SET=utf8  DEFAULT COLLATE=utf8_unicode_ci;";
+			PRIMARY KEY PO_group_id (group_id)
+			);";
 	
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -40,8 +41,8 @@ class PluginOrganizer {
 			permalink longtext NOT NULL default '',
 			disabled_plugins longtext NOT NULL default '',
 			enabled_plugins longtext NOT NULL default '',
-			UNIQUE KEY PO_post_id (post_id)
-			) ENGINE=innoDB  DEFAULT CHARACTER SET=utf8  DEFAULT COLLATE=utf8_unicode_ci;";
+			PRIMARY KEY PO_post_id (post_id)
+			);";
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
@@ -52,8 +53,8 @@ class PluginOrganizer {
 			permalink longtext NOT NULL default '',
 			disabled_plugins longtext NOT NULL default '',
 			enabled_plugins longtext NOT NULL default '',
-			UNIQUE KEY PO_id (url_id)
-			) ENGINE=innoDB  DEFAULT CHARACTER SET=utf8  DEFAULT COLLATE=utf8_unicode_ci;";
+			PRIMARY KEY PO_id (url_id)
+			);";
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
@@ -76,8 +77,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "1.2.1") {
-			update_option("PO_version_num", "1.2.1");
+		if (get_option("PO_version_num") != "1.2.2") {
+			update_option("PO_version_num", "1.2.2");
 		}
 	}
 	
@@ -98,13 +99,17 @@ class PluginOrganizer {
 		}
 	}
 	
+	function setup_nonce() {
+		$this->nonce = wp_create_nonce(plugin_basename(__FILE__));
+	}
+	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "1.2.1") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "1.2.2") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->POUrlPath."/image/po-icon-16x16.png");
+			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_PO_settings'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_load_order'));
@@ -132,13 +137,13 @@ class PluginOrganizer {
 		?>
 		<style type="text/css">
 			#icon-po-settings {
-				background: url("<?php print $this->POUrlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
+				background: url("<?php print $this->urlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
 			}
 			#icon-po-group {
-				background: url("<?php print $this->POUrlPath; ?>/image/po-group-32x32.png") no-repeat scroll 0px 0px transparent;
+				background: url("<?php print $this->urlPath; ?>/image/po-group-32x32.png") no-repeat scroll 0px 0px transparent;
 			}
 			#icon-po-global {
-				background: url("<?php print $this->POUrlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
+				background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
 			}
 			
 		</style>
@@ -156,8 +161,7 @@ class PluginOrganizer {
 					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
 				}
 			}
-			$PO_nonce = wp_create_nonce( plugin_basename(__FILE__) );
-			require_once($this->POAbsPath . "/tpl/settings.php");
+			require_once($this->absPath . "/tpl/settings.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
@@ -167,7 +171,7 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugins = get_option("active_plugins");
 			
-			require_once($this->POAbsPath . "/tpl/pluginList.php");
+			require_once($this->absPath . "/tpl/pluginList.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
@@ -210,7 +214,7 @@ class PluginOrganizer {
 			}
 			$allGroups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
 			
-			require_once($this->POAbsPath . "/tpl/groupList.php");
+			require_once($this->absPath . "/tpl/groupList.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
@@ -224,7 +228,7 @@ class PluginOrganizer {
 			if (!is_array($disabledPlugins)) {
 				$disabledPlugins = array();
 			}
-			require_once($this->POAbsPath . "/tpl/globalPlugins.php");
+			require_once($this->absPath . "/tpl/globalPlugins.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
@@ -260,7 +264,7 @@ class PluginOrganizer {
 					$globalPlugins = array();
 				}
 				
-				require_once($this->POAbsPath . "/tpl/urlAdd.php");
+				require_once($this->absPath . "/tpl/urlAdd.php");
 			} else if ($_REQUEST['url_admin_page'] == "edit") {
 				if ($_POST['add_url'] == '1' && $this->validate_field("permalink")) {
 					$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
@@ -275,7 +279,7 @@ class PluginOrganizer {
 							$globalPlugins = array();
 						}
 						
-						require_once($this->POAbsPath . "/tpl/urlAdd.php");
+						require_once($this->absPath . "/tpl/urlAdd.php");
 						return "";
 					} else {
 						$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink']));
@@ -311,7 +315,7 @@ class PluginOrganizer {
 				if (!is_array($globalPlugins)) {
 					$globalPlugins = array();
 				}
-				require_once($this->POAbsPath . "/tpl/urlEdit.php");
+				require_once($this->absPath . "/tpl/urlEdit.php");
 			} else {
 				if (is_numeric($_REQUEST['url_id']) && $_REQUEST['delete_url'] == 1) {
 					$urlId = $_REQUEST['url_id'];
@@ -319,7 +323,7 @@ class PluginOrganizer {
 					$deleteUrl = $wpdb->get_results($wpdb->prepare($deleteUrlQuery, $urlId));
 				}
 				$urlList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
-				require_once($this->POAbsPath . "/tpl/urlList.php");
+				require_once($this->absPath . "/tpl/urlList.php");
 			}
 		} else {
 			wp_die("You dont have permissions to access this page.");
@@ -377,7 +381,7 @@ class PluginOrganizer {
 				background-color: #FF0033;
 			}
 		</style>
-		<script language="javascript" src="<?php print $this->POUrlPath; ?>/js/validation.js"></script>
+		<script language="javascript" src="<?php print $this->urlPath; ?>/js/validation.js"></script>
 		<script type="text/javascript" language="javascript">
 			<?php
 			print "var regex = new Array();\n";
@@ -407,7 +411,6 @@ class PluginOrganizer {
 						return false;
 					}
 					var groupList = new Array();
-					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
 					jQuery('.group_member_check').each(function() {
 						if (this.checked) {
 							groupList[groupList.length] = this.value;
@@ -415,12 +418,12 @@ class PluginOrganizer {
 					});
 					var group_name=jQuery('#group_name').val();
 					var revertHtml = jQuery('#plugingroupdiv .inside').html();
-					jQuery('#plugingroupdiv .inside').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
+					jQuery('#plugingroupdiv .inside').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
 					
 					if (groupList.length == 0) {
 						groupList[0]="EMPTY";
 					}
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: PO_nonce, group_name: group_name }, function (result) {
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
 						alert(result);
 						jQuery('#plugingroupdiv .inside').html(revertHtml);
 						//var pluginList = jQuery('input[name=group[]]');
@@ -446,19 +449,18 @@ class PluginOrganizer {
 			<script type="text/javascript" language="javascript">
 				function submitGlobalPlugins(){
 					var disabledList = new Array();
-					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
 					jQuery('.disabled_plugin_check').each(function() {
 						if (this.checked) {
 							disabledList[disabledList.length] = this.value;
 						}
 					});
 					var revertHtml = jQuery('#pluginListdiv').html();
-					jQuery('#pluginListdiv').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
+					jQuery('#pluginListdiv').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
 					
 					if (disabledList.length == 0) {
 						disabledList[0]="EMPTY";
 					}
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_global_plugins'), { 'disabledList[]': disabledList, PO_nonce: PO_nonce }, function (result) {
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_global_plugins'), { 'disabledList[]': disabledList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 						alert(result);
 						jQuery('#pluginListdiv').html(revertHtml);
 						//var pluginList = jQuery('input[name=group[]]');
@@ -523,7 +525,6 @@ class PluginOrganizer {
 				function submitPluginLoadOrder(){
 					var orderList = new Array();
 					var startOrderList = new Array();
-					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
 					jQuery('.plugin_order_select').each(function() {
 						orderList[orderList.length] = this.value;
 						startOrderList[startOrderList.length] = jQuery("#start_" + this.id).val();
@@ -533,15 +534,15 @@ class PluginOrganizer {
 					if (jQuery('#the-list').length) {
 						load_element = jQuery('#the-list');
 						revertHtml = load_element.html();
-						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
+						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 					} else {
 						load_element = jQuery('#poststuff');
 						revertHtml = load_element.html();
-						load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
+						load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
 					}
 					
 					
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: PO_nonce }, function (result) {
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 						alert(result);
 						load_element.html(revertHtml);
 						if (result == "The plugin load order has been changed.") {
@@ -571,18 +572,16 @@ class PluginOrganizer {
 			?>
 			<script type="text/javascript" language="javascript">
 				function submitRedoPermalinks() {
-					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
 					var load_element = jQuery('#redo-permalinks-div .inside');
 					var revertHtml = load_element.html();
-					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: PO_nonce }, function (result) {
+					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 						alert(result);
 						load_element.html(revertHtml);
 					});
 				}
 
 				function submitPostTypeSupport() {
-					var PO_nonce = '<?php echo wp_create_nonce( plugin_basename(__FILE__) ); ?>';
 					var PO_cutom_post_type = new Array();
 					jQuery('.PO_cutom_post_type').each(function() {
 						if (this.checked) {
@@ -591,8 +590,8 @@ class PluginOrganizer {
 					});
 					var load_element = jQuery('#PO-custom-post-type-div .inside');
 					var revertHtml = load_element.html();
-					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->POUrlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_post_type_support'), { 'PO_cutom_post_type[]': PO_cutom_post_type, PO_nonce: PO_nonce }, function (result) {
+					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+					jQuery.post(encodeURI(ajaxurl + '?action=PO_post_type_support'), { 'PO_cutom_post_type[]': PO_cutom_post_type, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 						alert(result);
 						load_element.html(revertHtml);
 						jQuery('.PO_cutom_post_type').each(function() {
@@ -934,23 +933,32 @@ class PluginOrganizer {
 	function redo_permalinks() {
 		global $wpdb;
 		$failedCount = 0;
+		$updatedCount = 0;
+		$noUpdateCount = 0;
 		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 			print "You dont have permissions to access this page.";
 			die();
 		}
 		$posts = $wpdb->get_results("SELECT post_id, permalink FROM ".$wpdb->prefix."PO_post_plugins", ARRAY_A);
 		foreach ($posts as $post) {
-			if ($preparedUrl != $post['permalink']) {
-				if(!$wpdb->update($wpdb->prefix."PO_post_plugins", array("permalink"=>get_permalink($post['post_id'])), array("post_id"=>$post['post_id']))) {
+			if (get_permalink($post['post_id']) != stripslashes_deep($post['permalink'])) {
+				if($wpdb->update($wpdb->prefix."PO_post_plugins", array("permalink"=>get_permalink($post['post_id'])), array("post_id"=>$post['post_id']))) {
+					$updatedCount++;
+				} else {
 					$failedCount++;
 				}
+			} else {
+				$noUpdateCount++;
 			}
 		}
 
 		if ($failedCount > 0) {
-			print $failedCount . " permalinks failed to update!";
+			print $failedCount . " permalinks failed to update!\n";
+			print $updatedCount . " permalinks were updated successfully.\n";
+			print $noUpdateCount . " permalinks were already up to date.";
 		} else {
-			print "All permalinks were updated successfully.";
+			print $updatedCount . " permalinks were updated successfully.\n";
+			print $noUpdateCount . " permalinks were already up to date.";
 		}
 		die();
 	}

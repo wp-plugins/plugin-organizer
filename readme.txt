@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.3.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -69,6 +69,10 @@ A.
 7. Page edit screen.
 
 == Changelog ==
+
+= 1.2.2 =
+Fixed typo in recreate permalinks function.
+Centralized the nonce generation so the PluginOrganizer class now holds it.
 
 = 1.2.1 =
 Adding license tag to header and replacing global path variables with path variables inside the PluginOrganizer class.
@@ -154,6 +158,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Fixed typo in recreate permalinks function.
+Centralized the nonce generation so the PluginOrganizer class now holds it.
 
 = 1.2.1 =
 Adding license tag to header and replacing global path variables with path variables inside the PluginOrganizer class.

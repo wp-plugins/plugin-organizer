@@ -16,7 +16,7 @@
         <div id="post-body-content">
 	      <form method=post name="po_general_settings" action="" enctype="multipart/form-data">
 	        <?php 
-			echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $PO_nonce . '" />';
+			echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />';
 			?>			
 			<div id="general-settings-div" class="stuffbox" style="width: 98%">
               <h3><label for="order[]">Selective Plugin Loading</label></h3>

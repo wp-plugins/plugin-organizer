@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 1.2.1
+Version: 1.2.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -14,6 +14,7 @@ require_once(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/lib/Pl
 $PluginOrganizer = new PluginOrganizer(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)), plugins_url("", __FILE__));
 
 register_activation_hook(__FILE__,array($PluginOrganizer, 'activate'));
+add_action('init',  array($PluginOrganizer, 'setup_nonce'));
 
 add_action('admin_menu', array($PluginOrganizer, 'admin_menu'));
 if (!isset($_POST['PO_group']) && ($_GET['plugin_status'] == 'all' || $_GET['plugin_status'] == 'active' || !isset($_GET['plugin_status']))) {
