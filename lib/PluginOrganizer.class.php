@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "1.2.2") {
+		if (get_option("PO_version_num") != "1.2.3") {
 			$this->activate();
 		}
 	}
@@ -77,8 +77,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "1.2.2") {
-			update_option("PO_version_num", "1.2.2");
+		if (get_option("PO_version_num") != "1.2.3") {
+			update_option("PO_version_num", "1.2.3");
 		}
 	}
 	
@@ -105,7 +105,7 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "1.2.2") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "1.2.3") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {

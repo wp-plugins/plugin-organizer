@@ -49,7 +49,7 @@
 				  foreach ($plugins as $key=>$plugin) {
 					  if (in_array($key,  $globalPlugins)) {
 						  ?>
-						  <input type="checkbox" class="enabled_plugin_check" name="enabledPlugins[]" id="enabled_plugin_<?php print $count; ?>" value="<?php print $plugin; ?>"><?php print $plugin['Name']; ?><br>
+						  <input type="checkbox" class="enabled_plugin_check" name="enabledPlugins[]" id="enabled_plugin_<?php print $count; ?>" value="<?php print $key; ?>"><?php print $plugin['Name']; ?><br>
 						  <?php
 					  }
 					  $count++;
