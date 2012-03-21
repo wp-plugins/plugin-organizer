@@ -506,10 +506,10 @@ class PluginOrganizer {
 							alert(result);
 							load_element.html(revertHtml);
 							if (result == "The plugin load order has been changed.") {
-								jQuery('.plugin_order_select').each(function() {
-									var orderIndex = orderList.shift();
-									jQuery("#" + this.id).val(orderIndex);
-									jQuery("#start_" + this.id).val(orderIndex);
+								var count=0;
+								jQuery('tr.active').each(function () {
+									jQuery(this).find('.start_order').val(count);
+									count++;
 								});
 							}
 							make_plugins_draggable();
