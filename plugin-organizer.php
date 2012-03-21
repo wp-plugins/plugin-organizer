@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 1.2.3
+Version: 2.0
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -16,9 +16,11 @@ $PluginOrganizer = new PluginOrganizer(WP_PLUGIN_DIR . "/" . plugin_basename(dir
 register_activation_hook(__FILE__,array($PluginOrganizer, 'activate'));
 add_action('init',  array($PluginOrganizer, 'setup_nonce'));
 
+add_filter('views_plugins',  array($PluginOrganizer, 'add_group_views'));
 add_action('admin_menu', array($PluginOrganizer, 'admin_menu'));
-if (!isset($_POST['PO_group']) && ($_GET['plugin_status'] == 'all' || $_GET['plugin_status'] == 'active' || !isset($_GET['plugin_status']))) {
-	add_filter("plugin_action_links", array($PluginOrganizer, 'plugin_page'), 10, 2);
+if ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST)) {
+	add_filter("plugin_row_meta", array($PluginOrganizer, 'add_hidden_start_order'), 10, 2);
+	
 	add_action('all_plugins',  array($PluginOrganizer, 'reorder_plugins'));
 }
 add_action('wp_ajax_PO_plugin_organizer',  array($PluginOrganizer, 'save_order'));
@@ -35,4 +37,8 @@ if (get_option("PO_disable_plugins") == "1") {
 add_action('delete_post', array($PluginOrganizer, 'delete_plugin_lists'));
 
 add_action('pre_current_active_plugins', array($PluginOrganizer, 'recreate_plugin_order'));
+
+add_action('manage_plugins_columns', array($PluginOrganizer, 'get_column_headers'));
+
+
 ?>

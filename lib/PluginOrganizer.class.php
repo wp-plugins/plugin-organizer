@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "1.2.3") {
+		if (get_option("PO_version_num") != "2.0") {
 			$this->activate();
 		}
 	}
@@ -77,8 +77,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "1.2.3") {
-			update_option("PO_version_num", "1.2.3");
+		if (get_option("PO_version_num") != "2.0") {
+			update_option("PO_version_num", "2.0");
 		}
 	}
 	
@@ -105,15 +105,16 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "1.2.3") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.0") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_PO_settings'));
-			add_action('admin_head-plugins.php', array($this, 'ajax_load_order'));
 			add_action('admin_head-plugins.php', array($this, 'ajax_plugin_page'));
+			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
+			
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_load_order'));
@@ -234,24 +235,6 @@ class PluginOrganizer {
 		}
 	}
 
-
-	function plugin_page($buttons, $pluginFile) {
-		
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
-			$newButtonArray = array();
-			if (array_search($pluginFile, $plugins) !== false) {
-				$orderSelect = $this->get_order_select(array_search($pluginFile, $plugins), $plugins);
-				$buttons[] = "Load Order:".$orderSelect;
-			}
-		} else {
-			wp_die("You dont have permissions to access this page.");
-		}	
-		return $buttons;
-
-		
-	}
-
 	function url_admin() {
 		global $wpdb;
 		if ( current_user_can( 'activate_plugins' ) ) {
@@ -354,6 +337,19 @@ class PluginOrganizer {
 		
 	}
 
+	function add_hidden_start_order($pluginMeta, $pluginFile) {
+		
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$plugins = get_option("active_plugins");
+			if (array_search($pluginFile, $plugins) !== false) {
+				$pluginMeta[0] .= "<input type=\"hidden\" class=\"start_order\" id=\"start_order_" . array_search($pluginFile, $plugins) . "\" value=\"" . array_search($pluginFile, $plugins) . "\">";
+			}
+		} else {
+			wp_die("You dont have permissions to access this page.");
+		}	
+		return $pluginMeta;
+	}
+	
 	function get_order_select($count, $plugins) {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$orderSelect = "<select class=\"plugin_order_select\" name=\"order[]\" id=\"order_" . $count . "\" onchange=\"uniqueOrder('order_" . $count . "');\">";
@@ -361,8 +357,8 @@ class PluginOrganizer {
 					$orderSelect .= "<option value=\"" . $i . "\" " . (($i == $count) ? "selected=\"selected\"" : "") . ">" . ($i+1) . "</option>";
 				}
 			$orderSelect .= "</select>";
-			$orderSelect .= "<input type=\"hidden\" id=\"old_order_" . $count . "\" value=\"" . $count . "\">";
-			$orderSelect .= "<input type=\"hidden\" id=\"start_order_" . $count . "\" value=\"" . $count . "\">";
+			$orderSelect .= "<input type=\"hidden\" class=\"old_order\" id=\"old_order_" . $count . "\" value=\"" . $count . "\">";
+			$orderSelect .= "<input type=\"hidden\" class=\"start_order\" id=\"start_order_" . $count . "\" value=\"" . $count . "\">";
 			$orderSelect .= "<input type=\"button\" value=\"Save Order\" onmousedown=\"submitPluginLoadOrder();\">";
 		} else {
 			wp_die("You dont have permissions to access this page.");
@@ -480,24 +476,114 @@ class PluginOrganizer {
 	
 	function ajax_plugin_page() {
 		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+		if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+			if ( current_user_can( 'activate_plugins' ) ) {
+				$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+				?>
+				<script type="text/javascript" language="javascript">
+					function save_draggable_plugin_order() {
+						var orderList = new Array();
+						var startOrderList = new Array();
+						var count=0;
+						jQuery('tr.active').each(function () {
+							orderList[orderList.length] = count;
+							startOrderList[startOrderList.length] = jQuery(this).find('.start_order').val();
+							count++;
+						});
+						var load_element = '';
+						var revertHtml = '';
+						if (jQuery('#the-list').length) {
+							load_element = jQuery('#the-list');
+							revertHtml = load_element.html();
+							load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
+						} else {
+							load_element = jQuery('#poststuff');
+							revertHtml = load_element.html();
+							load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+						}
+
+						jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+							alert(result);
+							load_element.html(revertHtml);
+							if (result == "The plugin load order has been changed.") {
+								jQuery('.plugin_order_select').each(function() {
+									var orderIndex = orderList.shift();
+									jQuery("#" + this.id).val(orderIndex);
+									jQuery("#start_" + this.id).val(orderIndex);
+								});
+							}
+							make_plugins_draggable();
+						});
+					}
+					jQuery(document).ready(function () {
+						var saveOrderButton = '<div class="alignleft actions"><input type="button" class="save_plugin_order_button" name="save_plugin_order" value="Save Order"></div><br class="clear">';
+						jQuery('.tablenav.top .clear').remove();
+						jQuery('.tablenav.top').html(jQuery('.tablenav.top').html()+saveOrderButton);
+						jQuery('.tablenav.bottom .clear').remove();
+						jQuery('.tablenav.bottom').html(jQuery('.tablenav.bottom').html()+saveOrderButton);
+						jQuery('.save_plugin_order_button').click(function() {
+							save_draggable_plugin_order();
+						});
+						jQuery('.column-draghandle').css('width', '35px');
+					});
+					
+				</script>
+				<?php
+			}
+		} else if (array_key_exists('PO_group_view', $_REQUEST)) {
 			?>
 			<script type="text/javascript" language="javascript">
-				jQuery(document).ready(function () {
-					var groupDropdown = '<div class="alignleft actions"><select name="PO_group_view" onchange="syncGroupIds(this);">';
-					<?php
-						foreach ($groups as $group) {
-							print "groupDropdown += '<option value=\"" . $group->group_id . "\">" . $group->group_name . "</option>';\n";
-						}
-					?>
-					groupDropdown += '</select>';
-					groupDropdown += '<input type="submit" name="group_plugins" value="View Group"></div><br class="clear">';
-					jQuery('.tablenav.top .clear').remove();
-					jQuery('.tablenav.top').html(jQuery('.tablenav.top').html()+groupDropdown);
-					jQuery('.tablenav.bottom .clear').remove();
-					jQuery('.tablenav.bottom').html(jQuery('.tablenav.bottom').html()+groupDropdown);
-					
+				jQuery(document).ready(function() {
+					jQuery('.subsubsub .count').remove();
+				});
+			</script>
+			<?php
+		}
+	}
+	
+	function add_group_views($views) {
+		global $wpdb;
+		$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+		foreach ($groups as $group) {
+			$group->group_members = unserialize($group->group_members);
+			if ($group->group_members[0] != 'EMPTY') {
+				$groupCount = sizeof($group->group_members);
+			} else {
+				$groupCount = 0;
+			}
+			$groupName = $group->group_name;
+			$loopCount = 0;
+			while(array_key_exists($groupName, $views) && $loopCount < 10) {
+				$groupName = $group->group_name.$loopCount;
+				$loopCount++;
+			}
+			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->group_id.'">'.$group->group_name.'</a> ('.$groupCount.')';
+		}
+		return $views;
+	}
+	
+	function make_draggable() {
+		if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+			wp_enqueue_script('jquery-tablednd', $this->urlPath.'/js/jquery.tablednd.js');
+			?>
+			<style type="text/css">
+				tr.active .column-draghandle {
+					background-image:url('<?php print $this->urlPath; ?>/image/drag-16x16.png');
+					background-repeat:no-repeat;
+					background-position:center;
+				}
+			</style>
+			<script type="text/javascript" language="javascript">
+				function make_plugins_draggable() {
+					//jQuery('tr.inactive .draghandle').css('background', 'none');
+					jQuery('tr.inactive').each(function () {
+						jQuery(this).addClass('nodrag');
+						jQuery(this).addClass('nodrop');
+					});
+					jQuery('#the-list').tableDnD({dragHandle: "column-draghandle"});
+				}
+				jQuery(document).ready(function() {
+					make_plugins_draggable();
 				});
 			</script>
 			<?php
@@ -509,6 +595,7 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
 			?>
+			
 			<script type="text/javascript" language="javascript">
 				function uniqueOrder(currentId) {
 					var newVal = jQuery("#" + currentId).val();
@@ -671,7 +758,6 @@ class PluginOrganizer {
 				$perPage = 20;
 			}
 			if (sizeOf($plugins) > $perPage) {
-				remove_filter("plugin_action_links", array($this, 'plugin_page'), 10, 2);
 				remove_action('all_plugins',  array($this, 'reorder_plugins'));
 				$this->pluginPageActions = 0;
 				return $allPluginList;
@@ -682,9 +768,9 @@ class PluginOrganizer {
 		$newPluginList = Array();
 		$activePluginOrder = Array();
 		
-		if (is_numeric($_POST['PO_group_view'])) {
+		if (is_numeric($_REQUEST['PO_group_view'])) {
 			$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-			$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_POST['PO_group_view']), ARRAY_A);
+			$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_REQUEST['PO_group_view']), ARRAY_A);
 			$members = unserialize($group['group_members']);
 			foreach ($allPluginList as $key=>$val) {
 				if (in_array($val['Name'], $members)) {
@@ -709,6 +795,27 @@ class PluginOrganizer {
 	}
 
 
+	function get_column_headers($columns) {
+		$count = 0;
+		$newColumns = array();
+		if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+			foreach ($columns as $key=>$column) {
+				if ($count==1) {
+					$newColumns['draghandle'] = __('Drag');
+					$newColumns[$key]=$column;
+				} else {
+					$newColumns[$key]=$column;
+				}
+				$count++;
+			}
+		} else {
+			$newColumns = $columns;
+		}
+		#$columns['draghandle'] = __('Drag');
+		return $newColumns;
+	}
+
+	
 	function save_group() {
 		global $wpdb;
 		$wpdb->show_errors();
