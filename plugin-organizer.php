@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.0
+Version: 2.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -25,6 +25,9 @@ if ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active
 }
 add_action('wp_ajax_PO_plugin_organizer',  array($PluginOrganizer, 'save_order'));
 add_action('wp_ajax_PO_save_group',  array($PluginOrganizer, 'save_group'));
+add_action('wp_ajax_PO_delete_group',  array($PluginOrganizer, 'delete_group'));
+add_action('wp_ajax_PO_remove_plugins_from_group',  array($PluginOrganizer, 'remove_plugins_from_group'));
+add_action('wp_ajax_PO_add_to_group',  array($PluginOrganizer, 'add_to_group'));
 add_action('wp_ajax_PO_save_global_plugins',  array($PluginOrganizer, 'save_global_plugins'));
 add_action('wp_ajax_PO_redo_permalinks',  array($PluginOrganizer, 'redo_permalinks'));
 add_action('wp_ajax_PO_post_type_support',  array($PluginOrganizer, 'add_custom_post_type_support'));
@@ -39,6 +42,7 @@ add_action('delete_post', array($PluginOrganizer, 'delete_plugin_lists'));
 add_action('pre_current_active_plugins', array($PluginOrganizer, 'recreate_plugin_order'));
 
 add_action('manage_plugins_columns', array($PluginOrganizer, 'get_column_headers'));
+add_filter('manage_plugins_custom_column', array($PluginOrganizer, 'set_custom_column_values'), 10, 3 );
 
-
+add_filter( 'gettext', array($PluginOrganizer, 'change_page_title'), 10, 2 );
 ?>
