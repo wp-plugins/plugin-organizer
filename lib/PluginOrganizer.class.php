@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.1") {
+		if (get_option("PO_version_num") != "2.1.1") {
 			$this->activate();
 		}
 	}
@@ -77,8 +77,8 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option("PO_version_num") != "2.1") {
-			update_option("PO_version_num", "2.1");
+		if (get_option("PO_version_num") != "2.1.1") {
+			update_option("PO_version_num", "2.1.1");
 		}
 	}
 	
@@ -105,7 +105,7 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.1") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
@@ -115,12 +115,14 @@ class PluginOrganizer {
 			add_action('admin_head-plugins.php', array($this, 'ajax_plugin_page'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
 			
-			#$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
-			#add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			#add_action('admin_head-'.$plugin_page, array($this, 'ajax_load_order'));
-			#$plugin_page=add_submenu_page('Plugin_Organizer', 'Groups', 'Groups', 'activate_plugins', 'PO_Groups', array($this, 'group_page'));
-			#add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			#add_action('admin_head-'.$plugin_page, array($this, 'ajax_plugin_group'));
+			if (get_option('PO_alternate_admin') == "1") {
+				$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
+				add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
+				add_action('admin_head-'.$plugin_page, array($this, 'ajax_load_order'));
+				$plugin_page=add_submenu_page('Plugin_Organizer', 'Groups', 'Groups', 'activate_plugins', 'PO_Groups', array($this, 'group_page'));
+				add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
+				add_action('admin_head-'.$plugin_page, array($this, 'ajax_plugin_group'));
+			}
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'ajax_global_plugins'));
@@ -160,6 +162,10 @@ class PluginOrganizer {
 
 				if (preg_match("/^(1|0)$/", $_POST['PO_admin_disable_plugins'])) {
 					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
+				}
+
+				if (preg_match("/^(1|0)$/", $_POST['PO_alternate_admin'])) {
+					update_option("PO_alternate_admin", $_POST['PO_alternate_admin']);
 				}
 			}
 			require_once($this->absPath . "/tpl/settings.php");

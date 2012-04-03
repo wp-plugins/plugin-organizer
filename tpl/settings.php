@@ -15,9 +15,7 @@
       <div id="post-body">
         <div id="post-body-content">
 	      <form method=post name="po_general_settings" action="" enctype="multipart/form-data">
-	        <?php 
-			echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />';
-			?>			
+	        <?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>			
 			<div id="general-settings-div" class="stuffbox" style="width: 98%">
               <h3><label for="order[]">Selective Plugin Loading</label></h3>
 			  <div class="inside">
@@ -40,6 +38,19 @@
               </div>
             </div>
 	      </form>
+		  <br /><br />
+		  <form method=post name="po_general_settings" action="">
+		    <div id="alternate-admin-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="alternate-admin">Alternate Admin</label></h3>
+			  <div class="inside">
+				Enable: <input type=checkbox id="PO_alternate_admin" name="PO_alternate_admin" value="1" <?php print (get_option('PO_alternate_admin') == "1")? "checked='checked'":""; ?>/>
+				<input type=hidden name="page" value="Plugin_Organizer" />
+				<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>			
+				<br />
+				<input type=submit name=submit value="Save Settings" />
+			  </div>
+		    </div>
+		  </form>
 		  <br /><br />
 		  <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
