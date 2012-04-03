@@ -77,6 +77,10 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
+		if (get_option('PO_alternate_admin') == "") {
+			update_option('PO_alternate_admin', "1");
+		}
+		
 		if (get_option("PO_version_num") != "2.1.1") {
 			update_option("PO_version_num", "2.1.1");
 		}
