@@ -168,8 +168,10 @@ class PluginOrganizer {
 					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
 				}
 
-				if (preg_match("/^(1|0)$/", $_POST['PO_alternate_admin'])) {
-					update_option("PO_alternate_admin", $_POST['PO_alternate_admin']);
+				if ($_POST['PO_alternate_admin'] == 1) {
+					update_option("PO_alternate_admin", "1");
+				} else {
+					update_option("PO_alternate_admin", "0");
 				}
 			}
 			require_once($this->absPath . "/tpl/settings.php");
