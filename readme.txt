@@ -70,6 +70,10 @@ A.
 
 == Changelog ==
 
+= 2.1.2 =
+Fixed group view on plugin organizer page when the plugins per page has been set too low or extremely high.
+Fixed setting of the show old admin page when either save settings button is clicked.
+
 = 2.1.1 =
 Adding option to show the old admin pages.
 
@@ -173,6 +177,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.1.2 =
+Fixed group view on plugin organizer page when the plugins per page has been set too low or extremely high.
+Fixed setting of the show old admin page when either save settings button is clicked.
 
 = 2.1.1 =
 Adding option to show the old admin pages.
