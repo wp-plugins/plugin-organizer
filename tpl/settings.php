@@ -37,9 +37,7 @@
 				<input type=submit name=submit value="Save Settings" />
               </div>
             </div>
-	      </form>
 		  <br /><br />
-		  <form method=post name="po_general_settings" action="">
 		    <div id="alternate-admin-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="alternate-admin">Alternate Admin</label></h3>
 			  <div class="inside">

@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.1.1") {
+		if (get_option("PO_version_num") != "2.1.2") {
 			$this->activate();
 		}
 	}
@@ -81,8 +81,8 @@ class PluginOrganizer {
 			update_option('PO_alternate_admin', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.1.1") {
-			update_option("PO_version_num", "2.1.1");
+		if (get_option("PO_version_num") != "2.1.2") {
+			update_option("PO_version_num", "2.1.2");
 		}
 	}
 	
@@ -109,7 +109,7 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.1") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.2") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
@@ -961,7 +961,7 @@ class PluginOrganizer {
 	function reorder_plugins($allPluginList) {
 		global $wpdb;
 		$plugins = get_option("active_plugins");
-		if (is_admin() && $this->pluginPageActions == 1) {
+		if (is_admin() && $this->pluginPageActions == 1 && !is_numeric($_REQUEST['PO_group_view'])) {
 			$perPage = get_user_option("plugins_per_page");
 			if (!is_numeric($perPage)) {
 				$perPage = 20;
