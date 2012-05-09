@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.1.2") {
+		if (get_option("PO_version_num") != "2.1.3") {
 			$this->activate();
 		}
 	}
@@ -81,8 +81,8 @@ class PluginOrganizer {
 			update_option('PO_alternate_admin', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.1.2") {
-			update_option("PO_version_num", "2.1.2");
+		if (get_option("PO_version_num") != "2.1.3") {
+			update_option("PO_version_num", "2.1.3");
 		}
 	}
 	
@@ -109,7 +109,7 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.2") {
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.3") {
 			$this->activate();
 		}
 		if ( current_user_can( 'activate_plugins' ) ) {
@@ -705,7 +705,7 @@ class PluginOrganizer {
 					bulkListReplacement += '<option value="save_plugin_group">Save Group</option>';
 					bulkListReplacement += '<option value="delete_plugin_group">Delete Group</option>';
 					<?php 
-					if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+					if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
 						?>
 						bulkListReplacement += '<option value="save_load_order">Save plugin load order</option>';
 						<?php
@@ -772,7 +772,7 @@ class PluginOrganizer {
 	}
 	
 	function make_draggable() {
-		if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+		if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
 			?>
 			<script type="text/javascript" src="<?php print $this->urlPath.'/js/jquery.tablednd.js'; ?>"></script>
 			<style type="text/css">
@@ -1007,7 +1007,7 @@ class PluginOrganizer {
 	function get_column_headers($columns) {
 		$count = 0;
 		$newColumns = array();
-		if (!array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+		if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
 			foreach ($columns as $key=>$column) {
 				if ($count==1) {
 					$newColumns['PO_draghandle'] = __('Drag');
