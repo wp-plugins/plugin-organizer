@@ -3,6 +3,13 @@
 		color: #FF0033;
 	}
 </style>
+<script type="text/javascript" language="javascript">
+	function checkAllDisablePlugins() {
+		jQuery(".disabled_plugin_check").each(function() {  
+			this.checked = jQuery("#selectAllDisablePlugins").attr("checked");  
+		});  
+	}
+</script>
 <div class="wrap" id="wrap">
     <div class="icon32" id="icon-po-global"> <br /> </div>
 
@@ -19,9 +26,10 @@
     <div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">
-	      <form method=post name="po_global_plugin_list" action="" enctype="multipart/form-data">
+	      <form method=post name="po_global_plugin_list" action="">
 	        <div id="pluginListdiv" class="stuffbox" style="width: 98%">
-              <?php
+              <input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="checkAllDisablePlugins();">Select All<br><br>
+			  <?php
 				$count = 1;
 				foreach ($plugins as $key=>$plugin) {
 					?>

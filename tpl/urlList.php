@@ -25,7 +25,7 @@
 				foreach ($urlList as $url) {
 					print $url->permalink;
 					?>
-					  <div style="float: right;"><a class="editUrl" href="<?php print admin_url('admin.php'); ?>?page=PO_url_admin&url_admin_page=edit&url_id=<?php print $url->url_id; ?>">Edit</a> - <a id="deleteUrl<?php print $url->url_id; ?>" class="deleteUrl" href="<?php print admin_url('admin.php'); ?>?page=PO_url_admin&delete_url=1&url_id=<?php print $url->url_id; ?>">Delete</a></div><div style="clear:right;"><hr></div>
+					  <div style="float: right;"><a class="editUrl" href="<?php print admin_url('admin.php'); ?>?page=PO_url_admin&url_admin_page=edit&url_id=<?php print $url->url_id; ?>">Edit</a> - <a id="deleteUrl<?php print $url->url_id; ?>" class="deleteUrl" href="<?php print admin_url('admin.php'); ?>?page=PO_url_admin&delete_url=1&url_id=<?php print $url->url_id; ?>&PO_nonce=<?php print $this->nonce; ?>">Delete</a></div><div style="clear:right;"><hr></div>
 					<?php
 				}
 			  ?>

@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.1.3
+Version: 2.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -15,7 +15,7 @@ class PluginOrganizerMU {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && $pagenow != "plugins.php"))) {
-			if (get_option("PO_version_num") != "2.1.3" && !is_admin()) {
+			if (get_option("PO_version_num") != "2.2" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 			} else {
@@ -24,6 +24,7 @@ class PluginOrganizerMU {
 				$protocol = $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
 				/*** return the full address ***/
 				$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+				#$url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 				$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
 				$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
 				$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s";
@@ -47,6 +48,33 @@ class PluginOrganizerMU {
 				
 				$disabledPlugins = array_merge($disabledPostPlugins, $disabledUrlPlugins);
 				$enabledPlugins = array_merge($enabledPostPlugins, $enabledUrlPlugins);
+				
+				if (sizeof($disabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
+					if (preg_match('/\/$/', $url)) {
+						$endChar = '/';
+					}
+					$choppedUrl = $url;
+					//Dont allow an endless loop
+					$loopCount = 0;
+					while ($loopCount < 15 && ($choppedUrl = preg_replace('/\/[^\/]+\/?$/', $endChar, $choppedUrl)) && $choppedUrl != $protocol.'://'.$_SERVER['HTTP_HOST'].$endChar) {
+						$loopCount++;
+						$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s AND children=1";
+						$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $choppedUrl), ARRAY_A);
+						if ($wpdb->num_rows > 0) {
+							$disabledUrlPlugins = unserialize($urlPlugins['disabled_plugins']);
+							$enabledUrlPlugins = unserialize($urlPlugins['enabled_plugins']);
+							if (!is_array($disabledUrlPlugins)) {
+								$disabledUrlPlugins = array();
+							}
+							if (!is_array($enabledUrlPlugins)) {
+								$enabledUrlPlugins = array();
+							}
+							$disabledPlugins = array_merge($disabledPlugins, $disabledUrlPlugins);
+							$enabledPlugins = array_merge($enabledPlugins, $enabledUrlPlugins);
+							break;
+						}
+					}
+				}
 
 				if (is_array($globalPlugins)) {
 					foreach ($pluginList as $plugin) {

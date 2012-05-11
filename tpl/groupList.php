@@ -1,3 +1,10 @@
+<script type="text/javascript" language="javascript">
+	function checkAllGroupMembers() {
+		jQuery(".group_member_check").each(function() {  
+			this.checked = jQuery("#selectAllGroupMembers").attr("checked");  
+		});  
+	}
+</script>
 <div id="PO-group-wrap">
     <div class="icon32" id="icon-po-group"> <br /> </div>
 
@@ -20,6 +27,7 @@
 			  <div id="group_details" class="inside">
             	<label id="group_nameLabel" for="group_name">Group Name</label>: <input type="text" id="group_name" name="group_name" value="<?php print $currGroup['group_name']; ?>">
 				<br><br>
+				<input type="checkbox" id="selectAllGroupMembers" name="selectAllGroupMembers" value="" onclick="checkAllGroupMembers();">Select All<br><br>
 				<?php
 				$count = 1;
 				foreach ($plugins as $key=>$plugin) {

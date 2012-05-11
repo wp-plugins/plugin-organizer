@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.1.3") {
+		if (get_option("PO_version_num") != "2.2") {
 			$this->activate();
 		}
 	}
@@ -51,13 +51,30 @@ class PluginOrganizer {
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (
 			url_id bigint(20) unsigned NOT NULL auto_increment,
 			permalink longtext NOT NULL default '',
+			children int(1) NOT NULL default 0,
 			disabled_plugins longtext NOT NULL default '',
 			enabled_plugins longtext NOT NULL default '',
 			PRIMARY KEY PO_id (url_id)
 			);";
+		
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
+		}
+
+		//Add columns to PO_url_plugins table
+		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_url_plugins";
+		$showColumnResults = $wpdb->get_results($showColumnSql);
+		$fieldFound = 0;
+		foreach ($showColumnResults as $column) {
+			if ($column->Field == "children") {
+				$fieldFound = 1;
+			}
+		}
+
+		if ($fieldFound == 0) {
+			$addColumnSql = "ALTER TABLE ".$wpdb->prefix."PO_url_plugins ADD COLUMN children int(1) NOT NULL default 0;";
+			$addColumnResult = $wpdb->query($addColumnSql);
 		}
 
 
@@ -81,8 +98,12 @@ class PluginOrganizer {
 			update_option('PO_alternate_admin', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.1.3") {
-			update_option("PO_version_num", "2.1.3");
+		if (get_option('PO_fuzzy_url_matching') == "") {
+			update_option('PO_fuzzy_url_matching', "1");
+		}
+		
+		if (get_option("PO_version_num") != "2.2") {
+			update_option("PO_version_num", "2.2");
 		}
 	}
 	
@@ -109,9 +130,6 @@ class PluginOrganizer {
 	
 	function admin_menu() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups" || get_option("PO_version_num") != "2.1.3") {
-			$this->activate();
-		}
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
@@ -168,11 +186,14 @@ class PluginOrganizer {
 					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
 				}
 
-				if ($_POST['PO_alternate_admin'] == 1) {
-					update_option("PO_alternate_admin", "1");
-				} else {
-					update_option("PO_alternate_admin", "0");
+				if (preg_match("/^(1|0)$/", $_POST['PO_alternate_admin'])) {
+					update_option("PO_alternate_admin", $_POST['PO_alternate_admin']);
 				}
+				
+				if (preg_match("/^(1|0)$/", $_POST['PO_fuzzy_url_matching'])) {
+					update_option("PO_fuzzy_url_matching", $_POST['PO_fuzzy_url_matching']);
+				}
+				
 			}
 			require_once($this->absPath . "/tpl/settings.php");
 		} else {
@@ -261,7 +282,7 @@ class PluginOrganizer {
 				
 				require_once($this->absPath . "/tpl/urlAdd.php");
 			} else if ($_REQUEST['url_admin_page'] == "edit") {
-				if ($_POST['add_url'] == '1' && $this->validate_field("permalink")) {
+				if ($_POST['add_url'] == '1' && $this->validate_field("permalink") && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 					$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
 					$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
 					$urlCount = $getDupUrlResult[0]['count'];
@@ -277,7 +298,13 @@ class PluginOrganizer {
 						require_once($this->absPath . "/tpl/urlAdd.php");
 						return "";
 					} else {
-						$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink']));
+						if ($_POST['effectChildren'] != '1') {
+							$effectChildren = 0;
+						} else {
+							$effectChildren = 1;
+						}
+						
+						$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren));
 						$urlId = $wpdb->insert_id;
 						if (!is_numeric($urlId)) {
 							$urlId = 0;
@@ -290,7 +317,13 @@ class PluginOrganizer {
 					$urlId = 0;
 				}
 				if ($_POST['edit_url'] == '1' && $urlId != 0 && $this->validate_field("permalink")) {
-					$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink']), array("url_id"=>$urlId));
+					if ($_POST['effectChildren'] != '1') {
+						$effectChildren = 0;
+					} else {
+						$effectChildren = 1;
+					}
+
+					$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren), array("url_id"=>$urlId));
 					$errMsg = "URL successfully edited.";
 				}
 				
@@ -298,6 +331,7 @@ class PluginOrganizer {
 				$urlDetails = $wpdb->get_row($wpdb->prepare($urlDetailQuery, $urlId), ARRAY_A);
 				$disabledPlugins = unserialize($urlDetails['disabled_plugins']);
 				$enabledPlugins = unserialize($urlDetails['enabled_plugins']);
+				$effectChildren = $urlDetails['children'];
 				if (!is_array($disabledPlugins)) {
 					$disabledPlugins = array();
 				}
@@ -312,7 +346,7 @@ class PluginOrganizer {
 				}
 				require_once($this->absPath . "/tpl/urlEdit.php");
 			} else {
-				if (is_numeric($_REQUEST['url_id']) && $_REQUEST['delete_url'] == 1) {
+				if (is_numeric($_REQUEST['url_id']) && $_REQUEST['delete_url'] == 1 && wp_verify_nonce( $_REQUEST['PO_nonce'], plugin_basename(__FILE__) )) {
 					$urlId = $_REQUEST['url_id'];
 					$deleteUrlQuery = "DELETE FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id=%d";
 					$deleteUrl = $wpdb->get_results($wpdb->prepare($deleteUrlQuery, $urlId));

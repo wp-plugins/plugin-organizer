@@ -14,10 +14,10 @@
     <div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">
-	      <form method=post name="po_general_settings" action="" enctype="multipart/form-data">
+	      <form method=post name="po_general_settings" action="">
 	        <?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>			
 			<div id="general-settings-div" class="stuffbox" style="width: 98%">
-              <h3><label for="order[]">Selective Plugin Loading</label></h3>
+              <h3><label for="PO_disable_plugins">Selective Plugin Loading</label></h3>
 			  <div class="inside">
             	<strong>Selective Plugin Loading:</strong><br />
 				<?php $selectiveLoad = get_option("PO_disable_plugins"); ?>
@@ -33,21 +33,45 @@
 				<br />
 				NOTE:  When this option is enabled plugins will be disabled on the admin pages. The first option must be enabled before this one will take affect.
 				<br />
-				<input type=hidden name="page" value="Plugin_Organizer" />
 				<input type=submit name=submit value="Save Settings" />
               </div>
             </div>
+			<input type=hidden name="page" value="Plugin_Organizer" />
+			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>	
+		  </form>
 		  <br /><br />
-		    <div id="alternate-admin-div" class="stuffbox" style="width: 98%">
-			  <h3><label for="alternate-admin">Alternate Admin</label></h3>
+		  <form method=post name="po_alternate_admin_settings" action="">
+	        <div id="alternate-admin-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_alternate_admin">Alternate Admin</label></h3>
 			  <div class="inside">
-				Enable: <input type=checkbox id="PO_alternate_admin" name="PO_alternate_admin" value="1" <?php print (get_option('PO_alternate_admin') == "1")? "checked='checked'":""; ?>/>
-				<input type=hidden name="page" value="Plugin_Organizer" />
-				<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>			
+				<?php $alternateAdmin = get_option("PO_alternate_admin"); ?>
+				<input type="radio" name="PO_alternate_admin" value="1" <?php print ($alternateAdmin == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_alternate_admin" value="0" <?php print ($alternateAdmin != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				This enables the old admin pages.  If you are having problems with the bulk actions on the plugins page turn this on.
 				<br />
 				<input type=submit name=submit value="Save Settings" />
 			  </div>
 		    </div>
+			<input type=hidden name="page" value="Plugin_Organizer" />
+			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>	
+		  </form>
+		  <br /><br />
+		  <form method=post name="po_fuzzy_url_matching_settings" action="">
+	        <div id="fuzzy-url-matching-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_fuzzy_url_matching">Fuzzy URL matching</label></h3>
+			  <div class="inside">
+				<?php $fuzzyUrlMatching = get_option("PO_fuzzy_url_matching"); ?>
+				<input type="radio" name="PO_fuzzy_url_matching" value="1" <?php print ($fuzzyUrlMatching == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_fuzzy_url_matching" value="0" <?php print ($fuzzyUrlMatching != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				This gives URLs entered into the URL admin the ability to effect children of that URL.
+				<br />
+				<input type=submit name=submit value="Save Settings" />
+			  </div>
+		    </div>
+			<input type=hidden name="page" value="Plugin_Organizer" />
+			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>	
 		  </form>
 		  <br /><br />
 		  <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">

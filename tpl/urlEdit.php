@@ -3,6 +3,18 @@
 		color: #FF0033;
 	}
 </style>
+<script type="text/javascript" language="javascript">
+	function checkAllEnablePlugins() {
+		jQuery(".enabled_plugin_check").each(function() {  
+			this.checked = jQuery("#selectAllEnablePlugins").attr("checked");  
+		});  
+	}
+	function checkAllDisablePlugins() {
+		jQuery(".disabled_plugin_check").each(function() {  
+			this.checked = jQuery("#selectAllDisablePlugins").attr("checked");  
+		});  
+	}
+</script>
 <div id="wrap">
     <div class="icon32" id="icon-link-manager"> <br /> </div>
 
@@ -19,18 +31,20 @@
     <div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">
-	      <form method=post id="po_url_form" name="po_url_edit" action="<?php print admin_url('admin.php'); ?>?page=PO_url_admin" enctype="multipart/form-data">
+	      <form method=post id="po_url_form" name="po_url_edit" action="<?php print admin_url('admin.php'); ?>?page=PO_url_admin">
 	        <div id="po_permalink_div" class="stuffbox" style="width: 98%">
               <h3><label id="permalinkLabel" for="permalink">URL</label></h3>
 			  <div class="inside">
-				<input type="text" name="permalink" size="25" title="URL" value="<?php print $urlDetails['permalink']; ?>">
+				<input type="text" name="permalink" size="25" title="URL" value="<?php print $urlDetails['permalink']; ?>"><br />
+				<input type="checkbox" name="effectChildren" id="effectChildren" value="1" <?php print ($effectChildren == 1)? 'checked="checked"' : ''; ?>> Also effect children
 
 			  </div>
 			</div>
 		    <div id="po_disabled_plugins_div" class="stuffbox" style="width: 98%">
 			  <h3><label for="disabledPlugins[]">Disabled Plugins</label></h3>
 			  <div class="inside">
-            	<?php
+            	<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="checkAllDisablePlugins();">Select All<br><br>
+				<?php
 				  $count = 1;
 				  foreach ($plugins as $key=>$plugin) {
 					  ?>
@@ -44,7 +58,8 @@
 			<div id="po_global_plugins_div" class="stuffbox" style="width: 98%">
 			  <h3><label for="enabledPlugins[]">Enabled Plugins</label></h3>
 			  <div class="inside">
-            	<?php
+            	<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="checkAllEnablePlugins();">Select All<br><br>
+				<?php
 				  $count = 1;
 				  foreach ($plugins as $key=>$plugin) {
 					  if (in_array($key,  $globalPlugins)) {
@@ -57,6 +72,7 @@
 			    ?>
               </div>
             </div>
+			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>
 			<input type=hidden name="edit_url" value="1">
 			<input type=hidden name="url_admin_page" value="edit">
 			<input type=hidden name="url_id" value="<?php print $urlId; ?>">
