@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.2") {
+		if (get_option("PO_version_num") != "2.2.1") {
 			$this->activate();
 		}
 	}
@@ -102,8 +102,8 @@ class PluginOrganizer {
 			update_option('PO_fuzzy_url_matching', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.2") {
-			update_option("PO_version_num", "2.2");
+		if (get_option("PO_version_num") != "2.2.1") {
+			update_option("PO_version_num", "2.2.1");
 		}
 	}
 	
