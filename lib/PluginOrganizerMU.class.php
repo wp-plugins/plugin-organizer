@@ -19,16 +19,24 @@ class PluginOrganizerMU {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 			} else {
+				$ignoreProtocol = get_option('PO_ignore_protocol');
 				$globalPlugins = get_option("PO_disabled_plugins");
-				/*** check for https ***/
-				$protocol = $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
-				/*** return the full address ***/
-				$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-				#$url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-				$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
-				$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
-				$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s";
-				$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $url), ARRAY_A);
+				
+				if ($ignoreProtocol == '1') {
+					$url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink LIKE %s";
+					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, '%'.$url), ARRAY_A);
+					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s";
+					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, '%'.$url), ARRAY_A);
+				} else {
+					$protocol = $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
+					$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
+					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
+					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s";
+					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $url), ARRAY_A);
+				}
+				
 				$disabledPostPlugins = unserialize($postPlugins['disabled_plugins']);
 				$enabledPostPlugins = unserialize($postPlugins['enabled_plugins']);
 				$disabledUrlPlugins = unserialize($urlPlugins['disabled_plugins']);
@@ -56,10 +64,21 @@ class PluginOrganizerMU {
 					$choppedUrl = $url;
 					//Dont allow an endless loop
 					$loopCount = 0;
-					while ($loopCount < 15 && ($choppedUrl = preg_replace('/\/[^\/]+\/?$/', $endChar, $choppedUrl)) && $choppedUrl != $protocol.'://'.$_SERVER['HTTP_HOST'].$endChar) {
+					if ($ignoreProtocol == '1') {
+						$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
+					} else {
+						$lastUrl = $protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
+					}
+					while ($loopCount < 15 && ($choppedUrl = preg_replace('/\/[^\/]+\/?$/', $endChar, $choppedUrl)) && $choppedUrl != $lastUrl) {
 						$loopCount++;
-						$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s AND children=1";
-						$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $choppedUrl), ARRAY_A);
+						if ($ignoreProtocol == '1') {
+							$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s AND children=1";
+							$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, '%'.$choppedUrl), ARRAY_A);
+						} else {
+							$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s AND children=1";
+							$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $choppedUrl), ARRAY_A);
+						}
+						
 						if ($wpdb->num_rows > 0) {
 							$disabledUrlPlugins = unserialize($urlPlugins['disabled_plugins']);
 							$enabledUrlPlugins = unserialize($urlPlugins['enabled_plugins']);

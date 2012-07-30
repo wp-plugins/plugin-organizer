@@ -70,6 +70,9 @@ A.
 
 == Changelog ==
 
+= 2.2.1 =
+Added ability to ignore the protocol when matching the requested URL by checking a checkbox on the settings page.
+
 = 2.2 =
 Added Fuzzy URL matching to the arbitrary URL admin.  URLs can now effect their children.
 Added nonce checking to URL admin.
@@ -185,6 +188,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+Added ability to ignore the protocol when matching the requested URL by checking a checkbox on the settings page.
 
 = 2.2 =
 Added Fuzzy URL matching to the arbitrary URL admin.  URLs can now effect their children.

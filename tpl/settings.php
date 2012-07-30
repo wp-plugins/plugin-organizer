@@ -74,6 +74,23 @@
 			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>	
 		  </form>
 		  <br /><br />
+		  <form method=post name="po_ignore_protocol_settings" action="">
+	        <div id="ignore-protocol-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_ignore_protocol">Ignore URL Protocol</label></h3>
+			  <div class="inside">
+				<?php $ignoreProtocol = get_option("PO_ignore_protocol"); ?>
+				<input type="radio" name="PO_ignore_protocol" value="1" <?php print ($ignoreProtocol == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_ignore_protocol" value="0" <?php print ($ignoreProtocol != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				This allows you to ignore the protocol (http, https) of a URL when trying to match it in the database at page load time.  With this enabled https://yoururl.com/page/ will have the same plugins loaded as http://yoururl.com/page/.  If disabled they can be set seperately using the URL admin.
+				<br />
+				<input type=submit name=submit value="Save Settings" />
+			  </div>
+		    </div>
+			<input type=hidden name="page" value="Plugin_Organizer" />
+			<?php echo '<input type="hidden" name="PO_nonce" id="PO_nonce" value="' . $this->nonce . '" />'; ?>	
+		  </form>
+		  <br /><br />
 		  <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
 			  <div class="inside">

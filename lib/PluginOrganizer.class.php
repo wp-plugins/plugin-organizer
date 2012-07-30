@@ -193,6 +193,10 @@ class PluginOrganizer {
 				if (preg_match("/^(1|0)$/", $_POST['PO_fuzzy_url_matching'])) {
 					update_option("PO_fuzzy_url_matching", $_POST['PO_fuzzy_url_matching']);
 				}
+
+				if (preg_match("/^(1|0)$/", $_POST['PO_ignore_protocol'])) {
+					update_option("PO_ignore_protocol", $_POST['PO_ignore_protocol']);
+				}
 				
 			}
 			require_once($this->absPath . "/tpl/settings.php");
