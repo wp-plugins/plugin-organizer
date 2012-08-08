@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.4.1
-Stable tag: 2.2.1
+Stable tag: 2.3
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -62,13 +62,18 @@ A.
 
 1. Plugin admin page example.
 2. Settings page example.
-3. Alternative load order page.
-4. Plugin grouping page.
-5. Global plugins page.
-6. URL admin page.
-7. Page edit screen.
+3. Global plugins page.
+4. URL admin page.
+5. Page edit screen.
 
 == Changelog ==
+
+= 2.3 =
+Removed the old admin pages.  The plugins can now be managed directly on the plugins page.
+Redesigned the settings page to use ajax queries instead of reloading the page to save settings.
+Redesigned the URL admin to use ajax to save and edit URL's instead of reloading the page.
+Moved most of the javascript out of the main class and into template files.
+Added a setting to preserve the plugin data when it is deactivated.  The plugin data including database tables and MU plugin file can now be removed on deactivation.
 
 = 2.2.1 =
 Added ability to ignore the protocol when matching the requested URL by checking a checkbox on the settings page.
@@ -188,6 +193,13 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.3 =
+Removed the old admin pages.  The plugins can now be managed directly on the plugins page.
+Redesigned the settings page to use ajax queries instead of reloading the page to save settings.
+Redesigned the URL admin to use ajax to save and edit URL's instead of reloading the page.
+Moved most of the javascript out of the main class and into template files.
+Added a setting to preserve the plugin data when it is deactivated.  The plugin data including database tables and MU plugin file can now be removed on deactivation.
 
 = 2.2.1 =
 Added ability to ignore the protocol when matching the requested URL by checking a checkbox on the settings page.

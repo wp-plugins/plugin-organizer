@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.2.1") {
+		if (get_option("PO_version_num") != "2.3") {
 			$this->activate();
 		}
 	}
@@ -94,16 +94,43 @@ class PluginOrganizer {
 			update_option("PO_custom_post_type_support", array("post", "page"));
 		}
 		
-		if (get_option('PO_alternate_admin') == "") {
-			update_option('PO_alternate_admin', "1");
+		//delete alternate admin setting if it exists.
+		if (get_option('PO_alternate_admin') != "") {
+			delete_option('PO_alternate_admin');
 		}
 		
 		if (get_option('PO_fuzzy_url_matching') == "") {
 			update_option('PO_fuzzy_url_matching', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.2.1") {
-			update_option("PO_version_num", "2.2.1");
+		if (get_option('PO_preserve_settings') == "") {
+			update_option('PO_preserve_settings', "1");
+		}
+		
+		if (get_option("PO_version_num") != "2.3") {
+			update_option("PO_version_num", "2.3");
+		}
+	}
+	
+	function deactivate() {
+		global $wpdb;
+		//Delete database tables and options if the option to preserve is set to 0.
+		if (get_option("PO_preserve_settings") == "0") {
+			$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
+			$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
+			$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
+
+			delete_option("PO_preserve_settings");
+			delete_option("PO_alternate_admin");
+			delete_option("PO_fuzzy_url_matching");
+			delete_option("PO_version_num");
+			delete_option("PO_custom_post_type_support");
+			delete_option("PO_disable_plugins");
+			delete_option("PO_admin_disable_plugins");
+			
+		}
+		if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+			@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
 		}
 	}
 	
@@ -133,29 +160,38 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			add_action('admin_head-'.$plugin_page, array($this, 'ajax_PO_settings'));
-			add_action('admin_head-plugins.php', array($this, 'ajax_plugin_page'));
+			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
+			add_action('admin_head-plugins.php', array($this, 'plugin_page_js'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
 			
-			if (get_option('PO_alternate_admin') == "1") {
-				$plugin_page=add_submenu_page('Plugin_Organizer', 'Load Order', 'Load Order', 'activate_plugins', 'PO_Load_Order', array($this, 'edit_list'));
-				add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-				add_action('admin_head-'.$plugin_page, array($this, 'ajax_load_order'));
-				$plugin_page=add_submenu_page('Plugin_Organizer', 'Groups', 'Groups', 'activate_plugins', 'PO_Groups', array($this, 'group_page'));
-				add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-				add_action('admin_head-'.$plugin_page, array($this, 'ajax_plugin_group'));
-			}
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			add_action('admin_head-'.$plugin_page, array($this, 'ajax_global_plugins'));
+			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
 
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'URL Admin', 'URL Admin', 'activate_plugins', 'PO_url_admin', array($this, 'url_admin'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			add_action('admin_head-'.$plugin_page, array($this, 'ajax_url_admin'));
+			add_action('admin_head-'.$plugin_page, array($this, 'url_admin_js'));
 
 			
 		}
 
+	}
+
+	function plugin_page_js() {
+		global $wpdb;
+		require_once($this->absPath . "/tpl/plugin_page_js.php");
+	}
+
+	function url_admin_js() {
+		require_once($this->absPath . "/tpl/url_admin_js.php");
+	}
+
+	function global_plugins_js() {
+		require_once($this->absPath . "/tpl/global_plugins_js.php");
+	}
+
+	function settings_page_js() {
+		require_once($this->absPath . "/tpl/settings_page_js.php");
 	}
 
 	function admin_styles() {
@@ -170,6 +206,10 @@ class PluginOrganizer {
 			#icon-po-global {
 				background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
 			}
+
+			.activePlugin {
+				color: #FF0033;
+			}
 			
 		</style>
 		<?php
@@ -177,87 +217,12 @@ class PluginOrganizer {
 		
 	function settings_page() {
 		if ( current_user_can( 'activate_plugins' ) ) {
-			if ($_POST['submit'] == "Save Settings" && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
-				if (preg_match("/^(1|0)$/", $_POST['PO_disable_plugins'])) {
-					update_option("PO_disable_plugins", $_POST['PO_disable_plugins']);
-				}
-
-				if (preg_match("/^(1|0)$/", $_POST['PO_admin_disable_plugins'])) {
-					update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
-				}
-
-				if (preg_match("/^(1|0)$/", $_POST['PO_alternate_admin'])) {
-					update_option("PO_alternate_admin", $_POST['PO_alternate_admin']);
-				}
-				
-				if (preg_match("/^(1|0)$/", $_POST['PO_fuzzy_url_matching'])) {
-					update_option("PO_fuzzy_url_matching", $_POST['PO_fuzzy_url_matching']);
-				}
-
-				if (preg_match("/^(1|0)$/", $_POST['PO_ignore_protocol'])) {
-					update_option("PO_ignore_protocol", $_POST['PO_ignore_protocol']);
-				}
-				
-			}
 			require_once($this->absPath . "/tpl/settings.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
 	}
 	
-	function edit_list() {
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
-			
-			require_once($this->absPath . "/tpl/pluginList.php");
-		} else {
-			wp_die("You dont have permissions to access this page.");
-		}
-	}
-
-	function group_page() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$members = array();
-			$plugins = get_plugins();
-			if ($_POST['createGroup'] == "Create Group") {
-				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['new_group_name'], "group_members"=>serialize(array())));
-				$currGroup = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = ".$wpdb->insert_id, ARRAY_A);
-				$members = unserialize($currGroup['group_members']);
-			} else if ($_POST['deleteGroup'] == "Delete Group" && is_numeric($_POST['PO_group'])) {
-				$deleteGroupQuery = "DELETE FROM ".$wpdb->prefix."PO_groups WHERE group_id=%d";
-				$wpdb->query($wpdb->prepare($deleteGroupQuery, $_POST['PO_group']));
-				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
-				if (!isset($currGroup['group_id'])) {
-					$this->create_default_group();
-					$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-					$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
-				
-				}
-				$members = unserialize($currGroup['group_members']);
-			} else if (is_numeric($_POST['PO_group'])) {
-				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, $_POST['PO_group']), ARRAY_A);
-				$members = unserialize($currGroup['group_members']);
-			} else {
-				$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-				$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
-				if (!isset($currGroup['group_id'])) {
-					$this->create_default_group();
-					$currGroupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-					$currGroup = $wpdb->get_row($wpdb->prepare($currGroupQuery, get_option('PO_default_group')), ARRAY_A);
-				}
-				$members = unserialize($currGroup['group_members']);
-			}
-			$allGroups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-			
-			require_once($this->absPath . "/tpl/groupList.php");
-		} else {
-			wp_die("You dont have permissions to access this page.");
-		}
-	}
-
 	function global_plugins_page($post_id) {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$plugins = get_plugins();
@@ -272,83 +237,83 @@ class PluginOrganizer {
 		}
 	}
 
+	function submit_url() {
+		global $wpdb;
+		if ($this->validate_field("permalink") && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			$errMsg = '';
+			if ($_POST['url_id'] === '0') {
+				$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
+				$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
+				$urlCount = $getDupUrlResult[0]['count'];
+				if ($urlCount != 0) {
+					$errMsg = "That URL already exists in the database.";
+				} else {
+					if (preg_match("/^(1|0)$/", $_POST['effectChildren'])) {
+						$effectChildren = $_POST['effectChildren'];
+					}
+					
+					$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren));
+					$urlId = $wpdb->insert_id;
+					if (!is_numeric($urlId)) {
+						$urlId = 0;
+					}
+					$errMsg = "URL successfully added to the database.";
+				}
+			} else if (is_numeric($_POST['url_id'])) {
+				$urlId = $_POST['url_id'];
+				if (preg_match("/^(1|0)$/", $_POST['effectChildren'])) {
+					$effectChildren = $_POST['effectChildren'];
+				}
+
+				$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren), array("url_id"=>$urlId));
+				$errMsg = "URL successfully edited.";
+			} else {
+				$urlId = 0;
+			}
+			$this->get_url_admin_form($urlId, $errMsg, 1);
+		}
+		die();
+	}
+	
+	function get_url_admin_form($urlId, $errMsg, $ajaxRequest=0) {
+		global $wpdb;
+		$urlDetailQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id = %d";
+		$urlDetails = $wpdb->get_row($wpdb->prepare($urlDetailQuery, $urlId), ARRAY_A);
+		$disabledPlugins = unserialize($urlDetails['disabled_plugins']);
+		$enabledPlugins = unserialize($urlDetails['enabled_plugins']);
+		$effectChildren = $urlDetails['children'];
+		if (!is_array($disabledPlugins)) {
+			$disabledPlugins = array();
+		}
+		if (!is_array($enabledPlugins)) {
+			$enabledPlugins = array();
+		}
+		$plugins = get_plugins();
+		$activePlugins = get_option("active_plugins");
+		$globalPlugins = get_option("PO_disabled_plugins");
+		if (!is_array($globalPlugins)) {
+			$globalPlugins = array();
+		}
+		
+		require_once($this->absPath . "/tpl/urlForm.php");
+	}
+	
 	function url_admin() {
 		global $wpdb;
 		if ( current_user_can( 'activate_plugins' ) ) {
+			$errMsg = '';
 			if ($_REQUEST['url_admin_page'] == "add") {
-
-				$plugins = get_plugins();
-				$activePlugins = get_option("active_plugins");
-				$globalPlugins = get_option("PO_disabled_plugins");
-				if (!is_array($globalPlugins)) {
-					$globalPlugins = array();
-				}
-				
-				require_once($this->absPath . "/tpl/urlAdd.php");
+				//get the form
+				$this->get_url_admin_form(0, '');
 			} else if ($_REQUEST['url_admin_page'] == "edit") {
-				if ($_POST['add_url'] == '1' && $this->validate_field("permalink") && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
-					$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
-					$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
-					$urlCount = $getDupUrlResult[0]['count'];
-					if ($urlCount != 0) {
-						$errMsg = "That URL already exists in the database.";
-						$plugins = get_plugins();
-						$activePlugins = get_option("active_plugins");
-						$globalPlugins = get_option("PO_disabled_plugins");
-						if (!is_array($globalPlugins)) {
-							$globalPlugins = array();
-						}
-						
-						require_once($this->absPath . "/tpl/urlAdd.php");
-						return "";
-					} else {
-						if ($_POST['effectChildren'] != '1') {
-							$effectChildren = 0;
-						} else {
-							$effectChildren = 1;
-						}
-						
-						$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren));
-						$urlId = $wpdb->insert_id;
-						if (!is_numeric($urlId)) {
-							$urlId = 0;
-						}
-						$errMsg = "URL successfully added to the database.";
-					}
-				} else if (is_numeric($_REQUEST['url_id'])) {
+				if (is_numeric($_REQUEST['url_id'])) {
 					$urlId = $_REQUEST['url_id'];
 				} else {
 					$urlId = 0;
 				}
-				if ($_POST['edit_url'] == '1' && $urlId != 0 && $this->validate_field("permalink")) {
-					if ($_POST['effectChildren'] != '1') {
-						$effectChildren = 0;
-					} else {
-						$effectChildren = 1;
-					}
-
-					$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren), array("url_id"=>$urlId));
-					$errMsg = "URL successfully edited.";
-				}
 				
-				$urlDetailQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id = %d";
-				$urlDetails = $wpdb->get_row($wpdb->prepare($urlDetailQuery, $urlId), ARRAY_A);
-				$disabledPlugins = unserialize($urlDetails['disabled_plugins']);
-				$enabledPlugins = unserialize($urlDetails['enabled_plugins']);
-				$effectChildren = $urlDetails['children'];
-				if (!is_array($disabledPlugins)) {
-					$disabledPlugins = array();
-				}
-				if (!is_array($enabledPlugins)) {
-					$enabledPlugins = array();
-				}
-				$plugins = get_plugins();
-				$activePlugins = get_option("active_plugins");
-				$globalPlugins = get_option("PO_disabled_plugins");
-				if (!is_array($globalPlugins)) {
-					$globalPlugins = array();
-				}
-				require_once($this->absPath . "/tpl/urlEdit.php");
+				//get the form
+				$this->get_url_admin_form($urlId, '');
 			} else {
 				if (is_numeric($_REQUEST['url_id']) && $_REQUEST['delete_url'] == 1 && wp_verify_nonce( $_REQUEST['PO_nonce'], plugin_basename(__FILE__) )) {
 					$urlId = $_REQUEST['url_id'];
@@ -364,28 +329,7 @@ class PluginOrganizer {
 		
 	}
 
-	function ajax_url_admin() {
-		$this->include_js_validation();
-		?>
-		<script language="javascript" type="text/javascript">
-			jQuery(document).ready(function() {
-				if (jQuery(".deleteUrl").length > 0) {
-					jQuery(".deleteUrl").each(function() {
-						jQuery('#'+this.id).click(function() {
-							return confirm("Are you sure you want to delete this URL?");
-						});
-					});
-				}
-				
-				jQuery("#PO_submit_url").click(function() {
-					return(PO_form_validation('po_url_form'));
-				});
-			});
-
-		</script>
-		<?php
-		
-	}
+	
 
 	function add_hidden_start_order($pluginMeta, $pluginFile) {
 		
@@ -398,22 +342,6 @@ class PluginOrganizer {
 			wp_die("You dont have permissions to access this page.");
 		}	
 		return $pluginMeta;
-	}
-	
-	function get_order_select($count, $plugins) {
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$orderSelect = "<select class=\"plugin_order_select\" name=\"order[]\" id=\"order_" . $count . "\" onchange=\"uniqueOrder('order_" . $count . "');\">";
-				for ($i = 0; $i<sizeof($plugins); $i++) {
-					$orderSelect .= "<option value=\"" . $i . "\" " . (($i == $count) ? "selected=\"selected\"" : "") . ">" . ($i+1) . "</option>";
-				}
-			$orderSelect .= "</select>";
-			$orderSelect .= "<input type=\"hidden\" class=\"old_order\" id=\"old_order_" . $count . "\" value=\"" . $count . "\">";
-			$orderSelect .= "<input type=\"hidden\" class=\"start_order\" id=\"start_order_" . $count . "\" value=\"" . $count . "\">";
-			$orderSelect .= "<input type=\"button\" value=\"Save Order\" onmousedown=\"submitPluginLoadOrder();\">";
-		} else {
-			wp_die("You dont have permissions to access this page.");
-		}	
-		return $orderSelect;
 	}
 
 	function include_js_validation() {
@@ -438,359 +366,16 @@ class PluginOrganizer {
 		</script>
 		<?php
 	}
-	function ajax_plugin_group() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$this->include_js_validation();
-			?>
-			<script type="text/javascript" language="javascript">
-				jQuery(document).ready(function() {
-					jQuery("#saveGroup").click(function() {
-						return(PO_form_validation('po_edit_plugin_group'));
-					});
-					jQuery("#createGroup").click(function() {
-						return(PO_form_validation('po_create_plugin_group'));
-					});
-				});
-				function submitPluginGroup(group_id){
-					if (!PO_form_validation('po_edit_plugin_group')) {
-						return false;
-					}
-					var groupList = new Array();
-					jQuery('.group_member_check').each(function() {
-						if (this.checked) {
-							groupList[groupList.length] = this.value;
-						}
-					});
-					var group_name=jQuery('#group_name').val();
-					var revertHtml = jQuery('#plugingroupdiv .inside').html();
-					jQuery('#plugingroupdiv .inside').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					
-					if (groupList.length == 0) {
-						groupList[0]="EMPTY";
-					}
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
-						alert(result);
-						jQuery('#plugingroupdiv .inside').html(revertHtml);
-						//var pluginList = jQuery('input[name=group[]]');
-						jQuery('.group_member_check').each(function() {
-							if (groupList.indexOf(this.value) != -1) {
-								jQuery("#"+this.id).attr('checked', true);
-							} else {
-								jQuery("#"+this.id).attr('checked', false);
-							}
-						});
-					});
-				}
-			</script>
-			<?php
-		}	
-	}
 	
-	function ajax_global_plugins() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-			?>
-			<script type="text/javascript" language="javascript">
-				function submitGlobalPlugins(){
-					var disabledList = new Array();
-					jQuery('.disabled_plugin_check').each(function() {
-						if (this.checked) {
-							disabledList[disabledList.length] = this.value;
-						}
-					});
-					var revertHtml = jQuery('#pluginListdiv').html();
-					jQuery('#pluginListdiv').html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					
-					if (disabledList.length == 0) {
-						disabledList[0]="EMPTY";
-					}
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_save_global_plugins'), { 'disabledList[]': disabledList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-						alert(result);
-						jQuery('#pluginListdiv').html(revertHtml);
-						//var pluginList = jQuery('input[name=group[]]');
-						jQuery('.disabled_plugin_check').each(function() {
-							if (disabledList.indexOf(this.value) != -1) {
-								jQuery("#"+this.id).attr('checked', true);
-							} else {
-								jQuery("#"+this.id).attr('checked', false);
-							}
-						});
-					});
-				}
-			</script>
-			<?php
-		}
-	}
-	
-	function ajax_plugin_page() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_plugins();
-			foreach($plugins as $key=>$plugin) {
-				$plugins[$key]=$plugin['Name'];
-			}
-			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-			?>
-			<style type="text/css">
-				<?php 
-				$styleLoops = sizeof($groups)/8;
-				$cssLoopCount = 0;
-				while ($cssLoopCount < $styleLoops) {
-					$cssLoopCount++;
-					?>
-					.subsubsub li:nth-child(<?php print $cssLoopCount*8; ?>):before { content:"\A"; white-space:pre; }
-					<?php
-				}
-				?>
-				.column-PO_groups {
-					width: 150px;
-				}
-
-				.column-PO_draghandle {
-					width: 35px;
-				}
-					
-			</style>
-			<script type="text/javascript" language="javascript">
-				var pluginList = <?php print json_encode($plugins); ?>;
-				function PO_save_draggable_plugin_order() {
-					var orderList = new Array();
-					var startOrderList = new Array();
-					var count=0;
-					jQuery('tr.active').each(function () {
-						orderList[orderList.length] = count;
-						startOrderList[startOrderList.length] = jQuery(this).find('.start_order').val();
-						count++;
-					});
-					var load_element = jQuery('#the-list');
-					var revertHtml = load_element.html();
-					load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-						alert(result);
-						load_element.html(revertHtml);
-						if (result == "The plugin load order has been changed.") {
-							var count=0;
-							jQuery('tr.active').each(function () {
-								jQuery(this).find('.start_order').val(count);
-								count++;
-							});
-						}
-						make_plugins_draggable();
-					});
-					return false;
-				}
-				
-				function PO_add_plugins_to_group(selectedGroup) {
-					var groupList = new Array();
-					var group_id = jQuery(selectedGroup).val();
-					var group_name = jQuery(selectedGroup).text();
-					if (group_name == "-- New Group --") {
-						group_name = jQuery('input[name=PO_new_group_name]:first').val();
-						group_id = '';
-					}
-					jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
-						if (this.checked) {
-							groupList[groupList.length] = pluginList[jQuery(this).val()];
-						}
-					});
-					if (group_name == '' || group_name == '-- Select Group --') {
-						alert('You must enter a group name for your new group.');
-					} else if (groupList.length == 0) {
-						alert('You must select at least one plugin to add to the group.');
-					} else {
-						load_element = jQuery('#the-list');
-						revertHtml = load_element.html();
-						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-						jQuery.post(encodeURI(ajaxurl + '?action=PO_add_to_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
-							alert(result);
-							load_element.html(revertHtml);
-						});
-					}
-					return false;
-				}
-
-				function PO_save_plugins_to_group(selectedGroup) {
-					var groupList = new Array();
-					var group_id = jQuery(selectedGroup).val();
-					var group_name = jQuery(selectedGroup).text();
-					if (group_name == "-- New Group --") {
-						group_name = jQuery('input[name=PO_new_group_name]:first').val();
-						group_id = '';
-					}
-					jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
-						if (this.checked) {
-							groupList[groupList.length] = pluginList[jQuery(this).val()];
-						}
-					});
-					if (group_name == '' || group_name == '-- Select Group --') {
-						alert('You must enter a group name for your new group.');
-					} else if (groupList.length == 0) {
-						alert('You must select at least one plugin to add to the group.');
-					} else {
-						load_element = jQuery('#the-list');
-						revertHtml = load_element.html();
-						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-						jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
-							alert(result);
-							load_element.html(revertHtml);
-						});
-					}
-					return false;
-				}
-
-				function PO_remove_plugins_from_group(selectedGroup) {
-					var group_id = jQuery(selectedGroup).val();
-					var group_name = jQuery(selectedGroup).text();
-					if (group_name == '' || group_name == '-- Select Group --' || group_name == '-- New Group --') {
-						alert('You must select a group to remove plugins from it.');
-					} else {
-						var groupList = new Array();
-						jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
-							if (this.checked) {
-								groupList[groupList.length] = pluginList[jQuery(this).val()];
-							}
-						});
-						
-						if (groupList.length == 0) {
-							alert('You must select at least one plugin to remove from the group.');
-						} else {
-							if (confirm('Are you sure you wish to remove the selected plugins from group "'+group_name+'"?')) {
-								load_element = jQuery('#the-list');
-								revertHtml = load_element.html();
-								load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-								jQuery.post(encodeURI(ajaxurl + '?action=PO_remove_plugins_from_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-									alert(result);
-									load_element.html(revertHtml);
-								});
-							}
-						}
-					}
-					return false;
-				}
-				
-				function PO_delete_plugin_group(selectedGroup) {
-					var group_id = jQuery(selectedGroup).val();
-					var group_name = jQuery(selectedGroup).text();
-					if (group_name == '' || group_name == '-- Select Group --' || group_name == '-- New Group --') {
-						alert('You must select a group to delete.');
-					} else {
-						if (confirm('Are you sure you wish to delete group "'+group_name+'"?')) {
-							load_element = jQuery('#the-list');
-							revertHtml = load_element.html();
-							load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-							jQuery.post(encodeURI(ajaxurl + '?action=PO_delete_group'), { PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-								alert(result);
-								load_element.html(revertHtml);
-							});
-						}
-					}
-					return false;
-				}
-
-				function PO_submit_plugin_action(actionButton) {
-					var returnStatus = true;
-					var selectedAction = '';
-					var groupElement = '';
-					if (actionButton.id == 'doaction') {
-						selectedAction = jQuery('.tablenav.top .actions select[name=action]').val();
-						selectedGroup = jQuery('.tablenav.top .actions select[name=PO_group_name_select] option:selected');
-					} else {
-						selectedAction = jQuery('.tablenav.bottom .actions select[name=action2]').val();
-						selectedGroup = jQuery('.tablenav.bottom .actions select[name=PO_group_name_select2] option:selected');
-					}
-
-					if (selectedAction == "save_load_order") {
-						returnStatus = PO_save_draggable_plugin_order();
-					} else if (selectedAction == "save_plugin_group") {
-						returnStatus = PO_save_plugins_to_group(selectedGroup);
-					} else if (selectedAction == "add_to_plugin_group") {
-						returnStatus = PO_add_plugins_to_group(selectedGroup);
-					} else if (selectedAction == "delete_plugin_group") {
-						returnStatus = PO_delete_plugin_group(selectedGroup);
-					} else if (selectedAction == "remove_plugins_from_group") {
-						returnStatus = PO_remove_plugins_from_group(selectedGroup);
-					}
-					return returnStatus;
-				}
-				
-				
-				jQuery(document).ready(function () {
-					var pluginGroups = '';
-					pluginGroups += '<option value="">-- Select Group --</option>';
-					pluginGroups += '<option value="-- New Group --">-- New Group --</option>';
-					<?php
-					foreach ($groups as $group) {
-						?>
-						pluginGroups += '<option value="<?php print $group->group_id; ?>"><?php print $group->group_name; ?></option>';
-						<?php
-					}
-					?>
-					pluginGroups += '</select><input type="text" name="PO_new_group_name" style="display: none;">';
-					
-					var bulkActionList = new Array();
-					jQuery('.tablenav.top .actions select[name=action] option').each(function() {
-						bulkActionList[bulkActionList.length] = new Array(jQuery(this).val(), jQuery(this).text());
-					});
-					var bulkListReplacement = '';
-					for (var i=0; i<bulkActionList.length; i++) {
-						bulkListReplacement += '<option value="'+bulkActionList[i][0]+'">'+bulkActionList[i][1]+'</option>';
-					}
-					bulkListReplacement += '<option value="remove_plugins_from_group">Remove From Group</option>';
-					bulkListReplacement += '<option value="add_to_plugin_group">Add To Group</option>';
-					bulkListReplacement += '<option value="save_plugin_group">Save Group</option>';
-					bulkListReplacement += '<option value="delete_plugin_group">Delete Group</option>';
-					<?php 
-					if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
-						?>
-						bulkListReplacement += '<option value="save_load_order">Save plugin load order</option>';
-						<?php
-					}
-					?>
-					bulkListReplacement += '</select>';
-					jQuery('.tablenav.top .actions select[name=action]').remove();
-					jQuery('.tablenav.bottom .actions select[name=action2]').remove();
-					jQuery('.tablenav.top .actions').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' Groups: <select name="PO_group_name_select">'+pluginGroups);
-					jQuery('.tablenav.bottom .actions').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' Groups: <select name="PO_group_name_select2">'+pluginGroups);
-					jQuery('#doaction, #doaction2').click(function() {
-						return PO_submit_plugin_action(this);
-					});
-
-					jQuery('input[name=PO_new_group_name]').keyup(function() {
-						jQuery('input[name=PO_new_group_name]').val(jQuery(this).val());
-					});
-					jQuery('.tablenav.top .actions select[name=PO_group_name_select], .tablenav.bottom .actions select[name=PO_group_name_select2]').change(function() {
-						var selectedVal = jQuery(this).val();
-						jQuery('.tablenav.top .actions select[name=PO_group_name_select], .tablenav.bottom .actions select[name=PO_group_name_select2]').each(function() {
-							jQuery(this).val(selectedVal);
-						});
-						if (jQuery(this).val() == '-- New Group --') {
-							jQuery('input[name=PO_new_group_name]').css('display', '');
-						} else {
-							jQuery('input[name=PO_new_group_name]').css('display', 'none');
-						}
-					});
-				});
-				
-			</script>
-			<?php
-		}
-		if (array_key_exists('PO_group_view', $_REQUEST)) {
-			?>
-			<script type="text/javascript" language="javascript">
-				jQuery(document).ready(function() {
-					jQuery('.subsubsub .count').remove();
-				});
-			</script>
-			<?php
-		}
-	}
 	
 	function add_group_views($views) {
 		global $wpdb;
 		$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+		if (!array_key_exists('all', $views)) {
+			$views = array_reverse($views, true);
+			$views['all'] = '<a href="'.$_SERVER['PHP_SELF'].'?plugin_status=all">All <span class="count">('.count(get_plugins()).')</span></a>';
+			$views = array_reverse($views, true);
+		}
 		foreach ($groups as $group) {
 			$group->group_members = unserialize($group->group_members);
 			if ($group->group_members[0] != 'EMPTY') {
@@ -804,7 +389,7 @@ class PluginOrganizer {
 				$groupName = $group->group_name.$loopCount;
 				$loopCount++;
 			}
-			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->group_id.'">'.$group->group_name.'</a> ('.$groupCount.')';
+			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->group_id.'">'.$group->group_name.' <span class="count">('.$groupCount.')</span></a> ';
 		}
 		return $views;
 	}
@@ -837,113 +422,7 @@ class PluginOrganizer {
 		}
 	}
 	
-	function ajax_load_order() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-			?>
-			
-			<script type="text/javascript" language="javascript">
-				function uniqueOrder(currentId) {
-					var newVal = jQuery("#" + currentId).val();
-					var oldVal = jQuery("#old_" + currentId).val();
-					jQuery('.plugin_order_select').each(function() {
-						if (this.id != currentId && this.value == newVal) {
-							this.value = oldVal;
-							jQuery("#old_" + this.id).val(oldVal);
-						}
-					});
-					jQuery("#old_" + currentId).val(newVal);
 
-				}
-				function submitPluginLoadOrder(){
-					var orderList = new Array();
-					var startOrderList = new Array();
-					jQuery('.plugin_order_select').each(function() {
-						orderList[orderList.length] = this.value;
-						startOrderList[startOrderList.length] = jQuery("#start_" + this.id).val();
-					});
-					var load_element = '';
-					var revertHtml = '';
-					if (jQuery('#the-list').length) {
-						load_element = jQuery('#the-list');
-						revertHtml = load_element.html();
-						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
-					} else {
-						load_element = jQuery('#poststuff');
-						revertHtml = load_element.html();
-						load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					}
-					
-					
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_plugin_organizer'), { 'orderList[]': orderList, 'startOrder[]': startOrderList, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-						alert(result);
-						load_element.html(revertHtml);
-						if (result == "The plugin load order has been changed.") {
-							jQuery('.plugin_order_select').each(function() {
-								var orderIndex = orderList.shift();
-								jQuery("#" + this.id).val(orderIndex);
-								jQuery("#start_" + this.id).val(orderIndex);
-							});
-						}
-					});
-				}
-				function syncGroupIds(element) {
-					var selectedIndex = element.options['selectedIndex'];
-					var selections = jQuery('select[name=PO_group_view]');
-					for (var i=0; i<selections.length; i++) {
-						selections[i].options['selectedIndex'] = selectedIndex;
-					}
-					
-				}
-			</script>
-			<?php
-		}	
-	}
-
-	function ajax_PO_settings() {
-		if ( current_user_can( 'activate_plugins' ) ) {
-			?>
-			<script type="text/javascript" language="javascript">
-				function submitRedoPermalinks() {
-					var load_element = jQuery('#redo-permalinks-div .inside');
-					var revertHtml = load_element.html();
-					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-						alert(result);
-						load_element.html(revertHtml);
-					});
-				}
-
-				function submitPostTypeSupport() {
-					var PO_cutom_post_type = new Array();
-					jQuery('.PO_cutom_post_type').each(function() {
-						if (this.checked) {
-							PO_cutom_post_type[PO_cutom_post_type.length] = this.value;
-						}
-					});
-					var load_element = jQuery('#PO-custom-post-type-div .inside');
-					var revertHtml = load_element.html();
-					load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-					jQuery.post(encodeURI(ajaxurl + '?action=PO_post_type_support'), { 'PO_cutom_post_type[]': PO_cutom_post_type, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
-						alert(result);
-						load_element.html(revertHtml);
-						jQuery('.PO_cutom_post_type').each(function() {
-							var valFound = false;
-							for(i=0; i<PO_cutom_post_type.length; i++) {
-								if (this.value == PO_cutom_post_type[i]) {
-									valFound = true;
-								}
-							}
-							this.checked = valFound;
-						});
-					});
-				}
-			</script>
-			<?php
-		}
-	}
-	
 	function save_global_plugins() {
 		if ( !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 			print "You dont have permissions to access this page.";
@@ -1476,6 +955,112 @@ class PluginOrganizer {
 			update_option("active_plugins", $activePlugins);
 			update_option("PO_plugin_order", $activePlugins);
 		}
+	}
+
+	function manage_mu_plugin() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$result = "";
+		if ($_POST['selected_action'] == 'delete') {
+			if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+				if (@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+					$result = "The MU plugin component has been removed.";
+				} else {
+					$result = "There was an issue removing the MU plugin component!";
+				}
+			} else {
+				$result = "There was an issue removing the MU plugin component!";
+			}
+		} else if ($_POST['selected_action'] == 'move') {
+			if (!file_exists(ABSPATH . "wp-content/mu-plugins/")) {
+				@mkdir(ABSPATH . "wp-content/mu-plugins/");
+			}
+			if (file_exists(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php")) {
+				@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+			}
+			if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+				$result = "The MU plugin component has been moved to the mu-plugins folder.";
+			} else {
+				$result = "There was an issue moving the MU plugin component!";
+			}
+		}
+		print $result;
+		die();
+	}
+
+	function set_ignore_protocol() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$result = "";
+		if (preg_match("/^(1|0)$/", $_POST['PO_ignore_protocol'])) {
+			update_option("PO_ignore_protocol", $_POST['PO_ignore_protocol']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+		print $result;
+		die();
+	}
+
+
+	function set_fuzzy_url_matching() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$result = "";
+		if (preg_match("/^(1|0)$/", $_POST['PO_fuzzy_url_matching'])) {
+			update_option("PO_fuzzy_url_matching", $_POST['PO_fuzzy_url_matching']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+		print $result;
+		die();
+	}
+
+	function set_disable_plugin_settings() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		
+		$result = "";
+		if (preg_match("/^(1|0)$/", $_POST['PO_disable_plugins'])) {
+			update_option("PO_disable_plugins", $_POST['PO_disable_plugins']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+
+		if (preg_match("/^(1|0)$/", $_POST['PO_admin_disable_plugins'])) {
+			update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
+			$result .= "Update was successful.";
+		} else {
+			$result .= "Update failed.";
+		}
+		print $result;
+		die();
+	}
+
+	function set_preserve_settings() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$result = "";
+		if (preg_match("/^(1|0)$/", $_POST['PO_preserve_settings'])) {
+			update_option('PO_preserve_settings', $_POST['PO_preserve_settings']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+		print $result;
+		die();
 	}
 }
 ?>
