@@ -4,7 +4,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
 	?>
 	<script type="text/javascript" language="javascript">
-		function submitGlobalPlugins(){
+		function PO_submit_global_plugins(){
 			var disabledList = new Array();
 			jQuery('.disabled_plugin_check').each(function() {
 				if (this.checked) {

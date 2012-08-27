@@ -2,7 +2,7 @@
 if ( current_user_can( 'activate_plugins' ) ) {
 	?>
 	<script type="text/javascript" language="javascript">
-		function PO_submitDisableSettings() {
+		function PO_submit_disable_settings() {
 			var disable_plugins = 0;
 			var admin_disable_plugins = 0;
 			jQuery('.PO-disable-plugins').each(function() {
@@ -37,7 +37,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			});
 		}
 		
-		function PO_submitFuzzyUrlMatching() {
+		function PO_submit_fuzzy_url_matching() {
 			var fuzzy_url_matching = 0;
 			jQuery('.PO-fuzzy-url-radio').each(function() {
 				if (this.checked) {
@@ -58,7 +58,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			});
 		}
 		
-		function PO_submitIgnoreProtocol() {
+		function PO_submit_ignore_protocol() {
 			var ignore_protocol = 0;
 			jQuery('.PO-ignore-protocol-radio').each(function() {
 				if (this.checked) {
@@ -79,7 +79,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			});
 		}
 		
-		function PO_submitRedoPermalinks() {
+		function PO_submit_redo_permalinks() {
 			var load_element = jQuery('#redo-permalinks-div .inside');
 			var revertHtml = load_element.html();
 			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
@@ -89,7 +89,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			});
 		}
 
-		function PO_submitPostTypeSupport() {
+		function PO_submit_post_type_support() {
 			var PO_cutom_post_type = new Array();
 			jQuery('.PO_cutom_post_type').each(function() {
 				if (this.checked) {
@@ -114,7 +114,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			});
 		}
 
-		function PO_manageMuPluginFile() {
+		function PO_manage_mu_plugin_file() {
 			var selected_action = '';
 			jQuery('.PO-manage-mu-radio').each(function() {
 				if (this.checked) {
@@ -132,7 +132,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			}
 		}
 
-		function PO_submitPreserveSettings() {
+		function PO_submit_preserve_settings() {
 			var preserve_settings = '';
 			jQuery('.PO-preserve-settings-radio').each(function() {
 				if (this.checked) {

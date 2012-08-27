@@ -163,6 +163,19 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			return false;
 		}
 
+		function PO_reset_to_default_order() {
+			if (confirm('Are you sure you want to reset the plugin load order back to default?')) {
+				load_element = jQuery('#the-list');
+				revertHtml = load_element.html();
+				load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
+				jQuery.post(encodeURI(ajaxurl + '?action=PO_reset_to_default_order'), { PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+					alert(result);
+					load_element.html(revertHtml);
+				});
+			}
+			return false;
+		}
+
 		function PO_submit_plugin_action(actionButton) {
 			var returnStatus = true;
 			var selectedAction = '';
@@ -185,6 +198,8 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				returnStatus = PO_delete_plugin_group(selectedGroup);
 			} else if (selectedAction == "remove_plugins_from_group") {
 				returnStatus = PO_remove_plugins_from_group(selectedGroup);
+			} else if (selectedAction == "reset_to_default_order") {
+				returnStatus = PO_reset_to_default_order();
 			}
 			return returnStatus;
 		}
@@ -215,6 +230,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			bulkListReplacement += '<option value="add_to_plugin_group">Add To Group</option>';
 			bulkListReplacement += '<option value="save_plugin_group">Save Group</option>';
 			bulkListReplacement += '<option value="delete_plugin_group">Delete Group</option>';
+			bulkListReplacement += '<option value="reset_to_default_order">Reset To Default Order</option>';
 			<?php 
 			if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
 				?>

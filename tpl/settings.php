@@ -12,7 +12,7 @@
 				<?php $preserveSettings = get_option("PO_preserve_settings"); ?>
 				<input type="radio" name="PO_preserve_settings" class="PO-preserve-settings-radio" value="1" <?php print ($preserveSettings === "1" || $preserveSettings == '')? "checked='checked'":""; ?> />Yes<br />
 				<input type="radio" name="PO_preserve_settings" class="PO-preserve-settings-radio" value="0" <?php print ($preserveSettings === "0")? "checked='checked'":""; ?> />No<br />
-				<input type="button" name="manage-mu-plugin" value="Submit" onmousedown="PO_submitPreserveSettings();">
+				<input type="button" name="manage-mu-plugin" value="Submit" onmousedown="PO_submit_preserve_settings();">
 			  </div>
 		    </div>
 		  <br /><br />  
@@ -33,7 +33,7 @@
 				<br />
 				NOTE:  When this option is enabled plugins will be disabled on the admin pages. The first option must be enabled before this one will take affect.
 				<br />
-				<input type="button" name="submit-disable-settings" value="Save Settings" onmousedown="PO_submitDisableSettings();" />
+				<input type="button" name="submit-disable-settings" value="Save Settings" onmousedown="PO_submit_disable_settings();" />
               </div>
             </div>
 		  <br /><br />
@@ -46,7 +46,7 @@
 				<br />
 				This gives URLs entered into the URL admin the ability to effect children of that URL.
 				<br />
-				<input type="button" name="submit-fuzzy-url" value="Save Settings" onmousedown="PO_submitFuzzyUrlMatching();" />
+				<input type="button" name="submit-fuzzy-url" value="Save Settings" onmousedown="PO_submit_fuzzy_url_matching();" />
 			  </div>
 		    </div>
 		  <br /><br />
@@ -59,14 +59,14 @@
 				<br />
 				This allows you to ignore the protocol (http, https) of a URL when trying to match it in the database at page load time.  With this enabled https://yoururl.com/page/ will have the same plugins loaded as http://yoururl.com/page/.  If disabled they can be set seperately using the URL admin.
 				<br />
-				<input type="button" name="submit-ignore-protocol" value="Save Settings" onmousedown="PO_submitIgnoreProtocol();" />
+				<input type="button" name="submit-ignore-protocol" value="Save Settings" onmousedown="PO_submit_ignore_protocol();" />
 			  </div>
 		    </div>
 		  <br /><br />
 		    <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
 			  <div class="inside">
-				<input type="button" name="redo-permalinks" value="Recreate Permalinks" onmousedown="PO_submitRedoPermalinks();" />
+				<input type="button" name="redo-permalinks" value="Recreate Permalinks" onmousedown="PO_submit_redo_permalinks();" />
 			  </div>
 		    </div>
 		  <br /><br />
@@ -84,7 +84,7 @@
 					}
 				}
 				?>
-				<input type="button" name="add-post-support" value="Save Post Types" onmousedown="PO_submitPostTypeSupport();">
+				<input type="button" name="add-post-support" value="Save Post Types" onmousedown="PO_submit_post_type_support();">
 			  </div>
 		    </div>
 		  <br /><br />
@@ -93,7 +93,7 @@
 			  <div class="inside">
 				<input type="radio" name="PO_manage_mu" class="PO-manage-mu-radio" value="delete" />Delete<br />
 				<input type="radio" name="PO_manage_mu" class="PO-manage-mu-radio" value="move" />Move<br />
-				<input type=button name="manage-mu-plugin" value="Submit" onmousedown="PO_manageMuPluginFile();">
+				<input type=button name="manage-mu-plugin" value="Submit" onmousedown="PO_manage_mu_plugin_file();">
 			  </div>
 		    </div>
 	    </div>

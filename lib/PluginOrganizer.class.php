@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.3") {
+		if (get_option("PO_version_num") != "2.3.1") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.3") {
-			update_option("PO_version_num", "2.3");
+		if (get_option("PO_version_num") != "2.3.1") {
+			update_option("PO_version_num", "2.3.1");
 		}
 	}
 	
@@ -161,22 +161,35 @@ class PluginOrganizer {
 			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
+			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
+			
 			add_action('admin_head-plugins.php', array($this, 'plugin_page_js'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
+			add_action('admin_head-post-new.php', array($this, 'admin_styles'));
+			add_action('admin_head-post-new.php', array($this, 'common_js'));
+			
+			add_action('admin_head-post.php', array($this, 'admin_styles'));
+			add_action('admin_head-post.php', array($this, 'common_js'));
 			
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
+			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'URL Admin', 'URL Admin', 'activate_plugins', 'PO_url_admin', array($this, 'url_admin'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'url_admin_js'));
+			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 
 			
 		}
 
 	}
 
+	function common_js() {
+		require_once($this->absPath . "/tpl/common_js.php");
+	}
+	
 	function plugin_page_js() {
 		global $wpdb;
 		require_once($this->absPath . "/tpl/plugin_page_js.php");
@@ -209,6 +222,14 @@ class PluginOrganizer {
 
 			.activePlugin {
 				color: #FF0033;
+			}
+
+			.badInputLabel {
+				color: #FF0033;
+				font-weight: bold;
+			}
+			.badInput {
+				background-color: #FF0033;
 			}
 			
 		</style>
@@ -343,30 +364,6 @@ class PluginOrganizer {
 		}	
 		return $pluginMeta;
 	}
-
-	function include_js_validation() {
-		?>
-		<style type="text/css">
-			.badInputLabel {
-				color: #FF0033;
-				font-weight: bold;
-			}
-			.badInput {
-				background-color: #FF0033;
-			}
-		</style>
-		<script language="javascript" src="<?php print $this->urlPath; ?>/js/validation.js"></script>
-		<script type="text/javascript" language="javascript">
-			<?php
-			print "var regex = new Array();\n";
-			foreach ($this->regex as $key=>$val) {
-				print "regex['$key'] = $val;\n";
-			}
-			?>
-		</script>
-		<?php
-	}
-	
 	
 	function add_group_views($views) {
 		global $wpdb;
@@ -732,28 +729,16 @@ class PluginOrganizer {
 		$plugins = get_plugins();
 		$activePlugins = get_option("active_plugins");
 		?>
-		<style type="text/css">
-			.activeDisablePlugin {
-				color: #FF0033;
-			}
-		</style>
-		<script type="text/javascript" language="javascript">
-			function checkAllDisablePlugins() {
-				jQuery(".disabled_plugin_check").each(function() {  
-					this.checked = jQuery("#selectAllDisablePlugins").attr("checked");  
-				});  
-			}
-		</script>
-		<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="checkAllDisablePlugins();">Select All<br><br>
+		<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="PO_check_all_disable_plugins();">Select All<br><br>
 		<?php
 		foreach ($plugins as $key=>$plugin) {
 			if (in_array($key, $pluginList)) {
 				?>
-				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 				<?php
 			} else {
 				?>
-				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeDisablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+				<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 				<?php
 			}
 		}
@@ -784,29 +769,17 @@ class PluginOrganizer {
 		$plugins = get_plugins();
 		$activePlugins = get_option("active_plugins");
 		?>
-		<style type="text/css">
-			.activeEnablePlugin {
-				color: #FF0033;
-			}
-		</style>
-		<script type="text/javascript" language="javascript">
-			function checkAllEnablePlugins() {
-				jQuery(".enabled_plugin_check").each(function() {  
-					this.checked = jQuery("#selectAllEnablePlugins").attr("checked");  
-				});  
-			}
-		</script>
-		<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="checkAllEnablePlugins();">Select All<br><br>
+		<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="PO_check_all_enable_plugins();">Select All<br><br>
 		<?php
 		foreach ($plugins as $key=>$plugin) {
 			if (in_array($key, $globalPlugins)) {
 				if (in_array($key, $pluginList)) {
 					?>
-					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>" checked="checked"><?php print (in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 					<?php
 				} else {
 					?>
-					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activeEnablePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+					<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>"><?php print (in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
 					<?php
 				}
 			}
@@ -935,6 +908,21 @@ class PluginOrganizer {
 		die();
 	}
 
+	function reset_plugin_order() {
+		$activePlugins = get_option("active_plugins");
+		usort($activePlugins, array($this, 'custom_sort_plugins'));
+		update_option("active_plugins", $activePlugins);
+		update_option("PO_plugin_order", $activePlugins);
+		print "The order has been reset.";
+		die();
+	}
+
+	function custom_sort_plugins($a, $b) { 
+		$aData = get_plugin_data(WP_PLUGIN_DIR.'/'.$a);
+		$bData = get_plugin_data(WP_PLUGIN_DIR.'/'.$b);
+		return strcasecmp($aData['Name'], $bData['Name']);
+	}
+	
 	function recreate_plugin_order() {
 		$plugins = get_option("active_plugins");
 		$pluginOrder = get_option("PO_plugin_order");

@@ -1,20 +1,5 @@
-<?php
-$this->include_js_validation();
-?>
 <script language="javascript" type="text/javascript">
-	function checkAllEnablePlugins() {
-		jQuery(".enabled_plugin_check").each(function() {  
-			this.checked = jQuery("#selectAllEnablePlugins").attr("checked");  
-		});  
-	}
-	
-	function checkAllDisablePlugins() {
-		jQuery(".disabled_plugin_check").each(function() {  
-			this.checked = jQuery("#selectAllDisablePlugins").attr("checked");  
-		});  
-	}
-	
-	function PO_submitUrl() {
+	function PO_submit_url() {
 		if (PO_form_validation('po_url_form')) {
 			var urlId = jQuery('#url_id').val();
 			var effectChildren = 0;
@@ -54,6 +39,9 @@ $this->include_js_validation();
 				});
 			});
 		}
+		jQuery('#PO_submit_url').click(function() {
+			PO_submit_url();
+		});
 	});
 
 </script>

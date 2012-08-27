@@ -26,7 +26,7 @@
 		    <div id="po_disabled_plugins_div" class="stuffbox" style="width: 98%">
 			  <h3><label for="disabledPlugins[]">Disabled Plugins</label></h3>
 			  <div class="inside">
-            	<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="checkAllDisablePlugins();">Select All<br><br>
+            	<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="PO_check_all_disable_plugins();">Select All<br><br>
 				<?php
 				  $count = 1;
 				  foreach ($plugins as $key=>$plugin) {
@@ -41,7 +41,7 @@
 			<div id="po_global_plugins_div" class="stuffbox" style="width: 98%">
 			  <h3><label for="enabledPlugins[]">Enabled Plugins</label></h3>
 			  <div class="inside">
-            	<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="checkAllEnablePlugins();">Select All<br><br>
+            	<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="PO_check_all_enable_plugins();">Select All<br><br>
 				<?php
 				  $count = 1;
 				  foreach ($plugins as $key=>$plugin) {
@@ -56,7 +56,7 @@
               </div>
             </div>
 			<input type=hidden id="url_id" name="url_id" value="<?php print $urlId; ?>">
-			<input type="button" name="PO_submit_url" id="PO_submit_url" value="Save URL" onmousedown="PO_submitUrl();" />
+			<input type="button" name="PO_submit_url" id="PO_submit_url" value="Save URL" />
 	      </form>
 	    </div>
       </div>

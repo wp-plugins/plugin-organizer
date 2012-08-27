@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.3
+Version: 2.3.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -39,6 +39,7 @@ add_action('wp_ajax_PO_submit_fuzzy_url_matching',  array($PluginOrganizer, 'set
 add_action('wp_ajax_PO_submit_disable_plugin_settings',  array($PluginOrganizer, 'set_disable_plugin_settings'));
 add_action('wp_ajax_PO_submit_preserve_settings',  array($PluginOrganizer, 'set_preserve_settings'));
 add_action('wp_ajax_PO_submit_url',  array($PluginOrganizer, 'submit_url'));
+add_action('wp_ajax_PO_reset_to_default_order',  array($PluginOrganizer, 'reset_plugin_order'));
 
 if (get_option("PO_disable_plugins") == "1") {
 	add_action('admin_menu', array($PluginOrganizer, 'disable_plugin_box'));
