@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.3.1") {
+		if (get_option("PO_version_num") != "2.3.2") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.3.1") {
-			update_option("PO_version_num", "2.3.1");
+		if (get_option("PO_version_num") != "2.3.2") {
+			update_option("PO_version_num", "2.3.2");
 		}
 	}
 	
@@ -478,7 +478,7 @@ class PluginOrganizer {
 		if (is_admin() && $this->pluginPageActions == 1 && !is_numeric($_REQUEST['PO_group_view'])) {
 			$perPage = get_user_option("plugins_per_page");
 			if (!is_numeric($perPage)) {
-				$perPage = 20;
+				$perPage = 999;
 			}
 			if (sizeOf($plugins) > $perPage) {
 				remove_action('all_plugins',  array($this, 'reorder_plugins'));
