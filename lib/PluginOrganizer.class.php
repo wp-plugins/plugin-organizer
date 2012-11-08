@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.3.3") {
+		if (get_option("PO_version_num") != "2.4") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.3.3") {
-			update_option("PO_version_num", "2.3.3");
+		if (get_option("PO_version_num") != "2.4") {
+			update_option("PO_version_num", "2.4");
 		}
 	}
 	
@@ -273,12 +273,15 @@ class PluginOrganizer {
 						$effectChildren = $_POST['effectChildren'];
 					}
 					
-					$wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren));
-					$urlId = $wpdb->insert_id;
-					if (!is_numeric($urlId)) {
-						$urlId = 0;
+					if ($wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins']),"enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>$_POST['permalink'], "children"=>$effectChildren))) {
+						$urlId = $wpdb->insert_id;
+						if (!is_numeric($urlId)) {
+							$urlId = 0;
+						}
+						$errMsg = "URL successfully added to the database.";
+					} else {
+						$errMsg = "There was a problem adding the URL";
 					}
-					$errMsg = "URL successfully added to the database.";
 				}
 			} else if (is_numeric($_POST['url_id'])) {
 				$urlId = $_POST['url_id'];
@@ -993,6 +996,23 @@ class PluginOrganizer {
 		print $result;
 		die();
 	}
+
+	function set_ignore_arguments() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$result = "";
+		if (preg_match("/^(1|0)$/", $_POST['PO_ignore_arguments'])) {
+			update_option("PO_ignore_arguments", $_POST['PO_ignore_arguments']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+		print $result;
+		die();
+	}
+
 
 
 	function set_fuzzy_url_matching() {

@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.3.3
+Version: 2.4
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -15,22 +15,30 @@ class PluginOrganizerMU {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && $pagenow != "plugins.php"))) {
-			if (get_option("PO_version_num") != "2.3.3" && !is_admin()) {
+			if (get_option("PO_version_num") != "2.4" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 			} else {
 				$ignoreProtocol = get_option('PO_ignore_protocol');
+				$ignoreArguments = get_option('PO_ignore_arguments');
 				$globalPlugins = get_option("PO_disabled_plugins");
 				
+				if ($ignoreArguments == '1') {
+					$splitPath = explode('?', $_SERVER['REQUEST_URI']);
+					$requestedPath = $splitPath[0];
+				} else {
+					$requestedPath = $_SERVER['REQUEST_URI'];
+				}
+				
 				if ($ignoreProtocol == '1') {
-					$url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+					$url = $_SERVER['HTTP_HOST'].$requestedPath;
 					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink LIKE %s";
 					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, '%'.$url), ARRAY_A);
 					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s";
 					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, '%'.$url), ARRAY_A);
 				} else {
 					$protocol = $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
-					$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+					$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
 					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
 					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
 					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s";

@@ -78,6 +78,27 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				});
 			});
 		}
+
+		function PO_submit_ignore_arguments() {
+			var ignore_arguments = 1;
+			jQuery('.PO-ignore-arguments-radio').each(function() {
+				if (this.checked) {
+					ignore_arguments = this.value;
+				}
+			});
+			var load_element = jQuery('#PO-ignore-arguments-div .inside');
+			var revertHtml = load_element.html();
+			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_ignore_arguments'), { 'PO_ignore_arguments': ignore_arguments, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+				alert(result);
+				load_element.html(revertHtml);
+				jQuery('.PO-ignore-arguments-radio').each(function() {
+					if (this.value == ignore_arguments) {
+						this.checked = true;
+					}
+				});
+			});
+		}
 		
 		function PO_submit_redo_permalinks() {
 			var load_element = jQuery('#redo-permalinks-div .inside');

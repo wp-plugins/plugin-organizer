@@ -63,6 +63,19 @@
 			  </div>
 		    </div>
 		  <br /><br />
+		    <div id="PO-ignore-arguments-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_ignore_arguments">Ignore URL Arguments</label></h3>
+			  <div class="inside">
+				<?php $ignoreArguments = get_option("PO_ignore_arguments"); ?>
+				<input type="radio" name="PO_ignore_arguments" class="PO-ignore-arguments-radio" value="1" <?php print ($ignoreArguments == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_ignore_arguments" class="PO-ignore-arguments-radio" value="0" <?php print ($ignoreArguments != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				This allows you to ignore the arguments of a URL when trying to match it in the database at page load time.  With this enabled http://yoururl.com/page/?foo=2&bar=3 will have the same plugins loaded as http://yoururl.com/page/.  If disabled you can enter URLs with arguments included to load different plugins depending on what arguments are used in the URL admin.
+				<br />
+				<input type="button" name="submit-ignore-arguments" value="Save Settings" onmousedown="PO_submit_ignore_arguments();" />
+			  </div>
+		    </div>
+		  <br /><br />
 		    <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
 			  <div class="inside">

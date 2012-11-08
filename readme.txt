@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.4.2
-Stable tag: 2.3.3
+Stable tag: 2.4
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -67,6 +67,10 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.4 =
+Adding ability to ignore arguments to a URL.  You can now enter URLs into the URL admin with arguments so that http://yoururl.com/page/?foo=2&bar=3 will have different plugins loaded than http://yoururl.com/page/?foo=1&bar=4 and http://yoururl.com/page/.
+Fixed URL admin so that it checks to make sure the URL was entered into the database before saying it was successful.
 
 = 2.3.3 =
 Undoing a change that was done in 2.3.1 to the request uri that removed arguments from the uri.  It is causing some issues for some users.  Will redesign and create a later release to optionally remove the arguments. 
@@ -207,6 +211,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.4 =
+Adding ability to ignore arguments to a URL.  You can now enter URLs into the URL admin with arguments so that http://yoururl.com/page/?foo=2&bar=3 will have different plugins loaded than http://yoururl.com/page/?foo=1&bar=4 and http://yoururl.com/page/.
+Fixed URL admin so that it checks to make sure the URL was entered into the database before saying it was successful.
 
 = 2.3.3 =
 Undoing a change that was done in 2.3.1 to the request uri that removed arguments from the uri.  It is causing some issues for some users.  Will redesign and create a later release to optionally remove the arguments. 
