@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.4.2
-Stable tag: 2.4
+Stable tag: 2.5
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -67,6 +67,14 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.5 =
+Removed PHP notice errors.
+The plugin organizer plugin can no longer be disabled on the admin.
+Added better support for multi-site.
+The plugin will now correct plugins that are network activated and activated on the local site so they are only network activated.  This fixes an error where more plugins were seen as active than were displayed on the plugins page.
+The plugin organizer features will not load on the network admin.
+Network activated plugins can now be disabled.
 
 = 2.4 =
 Adding ability to ignore arguments to a URL.  You can now enter URLs into the URL admin with arguments so that http://yoururl.com/page/?foo=2&bar=3 will have different plugins loaded than http://yoururl.com/page/?foo=1&bar=4 and http://yoururl.com/page/.
@@ -211,6 +219,14 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.5 =
+Removed PHP notice errors.
+The plugin organizer plugin can no longer be disabled on the admin.
+Added better support for multi-site.
+The plugin will now correct plugins that are network activated and activated on the local site so they are only network activated.  This fixes an error where more plugins were seen as active than were displayed on the plugins page.
+The plugin organizer features will not load on the network admin.
+Network activated plugins can now be disabled.
 
 = 2.4 =
 Adding ability to ignore arguments to a URL.  You can now enter URLs into the URL admin with arguments so that http://yoururl.com/page/?foo=2&bar=3 will have different plugins loaded than http://yoururl.com/page/?foo=1&bar=4 and http://yoururl.com/page/.

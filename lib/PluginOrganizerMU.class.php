@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.4
+Version: 2.5
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -15,9 +15,10 @@ class PluginOrganizerMU {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && $pagenow != "plugins.php"))) {
-			if (get_option("PO_version_num") != "2.4" && !is_admin()) {
+			if (get_option("PO_version_num") != "2.5" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
+				update_option("PO_admin_disable_plugins", "0");
 			} else {
 				$ignoreProtocol = get_option('PO_ignore_protocol');
 				$ignoreArguments = get_option('PO_ignore_arguments');
@@ -37,7 +38,7 @@ class PluginOrganizerMU {
 					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s";
 					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, '%'.$url), ARRAY_A);
 				} else {
-					$protocol = $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
+					$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
 					$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
 					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
 					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
@@ -106,7 +107,7 @@ class PluginOrganizerMU {
 
 				if (is_array($globalPlugins)) {
 					foreach ($pluginList as $plugin) {
-						if (in_array($plugin, $globalPlugins)) {
+						if (in_array($plugin, $globalPlugins) && (!preg_match('/plugin-organizer.php$/', $plugin) || !is_admin())) {
 							if (in_array($plugin, $enabledPlugins)) {
 								$newPluginList[] = $plugin;
 							}
@@ -133,9 +134,22 @@ class PluginOrganizerMU {
 		}
 		return $newPluginList;
 	}
+
+	function disable_network_plugins($pluginList) {
+		if (sizeOf($pluginList) > 0) {
+			$tempPluginList = array_keys($pluginList);
+			$tempPluginList = $this->disable_plugins($tempPluginList);
+			$newPluginList = array();
+			foreach($tempPluginList as $pluginFile) {
+				$newPluginList[$pluginFile] = $pluginList[$pluginFile];
+			}
+			return $newPluginList;
+		}
+	}
 }
 
 $PluginOrganizerMU = new PluginOrganizerMU();
 add_filter('option_active_plugins', array($PluginOrganizerMU, 'disable_plugins'), 10, 1);
+add_filter('site_option_active_sitewide_plugins', array($PluginOrganizerMU, 'disable_network_plugins'), 10, 1);
 
 ?>
