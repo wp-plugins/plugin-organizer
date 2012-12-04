@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.5") {
+		if (get_option("PO_version_num") != "2.5.1") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.5") {
-			update_option("PO_version_num", "2.5");
+		if (get_option("PO_version_num") != "2.5.1") {
+			update_option("PO_version_num", "2.5.1");
 		}
 	}
 	
@@ -170,6 +170,11 @@ class PluginOrganizer {
 			
 			add_action('admin_head-post.php', array($this, 'admin_styles'));
 			add_action('admin_head-post.php', array($this, 'common_js'));
+			
+			$plugin_page=add_submenu_page('Plugin_Organizer', 'Settings', 'Settings', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
+			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
+			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 			
 			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
@@ -263,27 +268,28 @@ class PluginOrganizer {
 		global $wpdb;
 		if ($this->validate_field("permalink") && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 			$errMsg = '';
+			if (isset($_POST['effectChildren']) && preg_match("/^(1|0)$/", $_POST['effectChildren'])) {
+				$effectChildren = $_POST['effectChildren'];
+			} else {
+				$effectChildren = 0;
+			}
+
+			if (isset($_POST['disabledPlugins']) && is_array($_POST['disabledPlugins'])) {
+				$disabledPlugins = $_POST['disabledPlugins'];
+			} else {
+				$disabledPlugins = array();
+			}
+
+			if (isset($_POST['enabledPlugins']) && is_array($_POST['enabledPlugins'])) {
+				$enabledPlugins = $_POST['enabledPlugins'];
+			} else {
+				$enabledPlugins = array();
+			}
+			
 			if (isset($_POST['url_id']) && $_POST['url_id'] === '0') {
 				$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
 				$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
 				$urlCount = $getDupUrlResult[0]['count'];
-				if (isset($_POST['effectChildren']) && preg_match("/^(1|0)$/", $_POST['effectChildren'])) {
-					$effectChildren = $_POST['effectChildren'];
-				} else {
-					$effectChildren = 0;
-				}
-
-				if (isset($_POST['disabledPlugins']) && is_array($_POST['disabledPlugins'])) {
-					$disabledPlugins = $_POST['disabledPlugins'];
-				} else {
-					$disabledPlugins = array();
-				}
-
-				if (isset($_POST['enabledPlugins']) && is_array($_POST['enabledPlugins'])) {
-					$enabledPlugins = $_POST['enabledPlugins'];
-				} else {
-					$enabledPlugins = array();
-				}
 					
 				if ($urlCount != 0) {
 					$errMsg = "That URL already exists in the database.";

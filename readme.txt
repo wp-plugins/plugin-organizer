@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.4.2
-Stable tag: 2.5
+Stable tag: 2.5.1
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -29,7 +29,7 @@ Icon Set: http://bogo-d.deviantart.com/
 3. Activate the plugin through the 'Plugins' menu in WordPress
 4. You can either use the menu item under settings in the WordPress admin called Organize Plugins or there will be a drop down list for each plugin in the plugin admin page to select the load order.
 
-NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins.  If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful.
+IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins.  If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful.
 
 
 == Frequently Asked Questions ==
@@ -46,7 +46,7 @@ Q. Does this plugin work with custom post types?
 A. Yes it has been tested with custom post types.  You can add support for your custom post types on the settings page.
 
 Q. Does this only apply to WP MU or all types of WP installs?
-"NOTE: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful."
+"IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful."
 
 A. The mu-plugins folder contains "Must Use" plugins that are loaded before regular plugins. The mu is not related to WordPress MU. This was added to regular WordPress in 3.0 I believe. I only placed this one class in the MU folder because I wanted to have my plugin run as a normal plugin so it could be disabled if needed. 
 
@@ -67,6 +67,10 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.5.1 =
+Fixed a problem with URL admin not saving edited URLs
+Changed the first menu item to settings under Plugin Organizer
 
 = 2.5 =
 Removed PHP notice errors.
@@ -219,6 +223,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.5.1 =
+Fixed a problem with URL admin not saving edited URLs
+Changed the first menu item to settings under Plugin Organizer
 
 = 2.5 =
 Removed PHP notice errors.
