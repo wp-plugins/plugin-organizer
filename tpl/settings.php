@@ -3,6 +3,13 @@
 
     <h2>Settings</h2>
     <p>Genral Settings</p>
+	<?php
+	if ($errMsg != "") {
+		?>
+		<p style="color: #CC0066;"><?php print $errMsg; ?></p>
+		<?php
+	}
+	?>
 	<div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">

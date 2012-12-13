@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.5.1") {
+		if (get_option("PO_version_num") != "2.5.2") {
 			$this->activate();
 		}
 	}
@@ -23,7 +23,7 @@ class PluginOrganizer {
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_groups (
 			group_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			group_name varchar(255) NOT NULL default '',
-			group_members longtext DEFAULT NULL,
+			group_members longtext NOT NULL,
 			PRIMARY KEY PO_group_id (group_id)
 			);";
 	
@@ -38,9 +38,9 @@ class PluginOrganizer {
 		
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_post_plugins (
 			post_id bigint(20) unsigned NOT NULL,
-			permalink longtext NOT NULL default '',
-			disabled_plugins longtext NOT NULL default '',
-			enabled_plugins longtext NOT NULL default '',
+			permalink longtext NOT NULL,
+			disabled_plugins longtext NOT NULL,
+			enabled_plugins longtext NOT NULL,
 			PRIMARY KEY PO_post_id (post_id)
 			);";
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
@@ -50,10 +50,10 @@ class PluginOrganizer {
 
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (
 			url_id bigint(20) unsigned NOT NULL auto_increment,
-			permalink longtext NOT NULL default '',
+			permalink longtext NOT NULL,
 			children int(1) NOT NULL default 0,
-			disabled_plugins longtext NOT NULL default '',
-			enabled_plugins longtext NOT NULL default '',
+			disabled_plugins longtext NOT NULL,
+			enabled_plugins longtext NOT NULL,
 			PRIMARY KEY PO_id (url_id)
 			);";
 		
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.5.1") {
-			update_option("PO_version_num", "2.5.1");
+		if (get_option("PO_version_num") != "2.5.2") {
+			update_option("PO_version_num", "2.5.2");
 		}
 	}
 	
@@ -242,7 +242,25 @@ class PluginOrganizer {
 	}
 		
 	function settings_page() {
+		global $wpdb;
 		if ( current_user_can( 'activate_plugins' ) ) {
+			$errMsg = "";
+			
+			if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups") {
+				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
+				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_groups (group_id bigint(20) unsigned NOT NULL AUTO_INCREMENT, group_name varchar(255) NOT NULL default '', group_members longtext NOT NULL, PRIMARY KEY PO_group_id (group_id));<br /><br />";
+			}
+			
+			if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
+				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
+				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_post_plugins (post_id bigint(20) unsigned NOT NULL, permalink longtext NOT NULL, disabled_plugins longtext NOT NULL, enabled_plugins longtext NOT NULL, PRIMARY KEY PO_post_id (post_id));<br /><br />";
+			}
+
+			if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
+				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
+				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (url_id bigint(20) unsigned NOT NULL auto_increment, permalink longtext NOT NULL, children int(1) NOT NULL default 0, disabled_plugins longtext NOT NULL, enabled_plugins longtext NOT NULL, PRIMARY KEY PO_id (url_id));<br /><br />";
+			}
+
 			require_once($this->absPath . "/tpl/settings.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
