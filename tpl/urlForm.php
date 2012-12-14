@@ -24,7 +24,7 @@
 			  </div>
 			</div>
 		    <div id="po_disabled_plugins_div" class="stuffbox" style="width: 98%">
-			  <h3><label for="disabledPlugins[]">Disabled Plugins</label></h3>
+			  <h3><label id="disabledPluginsLabel" for="disabledPlugins[]">Disabled Plugins</label></h3>
 			  <div class="inside">
             	<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="PO_check_all_disable_plugins();">Select All<br><br>
 				<?php
@@ -39,7 +39,7 @@
               </div>
             </div>
 			<div id="po_global_plugins_div" class="stuffbox" style="width: 98%">
-			  <h3><label for="enabledPlugins[]">Enabled Plugins</label></h3>
+			  <h3><label id="enabledPluginsLabel" for="enabledPlugins[]">Enabled Plugins</label></h3>
 			  <div class="inside">
             	<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="PO_check_all_enable_plugins();">Select All<br><br>
 				<?php

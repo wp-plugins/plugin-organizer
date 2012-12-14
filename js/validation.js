@@ -9,12 +9,14 @@ function PO_form_validation(frmId) {
 			regex[frmElements[i].name] = regex['default'];
 		}
 		
+		var labelName = frmElements[i].name.replace('[','');
+		labelID = labelName.replace(']','');
 		if (frmElements[i].type != 'button' && frmElements[i].type != 'file' && frmElements[i].type != 'submit' && frmElements[i].type != 'image' && frmElements[i].type != 'hidden' && !regex[frmElements[i].name].test(frmElements[i].value)) {
 			pass = false;
-			var label=jQuery('#'+frmElements[i].name + "Label");
+			var label=jQuery('#'+labelID + "Label");
 			if (label) {
 				alert(label.html() + ' is invalid.');
-				jQuery('#'+frmElements[i].name + "Label").addClass('badInputLabel');
+				jQuery('#'+labelID + "Label").addClass('badInputLabel');
 			} else if (frmElements[i].title) {
 				alert(frmElements[i].title + ' is invalid.');
 				frmElements[i].addClass('badInput');
@@ -23,9 +25,9 @@ function PO_form_validation(frmId) {
 			}
 			
 		} else if (frmElements[i].type != 'file' && frmElements[i].type != 'button' && frmElements[i].type != 'submit' && frmElements[i].type != 'image' && frmElements[i].type != 'hidden') {
-			var label=jQuery('#'+frmElements[i].name + "Label");
+			var label=jQuery('#'+labelID + "Label");
 			if (label) {
-				jQuery('#'+frmElements[i].name + "Label").removeClass('badInputLabel');
+				jQuery('#'+labelID + "Label").removeClass('badInputLabel');
 			} else {
 				frmElements[i].removeClass('badInput');
 			}
