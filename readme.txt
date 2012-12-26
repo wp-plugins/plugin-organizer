@@ -9,6 +9,7 @@ Stable tag: 2.5.6
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
+3. Adds grouping to the plugin admin age.
 
 == Description ==
 
