@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.5.5") {
+		if (get_option("PO_version_num") != "2.5.6") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.5.5") {
-			update_option("PO_version_num", "2.5.5");
+		if (get_option("PO_version_num") != "2.5.6") {
+			update_option("PO_version_num", "2.5.6");
 		}
 	}
 	
@@ -217,9 +217,6 @@ class PluginOrganizer {
 		<style type="text/css">
 			#icon-po-settings {
 				background: url("<?php print $this->urlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
-			}
-			#icon-po-group {
-				background: url("<?php print $this->urlPath; ?>/image/po-group-32x32.png") no-repeat scroll 0px 0px transparent;
 			}
 			#icon-po-global {
 				background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;

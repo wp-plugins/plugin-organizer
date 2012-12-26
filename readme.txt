@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 2.5.5
+Stable tag: 2.5.6
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -16,11 +16,6 @@ This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
 3. Adds grouping to the plugin admin age.
-
-Icons provided by http://www.iconizer.net
-Icon Set: http://www.userinterfaceicons.com/download.php
-Icon Set: http://www.fatcow.com/free-icons/
-Icon Set: http://bogo-d.deviantart.com/
 
 == Installation ==
 
@@ -67,6 +62,9 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.5.6 =
+Replacing Icons because they were released under creative commons and not gpl.
 
 = 2.5.5 =
 Fixing missing db table error message when the table exists on windows server.
@@ -236,6 +234,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.5.6 =
+Replacing Icons because they were released under creative commons and not gpl.
 
 = 2.5.5 =
 Fixing missing db table error message when the table exists on windows server.
