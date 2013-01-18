@@ -6,6 +6,7 @@ Requires at least: 3.1
 Tested up to: 3.5
 Stable tag: 2.5.7
 
+
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
