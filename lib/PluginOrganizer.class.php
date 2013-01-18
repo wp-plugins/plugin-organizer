@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.5.6") {
+		if (get_option("PO_version_num") != "2.5.7") {
 			$this->activate();
 		}
 	}
@@ -107,8 +107,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.5.6") {
-			update_option("PO_version_num", "2.5.6");
+		if (get_option("PO_version_num") != "2.5.7") {
+			update_option("PO_version_num", "2.5.7");
 		}
 	}
 	

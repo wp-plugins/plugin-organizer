@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 2.5.6
+Stable tag: 2.5.7
 
 This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
@@ -63,6 +63,9 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.5.7 =
+Fixing more bad characters being added by svn or wordpress.org.
 
 = 2.5.6 =
 Replacing Icons because they were released under creative commons and not gpl.
@@ -235,6 +238,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.5.7 =
+Fixing more bad characters being added by svn or wordpress.org.
 
 = 2.5.6 =
 Replacing Icons because they were released under creative commons and not gpl.
