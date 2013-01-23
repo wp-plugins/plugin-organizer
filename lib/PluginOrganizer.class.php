@@ -41,8 +41,7 @@ class PluginOrganizer {
 			permalink longtext NOT NULL,
 			disabled_plugins longtext NOT NULL,
 			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_post_id (post_id),
-			FULLTEXT KEY PO_post_permalink (permalink)
+			PRIMARY KEY PO_post_id (post_id)
 			);";
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -60,8 +59,7 @@ class PluginOrganizer {
 			children int(1) NOT NULL default 0,
 			disabled_plugins longtext NOT NULL,
 			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_id (url_id),
-			FULLTEXT KEY PO_url_permalink (permalink)
+			PRIMARY KEY PO_id (url_id)
 			);";
 		
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
