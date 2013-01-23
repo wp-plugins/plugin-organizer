@@ -226,6 +226,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			for (var i=0; i<bulkActionList.length; i++) {
 				bulkListReplacement += '<option value="'+bulkActionList[i][0]+'">'+bulkActionList[i][1]+'</option>';
 			}
+			bulkListReplacement += '<option value="" disabled>-- PO Actions --</option>';
 			bulkListReplacement += '<option value="remove_plugins_from_group">Remove From Group</option>';
 			bulkListReplacement += '<option value="add_to_plugin_group">Add To Group</option>';
 			bulkListReplacement += '<option value="save_plugin_group">Save Group</option>';
@@ -241,8 +242,8 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			bulkListReplacement += '</select>';
 			jQuery('.tablenav.top .actions select[name=action]').remove();
 			jQuery('.tablenav.bottom .actions select[name=action2]').remove();
-			jQuery('.tablenav.top .actions').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' Groups: <select name="PO_group_name_select">'+pluginGroups);
-			jQuery('.tablenav.bottom .actions').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' Groups: <select name="PO_group_name_select2">'+pluginGroups);
+			jQuery('.tablenav.top .actions:first').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' Groups: <select name="PO_group_name_select">'+pluginGroups);
+			jQuery('.tablenav.bottom .actions:first').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' Groups: <select name="PO_group_name_select2">'+pluginGroups);
 			jQuery('#doaction, #doaction2').click(function() {
 				return PO_submit_plugin_action(this);
 			});
