@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 2.5.7
+Stable tag: 2.5.8
 
 
 This plugin allows you to do the following:
@@ -64,6 +64,11 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.5.8 =
+Fixing grouping issues.  
+Plugin names were not being escaped when building the group list for display so they werent showing up.
+On the recently active screen the plugin organizer actions were duplicated and so when adding to group the group name was duplicated.
 
 = 2.5.7 =
 Fixing more bad characters being added by svn or wordpress.org.
@@ -239,6 +244,11 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.5.8 =
+Fixing grouping issues.  
+Plugin names were not being escaped when building the group list for display so they werent showing up.
+On the recently active screen the plugin organizer actions were duplicated and so when adding to group the group name was duplicated.
 
 = 2.5.7 =
 Fixing more bad characters being added by svn or wordpress.org.

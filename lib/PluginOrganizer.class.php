@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.5.7") {
+		if (get_option("PO_version_num") != "2.5.8") {
 			$this->activate();
 		}
 	}
@@ -41,12 +41,18 @@ class PluginOrganizer {
 			permalink longtext NOT NULL,
 			disabled_plugins longtext NOT NULL,
 			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_post_id (post_id)
+			PRIMARY KEY PO_post_id (post_id),
+			FULLTEXT KEY PO_post_permalink (permalink)
 			);";
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
 		}
+
+		//No reliable way to detect an index so try to create and ignore if errors.
+		$addIndexSql = "ALTER TABLE ".$wpdb->prefix."PO_post_plugins ADD FULLTEXT KEY PO_post_permalink (permalink);";
+		$addIndexResult = $wpdb->query($addIndexSql);
+		
 
 		$sql = "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (
 			url_id bigint(20) unsigned NOT NULL auto_increment,
@@ -54,13 +60,19 @@ class PluginOrganizer {
 			children int(1) NOT NULL default 0,
 			disabled_plugins longtext NOT NULL,
 			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_id (url_id)
+			PRIMARY KEY PO_id (url_id),
+			FULLTEXT KEY PO_url_permalink (permalink)
 			);";
 		
 		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
 		}
+
+		//No reliable way to detect an index so try to create and ignore if errors.
+		$addIndexSql = "ALTER TABLE ".$wpdb->prefix."PO_url_plugins ADD FULLTEXT KEY PO_url_permalink (permalink);";
+		$addIndexResult = $wpdb->query($addIndexSql);
+		
 
 		//Add columns to PO_url_plugins table
 		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_url_plugins";
@@ -107,8 +119,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.5.7") {
-			update_option("PO_version_num", "2.5.7");
+		if (get_option("PO_version_num") != "2.5.8") {
+			update_option("PO_version_num", "2.5.8");
 		}
 	}
 	
@@ -549,6 +561,7 @@ class PluginOrganizer {
 			$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
 			$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_REQUEST['PO_group_view']), ARRAY_A);
 			$members = unserialize($group['group_members']);
+			$members = stripslashes_deep($members);
 			foreach ($allPluginList as $key=>$val) {
 				if (is_array($members) && in_array($val['Name'], $members)) {
 					$activePlugins[$key] = $val;
@@ -600,6 +613,7 @@ class PluginOrganizer {
 				$assignedGroups = "";
 				foreach ($groups as $group) {
 					$members = unserialize($group['group_members']);
+					$members = stripslashes_deep($members);
 					if (array_search($plugin['Name'], $members) !== FALSE) {
 						$assignedGroups .= '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group['group_id'].'">'.$group['group_name'].'</a> ,';
 					}
@@ -663,7 +677,10 @@ class PluginOrganizer {
 				$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
 				$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_POST['PO_group']), ARRAY_A);
 				$members = unserialize($group['group_members']);
-				#print_r($members);
+				if (!is_array($members)) {
+					$members = array();
+				}
+				
 				foreach($_POST['groupList'] as $newGroupMember) {
 					#print $newGroupMember . " - " . array_search($newGroupMember, $members) . "\n";
 					if (array_search($newGroupMember, $members) === FALSE) {
@@ -719,6 +736,9 @@ class PluginOrganizer {
 		if (current_user_can('activate_plugins') && is_numeric($_POST['PO_group'])) {
 			$currGroup = stripslashes_deep($wpdb->get_row($wpdb->prepare("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d", $_POST['PO_group']), ARRAY_A));
 			$members = unserialize($currGroup['group_members']);
+			if (!is_array($members)) {
+				$members = array();
+			}
 			foreach($_POST['groupList'] as $key=>$pluginToRemove) {
 				if (array_search($pluginToRemove, $members) !== FALSE) {
 					unset($members[array_search($pluginToRemove, $members)]);
