@@ -31,7 +31,7 @@
 				<input type="radio" name="PO_disable_plugins" class="PO-disable-plugins" value="1" <?php print ($selectiveLoad == "1")? "checked='checked'":""; ?>> Enable<br />
 				<input type="radio" name="PO_disable_plugins" class="PO-disable-plugins" value="0" <?php print ($selectiveLoad != "1")? "checked='checked'":""; ?>> Disable
 				<br />
-				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to /wp-content/mu-plugins before it will take effect.  If you don't have an mu-plugins folder you need to create it.
+				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to /wp-content/mu-plugins before it will take affect.  If you don't have an mu-plugins folder you need to create it.
 				<br /><br /><br />
 				<strong>Admin Areas:</strong><br />
 				<?php $selectiveAdminLoad = get_option("PO_admin_disable_plugins"); ?>
@@ -51,7 +51,7 @@
 				<input type="radio" name="PO_fuzzy_url_matching" class="PO-fuzzy-url-radio" value="1" <?php print ($fuzzyUrlMatching == "1")? "checked='checked'":""; ?>> Enable<br />
 				<input type="radio" name="PO_fuzzy_url_matching" class="PO-fuzzy-url-radio" value="0" <?php print ($fuzzyUrlMatching != "1")? "checked='checked'":""; ?>> Disable
 				<br />
-				This gives URLs entered into the URL admin the ability to effect children of that URL.
+				This gives URLs entered into the URL admin the ability to affect children of that URL.
 				<br />
 				<input type="button" name="submit-fuzzy-url" value="Save Settings" onmousedown="PO_submit_fuzzy_url_matching();" />
 			  </div>

@@ -2,9 +2,9 @@
 	function PO_submit_url() {
 		if (PO_form_validation('po_url_form')) {
 			var urlId = jQuery('#url_id').val();
-			var effectChildren = 0;
-			if (jQuery('#effectChildren').attr('checked')) {
-				effectChildren = jQuery('#effectChildren').val();
+			var affectChildren = 0;
+			if (jQuery('#affectChildren').attr('checked')) {
+				affectChildren = jQuery('#affectChildren').val();
 			}
 			
 			var enabledPlugins = new Array();
@@ -25,7 +25,7 @@
 			var load_element = jQuery('#PO-url-admin-wrap');
 			var revertHtml = load_element.html();
 			load_element.html('<div id="loading-image" style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_url'), { 'url_id': urlId, 'effectChildren': effectChildren, 'enabledPlugins[]': enabledPlugins, 'disabledPlugins[]': disabledPlugins, 'permalink': permalink, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_url'), { 'url_id': urlId, 'affectChildren': affectChildren, 'enabledPlugins[]': enabledPlugins, 'disabledPlugins[]': disabledPlugins, 'permalink': permalink, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 				load_element.html(result);
 				jQuery('#PO_submit_url').click(function() {
 					PO_submit_url();

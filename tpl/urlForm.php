@@ -19,7 +19,7 @@
               <h3><label id="permalinkLabel" for="permalink">URL</label></h3>
 			  <div class="inside">
 				<input type="text" id="permalink" name="permalink" size="25" title="URL" value="<?php print $urlDetails['permalink']; ?>"><br />
-				<input type="checkbox" name="effectChildren" id="effectChildren" value="1" <?php print ($effectChildren == 1)? 'checked="checked"' : ''; ?>> Also effect children
+				<input type="checkbox" name="affectChildren" id="affectChildren" value="1" <?php print ($affectChildren == 1)? 'checked="checked"' : ''; ?>> Also affect children
 
 			  </div>
 			</div>
