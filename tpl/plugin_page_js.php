@@ -233,7 +233,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			bulkListReplacement += '<option value="delete_plugin_group">Delete Group</option>';
 			bulkListReplacement += '<option value="reset_to_default_order">Reset To Default Order</option>';
 			<?php 
-			if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+			if ($this->pluginPageActions == '1' && !isset($_REQUEST['PO_group_view']) && (!isset($_REQUEST['plugin_status']) || $_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active')) {
 				?>
 				bulkListReplacement += '<option value="save_load_order">Save plugin load order</option>';
 				<?php
@@ -267,7 +267,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	</script>
 	<?php
 }
-if (array_key_exists('PO_group_view', $_REQUEST)) {
+if (isset($_REQUEST['PO_group_view'])) {
 	?>
 	<script type="text/javascript" language="javascript">
 		jQuery(document).ready(function() {

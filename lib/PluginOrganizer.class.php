@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.6.1") {
+		if (get_option("PO_version_num") != "2.6.2") {
 			$this->activate();
 		}
 	}
@@ -133,8 +133,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.6.1") {
-			update_option("PO_version_num", "2.6.1");
+		if (get_option("PO_version_num") != "2.6.2") {
+			update_option("PO_version_num", "2.6.2");
 		}
 	}
 	
@@ -615,7 +615,7 @@ class PluginOrganizer {
 	function get_column_headers($columns) {
 		$count = 0;
 		$newColumns = array();
-		if ($this->pluginPageActions == '1' && !array_key_exists('PO_group_view', $_REQUEST) && ($_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active' || !array_key_exists('plugin_status', $_REQUEST))) {
+		if ($this->pluginPageActions == '1' && !isset($_REQUEST['PO_group_view']) && (!isset($_REQUEST['plugin_status']) || $_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active')) {
 			foreach ($columns as $key=>$column) {
 				if ($count==1) {
 					$newColumns['PO_draghandle'] = __('Drag');
