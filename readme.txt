@@ -7,14 +7,14 @@ Tested up to: 3.5.1
 Stable tag: 2.6.2
 
 
-This pluginASD asd ASD  allows you to do the following:
+This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
 3. Adds grouping to the plugin admin age.
 
 == Description ==
 
-This pluginaSDa dasd allows you to do the following:
+This plugin allows you to do the following:
 1. Change the order that your plugins are loaded.
 2. Selectively disable plugins by any post type or wordpress managed URL.
 3. Adds grouping to the plugin admin age.
@@ -70,11 +70,6 @@ Fixing PHP notices
 
 = 2.6.1 =
 Fixing bad characters added during commit
-
-= 2.6 =
-Fixed error on windows when inserting into po_post_plugins without specifying all fields.
-Added ability to effect children of posts, pages, custom post types.
-Redesign of the post edit screen meta box.
 
 = 2.5.9 =
 Missed a file when committing 2.5.8.
