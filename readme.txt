@@ -202,6 +202,55 @@ Added missing tpl/globalPlugins.php file.
 = 0.8 =
 Adding custom post type support.
 
+= 0.7.3 =
+Fixed activation errors when mu-plugins folder is not writable.
+
+= 0.7.2 =
+Fixed bug that reordered plugins back to default when plugins were activated or deactivated.
+Fixed jQuery loading indicator on plugin admin.
+Fixed Bulk Actions on plugin admin
+
+= 0.7.1 =
+Removed display of plugin load order functions on plugin admin if the view is paged.  To view load order functions on plugin admin you must display all active plugins on one page.
+
+= 0.7 =
+Wordpress 3.1 fixes for jQuery 1.4.4
+
+= 0.6 =
+Added functionality to disable plugins globally and selectively enable them for posts and pages.
+Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
+New databse layout.  Will be created when plugin is activated.
+
+= 0.5 =
+Added functionality to selectively disable plugins by post or page.  
+There is now a Must Use plugin component that comes with the main plugin.
+To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins.
+If the mu-plugins directory does not exist you must create it.
+
+= 0.4.1 =
+Fixed empty items in plugin list.
+
+= 0.4 =
+Added grouping to the plugin admin page.
+Improved ajax requests
+Added ajax loading image.
+Added page to create and organize plugin groups.
+
+= 0.3 =
+Added ajax requests to the settings page so both forms now use ajax.
+Added nonce checking to the ajax requests.  
+Requires user to have activate_plugins capability.
+
+= 0.2 =
+Made function to reorder the plugins on plugin admin page in the order they will be loaded.
+Redid the sort functions to use PHP's array_multisort.
+
+= 0.1.1 =
+improved the ajax requests on the plugin admin page.  
+
+= 0.1 =
+Initial version.
+
 == Upgrade Notice ==
 
 = 2.6.2 =
