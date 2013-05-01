@@ -71,6 +71,11 @@ Fixing PHP notices
 = 2.6.1 =
 Fixing bad characters added during commit
 
+= 2.6 =
+Fixed error on windows when inserting into po_post_plugins without specifying all fields.
+Added ability to effect children of posts, pages, custom post types.
+Redesign of the post edit screen meta box.
+
 = 2.5.9 =
 Missed a file when committing 2.5.8.
 
