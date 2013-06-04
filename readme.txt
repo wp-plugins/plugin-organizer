@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5.1
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 
 
 This plugin allows you to do the following:
@@ -64,6 +64,9 @@ A.
 5. Page edit screen.
 
 == Changelog ==
+
+= 2.6.3 =
+Fixing bug that allows plugins to be disabled on the update pages.
 
 = 2.6.2 =
 Fixing PHP notices
@@ -257,6 +260,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 2.6.3 =
+Fixing bug that allows plugins to be disabled on the update pages.
 
 = 2.6.2 =
 Fixing PHP notices
