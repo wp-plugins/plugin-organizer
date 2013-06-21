@@ -14,115 +14,80 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "2.6.3") {
+		if (get_option("PO_version_num") != "3.0") {
 			$this->activate();
 		}
 	}
+	
+	function move_old_groups() {
+		global $wpdb;
+		$groupList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+		foreach ($groupList as $group) {
+			$post_id = wp_insert_post(array('post_title'=>$group->group_name, 'post_type'=>'plugin_group', 'post_status'=>'publish'));
+			if (!is_wp_error($post_id)) {
+				update_post_meta($post_id, '_PO_group_members', unserialize($group->group_members));
+			}
+		}
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
+	}
+
+	function move_old_post_plugins() {
+		global $wpdb;
+		$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_post_plugins");
+		foreach ($postList as $post) {
+			if (is_numeric($post->post_id)) {
+				update_post_meta($post->post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
+				update_post_meta($post->post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
+				update_post_meta($post->post_id, '_PO_affect_children', $post->children);
+				update_post_meta($post->post_id, '_PO_post_permalink', get_permalink($post->post_id));
+			}
+		}
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
+	}
+	
+	function move_old_url_plugins() {
+		global $wpdb;
+		$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
+		foreach ($postList as $post) {
+			$post_id = wp_insert_post(array('post_title'=>$post->permalink, 'post_type'=>'plugin_filter', 'post_status'=>'publish'));
+			if (!is_wp_error($post_id)) {
+				update_post_meta($post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
+				update_post_meta($post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
+				update_post_meta($post_id, '_PO_affect_children', $post->children);
+				update_post_meta($post_id, '_PO_post_permalink', $post->permalink);
+			}
+		}
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
+	}
+
 	function activate() {
 		global $wpdb;
-		$sql = "CREATE TABLE ".$wpdb->prefix."PO_groups (
-			group_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-			group_name varchar(255) NOT NULL default '',
-			group_members longtext NOT NULL,
-			PRIMARY KEY PO_group_id (group_id)
-			);";
-	
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") != $wpdb->prefix."PO_groups") {
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($sql);
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
+			$this->move_old_groups();
 		}
-		$row = $wpdb->get_row("SELECT count(*) as count FROM " . $wpdb->prefix . "PO_groups");
-		if ($row->count == 0) {
-			$this->create_default_group();
+
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
+			$this->move_old_post_plugins();
 		}
 		
-		$sql = "CREATE TABLE ".$wpdb->prefix."PO_post_plugins (
-			post_id bigint(20) unsigned NOT NULL,
-			permalink longtext NOT NULL,
-			children int(1) NOT NULL default 0,
-			disabled_plugins longtext NOT NULL,
-			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_post_id (post_id)
-			);";
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") != $wpdb->prefix."PO_post_plugins") {
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($sql);
-		}
-
-		//Add columns to PO_post_plugins table
-		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_post_plugins";
-		$showColumnResults = $wpdb->get_results($showColumnSql);
-		$childFieldFound = 0;
-		foreach ($showColumnResults as $column) {
-			if ($column->Field == "children") {
-				$childFieldFound = 1;
-			}
-		}
-
-		if ($childFieldFound == 0) {
-			$addColumnSql = "ALTER TABLE ".$wpdb->prefix."PO_post_plugins ADD COLUMN children int(1) NOT NULL default 0;";
-			$addColumnResult = $wpdb->query($addColumnSql);
+		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
+			$this->move_old_url_plugins();
 		}
 		
-		//No reliable way to detect an index so try to create and ignore if errors.
-		$addIndexSql = "ALTER TABLE ".$wpdb->prefix."PO_post_plugins ADD FULLTEXT KEY PO_post_permalink (permalink);";
-		$addIndexResult = $wpdb->query($addIndexSql);
-		
-
-		$sql = "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (
-			url_id bigint(20) unsigned NOT NULL auto_increment,
-			permalink longtext NOT NULL,
-			children int(1) NOT NULL default 0,
-			disabled_plugins longtext NOT NULL,
-			enabled_plugins longtext NOT NULL,
-			PRIMARY KEY PO_id (url_id)
-			);";
-		
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") != $wpdb->prefix."PO_url_plugins") {
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($sql);
+		if (!file_exists(WPMU_PLUGIN_DIR)) {
+			@mkdir(WPMU_PLUGIN_DIR);
 		}
 
-		//No reliable way to detect an index so try to create and ignore if errors.
-		$addIndexSql = "ALTER TABLE ".$wpdb->prefix."PO_url_plugins ADD FULLTEXT KEY PO_url_permalink (permalink);";
-		$addIndexResult = $wpdb->query($addIndexSql);
-		
-
-		//Add columns to PO_url_plugins table
-		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_url_plugins";
-		$showColumnResults = $wpdb->get_results($showColumnSql);
-		$fieldFound = 0;
-		foreach ($showColumnResults as $column) {
-			if ($column->Field == "children") {
-				$fieldFound = 1;
-			}
-		}
-
-		if ($fieldFound == 0) {
-			$addColumnSql = "ALTER TABLE ".$wpdb->prefix."PO_url_plugins ADD COLUMN children int(1) NOT NULL default 0;";
-			$addColumnResult = $wpdb->query($addColumnSql);
-		}
-
-
-		if (!file_exists(ABSPATH . "wp-content/mu-plugins/")) {
-			@mkdir(ABSPATH . "wp-content/mu-plugins/");
-		}
-
-		if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
-			@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+		if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
+			@unlink(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
 		}
 		
 		if (file_exists(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php")) {
-			@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+			@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
 		}
 		
 		if (!is_array(get_option("PO_custom_post_type_support"))) {
 			update_option("PO_custom_post_type_support", array("post", "page"));
-		}
-		
-		//delete alternate admin setting if it exists.
-		if (get_option('PO_alternate_admin') != "") {
-			delete_option('PO_alternate_admin');
 		}
 		
 		if (get_option('PO_fuzzy_url_matching') == "") {
@@ -133,8 +98,42 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "2.6.3") {
-			update_option("PO_version_num", "2.6.3");
+		if (get_option("PO_version_num") != "3.0") {
+			update_option("PO_version_num", "3.0");
+		}
+
+		//Add capabilities to the administrator role
+		$administrator = get_role( 'administrator' );
+		if ( is_object($administrator) ) {			
+			$administrator->add_cap('edit_plugin_filter');
+			$administrator->add_cap('edit_plugin_filters');
+			$administrator->add_cap('edit_private_plugin_filters');
+			$administrator->add_cap('delete_plugin_filter');
+			$administrator->add_cap('delete_plugin_filters');
+			$administrator->add_cap('edit_others_plugin_filters');
+			$administrator->add_cap('read_plugin_filters');
+			$administrator->add_cap('read_private_plugin_filters');
+			$administrator->add_cap('publish_plugin_filters');
+			$administrator->add_cap('delete_others_plugin_filters');
+			$administrator->add_cap('delete_published_plugin_filters');
+			$administrator->add_cap('delete_private_plugin_filters');
+
+			$administrator->add_cap('edit_plugin_group');
+			$administrator->add_cap('edit_plugin_groups');
+			$administrator->add_cap('edit_private_plugin_groups');
+			$administrator->add_cap('delete_plugin_group');
+			$administrator->add_cap('delete_plugin_groups');
+			$administrator->add_cap('edit_others_plugin_groups');
+			$administrator->add_cap('read_plugin_groups');
+			$administrator->add_cap('read_private_plugin_groups');
+			$administrator->add_cap('publish_plugin_groups');
+			$administrator->add_cap('delete_others_plugin_groups');
+			$administrator->add_cap('delete_published_plugin_groups');
+			$administrator->add_cap('delete_private_plugin_groups');
+		}
+
+		if (wp_count_posts('plugin_group') == 0) {
+			$this->create_default_group();
 		}
 	}
 	
@@ -155,16 +154,47 @@ class PluginOrganizer {
 			delete_option("PO_admin_disable_plugins");
 			
 		}
-		if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
-			@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+		if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
+			@unlink(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
+		}
+
+		$administrator = get_role( 'administrator' );
+		if ( is_object($administrator) ) {			
+			$administrator->remove_cap('edit_plugin_filter');
+			$administrator->remove_cap('edit_plugin_filters');
+			$administrator->remove_cap('edit_private_plugin_filters');
+			$administrator->remove_cap('delete_plugin_filter');
+			$administrator->remove_cap('delete_plugin_filters');
+			$administrator->remove_cap('edit_others_plugin_filters');
+			$administrator->remove_cap('read_plugin_filters');
+			$administrator->remove_cap('read_private_plugin_filters');
+			$administrator->remove_cap('publish_plugin_filters');
+			$administrator->remove_cap('delete_others_plugin_filters');
+			$administrator->remove_cap('delete_published_plugin_filters');
+			$administrator->remove_cap('delete_private_plugin_filters');
+
+			$administrator->remove_cap('edit_plugin_group');
+			$administrator->remove_cap('edit_plugin_groups');
+			$administrator->remove_cap('edit_private_plugin_groups');
+			$administrator->remove_cap('delete_plugin_group');
+			$administrator->remove_cap('delete_plugin_groups');
+			$administrator->remove_cap('edit_others_plugin_groups');
+			$administrator->remove_cap('read_plugin_groups');
+			$administrator->remove_cap('read_private_plugin_groups');
+			$administrator->remove_cap('publish_plugin_groups');
+			$administrator->remove_cap('delete_others_plugin_groups');
+			$administrator->remove_cap('delete_published_plugin_groups');
+			$administrator->remove_cap('delete_private_plugin_groups');
 		}
 	}
 	
 	function create_default_group() {
 		global $wpdb;
-		$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>"Default", "group_members"=>serialize(array())));
-		$row = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "PO_groups");
-		update_option("PO_default_group", $row->group_id);
+		$post_id = wp_insert_post(array('post_title'=>"Default", 'post_type'=>'plugin_group', 'post_status'=>'publish'));
+		if (!is_wp_error($post_id)) {
+			update_post_meta($post_id, '_PO_group_members', array());
+		}
+		update_option("PO_default_group", $post_id);
 	}
 	
 	function validate_field($fieldname) {
@@ -184,11 +214,6 @@ class PluginOrganizer {
 	function admin_menu() {
 		global $wpdb;
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugin_page=add_menu_page('Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath."/image/po-icon-16x16.png");
-			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
-			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
-			
 			add_action('admin_head-plugins.php', array($this, 'plugin_page_js'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
 			add_action('admin_head-post-new.php', array($this, 'admin_styles'));
@@ -197,22 +222,15 @@ class PluginOrganizer {
 			add_action('admin_head-post.php', array($this, 'admin_styles'));
 			add_action('admin_head-post.php', array($this, 'common_js'));
 			
-			$plugin_page=add_submenu_page('Plugin_Organizer', 'Settings', 'Settings', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
+			$plugin_page=add_submenu_page('options-general.php', 'Plugin Organizer Settings', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 			
-			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
+			$plugin_page=add_submenu_page('edit.php?post_type=plugin_filter', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
 			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
-
-			$plugin_page=add_submenu_page('Plugin_Organizer', 'URL Admin', 'URL Admin', 'activate_plugins', 'PO_url_admin', array($this, 'url_admin'));
-			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
-			add_action('admin_head-'.$plugin_page, array($this, 'url_admin_js'));
-			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
-
-			
 		}
 
 	}
@@ -224,10 +242,6 @@ class PluginOrganizer {
 	function plugin_page_js() {
 		global $wpdb;
 		require_once($this->absPath . "/tpl/plugin_page_js.php");
-	}
-
-	function url_admin_js() {
-		require_once($this->absPath . "/tpl/url_admin_js.php");
 	}
 
 	function global_plugins_js() {
@@ -249,53 +263,80 @@ class PluginOrganizer {
 			}
 
 			.activePlugin {
-				color: #FF0033;
+				color: #990033;
 			}
 
 			.badInputLabel {
-				color: #FF0033;
+				color: #990033;
 				font-weight: bold;
 			}
 			.badInput {
-				background-color: #FF0033;
+				background-color: #990033;
 			}
 			.metaBoxLabel {
 				font-size: 20px;
 				line-height: 22px;
 				padding: 5px;
-				text-align: center;
+				float: left;
+				clear: both;
+				width: 100px;
 			}
 			.metaBoxContent {
-				border: 1px outset #000000;
+				border: 2px outset #000000;
 				margin-bottom: 20px;
+				float: left;
+				width: 100%;
 			}
 			.metaBoxContent input[type="checkbox"], .plugin-organizer_page_PO_global_plugins input[type="checkbox"], .plugin-organizer_page_PO_global_plugins input[type="radio"], .toplevel_page_Plugin_Organizer input[type="checkbox"], .toplevel_page_Plugin_Organizer input[type="radio"], .plugin-organizer_page_PO_url_admin input[type="checkbox"], .plugin-organizer_page_PO_url_admin input[type="radio"] {
 				margin: 0px 3px 0px 3px !important;
+			}
+
+			.poPermalinkInput, .poFilterNameInput {
+				width: 90%;
+				margin: 10px;
+			}
+
+			.pluginWrap {
+				padding: 4px 0px;
+				border-bottom: 1px solid #cccccc;
+				line-height: 26px;
+			}
+
+			.pluginsList {
+				display: none;
+			}
+			
+			.pluginsButton {
+				vertical-align: middle;
+				margin: 0px 3px;
+			}
+
+			.inactivePluginWrap {
+				background-color: #cccccc;
+				border-bottom: 1px solid #ffffff;
 			}
 			
 		</style>
 		<?php
 	}
 		
+	function check_mu_plugin() {
+		$muPlugins = get_mu_plugins();
+		if (!isset($muPlugins['PluginOrganizerMU.class.php']['Version'])) {
+			return "You are missing the MU Plugin.  Please use the tool provided on the settings page to move the plugin into place or manually copy ".$this->absPath."/lib/PluginOrganizerMU.class.php to ".WPMU_PLUGIN_DIR."/PluginOrganizerMU.class.php.  If you don't do this the plugin will not work.  This message will disappear when everything is correct.";
+		} else if (isset($muPlugins['PluginOrganizerMU.class.php']['Version']) && $muPlugins['PluginOrganizerMU.class.php']['Version'] != get_option("PO_version_num")) {
+			return "You are running an old version of the MU Plugin.  Please use the tool provided on the settings page to move the updated version into place or manually copy ".$this->absPath."/lib/PluginOrganizerMU.class.php to ".WPMU_PLUGIN_DIR."/PluginOrganizerMU.class.php.  If you don't do this the plugin will not work.  This message will disappear when everything is correct.";
+		} else {
+			return "";
+		}
+	}
+	
 	function settings_page() {
 		global $wpdb;
+		
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$errMsg = "";
-			
-			if(strtolower($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'")) != strtolower($wpdb->prefix."po_groups")) {
-				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
-				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_groups (group_id bigint(20) unsigned NOT NULL AUTO_INCREMENT, group_name varchar(255) NOT NULL default '', group_members longtext NOT NULL, PRIMARY KEY PO_group_id (group_id));<br /><br />";
-			}
-			
-			if(strtolower($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'")) != strtolower($wpdb->prefix."po_post_plugins")) {
-				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
-				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_post_plugins (post_id bigint(20) unsigned NOT NULL, permalink longtext NOT NULL, children int(1) NOT NULL default 0, disabled_plugins longtext NOT NULL, enabled_plugins longtext NOT NULL, PRIMARY KEY PO_post_id (post_id));<br /><br />";
-			}
-
-			if(strtolower($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'")) != strtolower($wpdb->prefix."po_url_plugins")) {
-				$errMsg .= "A required database table is missing.  Please run the following sql command on your database server to create the missing table.<br />";
-				$errMsg .= "CREATE TABLE ".$wpdb->prefix."PO_url_plugins (url_id bigint(20) unsigned NOT NULL auto_increment, permalink longtext NOT NULL, children int(1) NOT NULL default 0, disabled_plugins longtext NOT NULL, enabled_plugins longtext NOT NULL, PRIMARY KEY PO_id (url_id));<br /><br />";
-			}
+			$muPlugins = get_mu_plugins();
+			$errMsg = $this->check_mu_plugin();
 
 			require_once($this->absPath . "/tpl/settings.php");
 		} else {
@@ -305,9 +346,10 @@ class PluginOrganizer {
 	
 	function global_plugins_page($post_id) {
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_plugins();
+			$errMsg = $this->check_mu_plugin();
+			$plugins = $this->reorder_plugins(get_plugins());
 			$disabledPlugins = get_option('PO_disabled_plugins');
-			$activePlugins = get_option("active_plugins");
+			$activePlugins = $this->get_active_plugins();
 			$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
 			if (!is_array($disabledPlugins)) {
 				$disabledPlugins = array();
@@ -316,128 +358,12 @@ class PluginOrganizer {
 		} else {
 			wp_die("You dont have permissions to access this page.");
 		}
-	}
-
-	function submit_url() {
-		global $wpdb;
-		if ($this->validate_field("permalink") && wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
-			$errMsg = '';
-			if (isset($_POST['affectChildren']) && preg_match("/^(1|0)$/", $_POST['affectChildren'])) {
-				$affectChildren = $_POST['affectChildren'];
-			} else {
-				$affectChildren = 0;
-			}
-
-			if (isset($_POST['disabledPlugins']) && is_array($_POST['disabledPlugins'])) {
-				$disabledPlugins = $_POST['disabledPlugins'];
-			} else {
-				$disabledPlugins = array();
-			}
-
-			if (isset($_POST['enabledPlugins']) && is_array($_POST['enabledPlugins'])) {
-				$enabledPlugins = $_POST['enabledPlugins'];
-			} else {
-				$enabledPlugins = array();
-			}
-			
-			if (isset($_POST['url_id']) && $_POST['url_id'] === '0') {
-				$getDupUrlQuery = "SELECT count(*) as count FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink=%s";
-				$getDupUrlResult = $wpdb->get_results($wpdb->prepare($getDupUrlQuery, $_POST['permalink']),ARRAY_A);
-				$urlCount = $getDupUrlResult[0]['count'];
-					
-				if ($urlCount != 0) {
-					$errMsg = "That URL already exists in the database.";
-				} else {
-					
-					if ($wpdb->insert($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($disabledPlugins),"enabled_plugins"=>serialize($enabledPlugins), "permalink"=>$_POST['permalink'], "children"=>$affectChildren))) {
-						$urlId = $wpdb->insert_id;
-						if (!is_numeric($urlId)) {
-							$urlId = 0;
-						}
-						$errMsg = "URL successfully added to the database.";
-					} else {
-						$errMsg = "There was a problem adding the URL";
-					}
-				}
-			} else if (isset($_POST['url_id']) && is_numeric($_POST['url_id'])) {
-				$urlId = $_POST['url_id'];
-				
-				$wpdb->update($wpdb->prefix."PO_url_plugins", array("disabled_plugins"=>serialize($disabledPlugins),"enabled_plugins"=>serialize($enabledPlugins), "permalink"=>$_POST['permalink'], "children"=>$affectChildren), array("url_id"=>$urlId));
-				$errMsg = "URL successfully edited.";
-			} else {
-				$urlId = 0;
-			}
-			$this->get_url_admin_form($urlId, $errMsg, 1);
-		}
-		die();
-	}
-	
-	function get_url_admin_form($urlId, $errMsg, $ajaxRequest=0) {
-		global $wpdb;
-		$urlDetailQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id = %d";
-		$urlDetails = $wpdb->get_row($wpdb->prepare($urlDetailQuery, $urlId), ARRAY_A);
-		$disabledPlugins = unserialize($urlDetails['disabled_plugins']);
-		$enabledPlugins = unserialize($urlDetails['enabled_plugins']);
-		$affectChildren = $urlDetails['children'];
-		if (!is_array($disabledPlugins)) {
-			$disabledPlugins = array();
-		}
-		if (!is_array($enabledPlugins)) {
-			$enabledPlugins = array();
-		}
-		$plugins = get_plugins();
-		$activePlugins = get_option("active_plugins");
-		$globalPlugins = get_option("PO_disabled_plugins");
-		if (!is_array($globalPlugins)) {
-			$globalPlugins = array();
-		}
-		
-		require_once($this->absPath . "/tpl/urlForm.php");
-	}
-	
-	function url_admin() {
-		global $wpdb;
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$errMsg = '';
-			if (isset($_REQUEST['url_admin_page'])) {
-				$urlAdminPage = $_REQUEST['url_admin_page'];
-			} else {
-				$urlAdminPage = '';
-			}
-			
-			if ($urlAdminPage == "add") {
-				//get the form
-				$this->get_url_admin_form(0, '');
-			} else if ($urlAdminPage == "edit") {
-				if (isset($_REQUEST['url_id']) && is_numeric($_REQUEST['url_id'])) {
-					$urlId = $_REQUEST['url_id'];
-				} else {
-					$urlId = 0;
-				}
-				
-				//get the form
-				$this->get_url_admin_form($urlId, '');
-			} else {
-				if (isset($_REQUEST['url_id']) && is_numeric($_REQUEST['url_id']) && isset($_REQUEST['delete_url']) && $_REQUEST['delete_url'] == 1 && wp_verify_nonce( $_REQUEST['PO_nonce'], plugin_basename(__FILE__) )) {
-					$urlId = $_REQUEST['url_id'];
-					$deleteUrlQuery = "DELETE FROM ".$wpdb->prefix."PO_url_plugins WHERE url_id=%d";
-					$deleteUrl = $wpdb->get_results($wpdb->prepare($deleteUrlQuery, $urlId));
-				}
-				$urlList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
-				require_once($this->absPath . "/tpl/urlList.php");
-			}
-		} else {
-			wp_die("You dont have permissions to access this page.");
-		}
-		
-	}
-
-	
+	}	
 
 	function add_hidden_start_order($pluginMeta, $pluginFile) {
 		
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
+			$plugins = $this->get_active_plugins();
 			if (array_search($pluginFile, $plugins) !== false) {
 				$pluginMeta[0] .= "<input type=\"hidden\" class=\"start_order\" id=\"start_order_" . array_search($pluginFile, $plugins) . "\" value=\"" . array_search($pluginFile, $plugins) . "\">";
 			}
@@ -448,27 +374,26 @@ class PluginOrganizer {
 	}
 	
 	function add_group_views($views) {
-		global $wpdb;
-		$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+		$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
 		if (!array_key_exists('all', $views)) {
 			$views = array_reverse($views, true);
 			$views['all'] = '<a href="'.$_SERVER['PHP_SELF'].'?plugin_status=all">All <span class="count">('.count(get_plugins()).')</span></a>';
 			$views = array_reverse($views, true);
 		}
 		foreach ($groups as $group) {
-			$group->group_members = unserialize($group->group_members);
-			if (isset($group->group_members[0]) && $group->group_members[0] != 'EMPTY') {
-				$groupCount = sizeof($group->group_members);
+			$group_members = get_post_meta($group->ID, '_PO_group_members', $single=true);
+			if (isset($group_members[0]) && $group_members[0] != 'EMPTY') {
+				$groupCount = sizeof($group_members);
 			} else {
 				$groupCount = 0;
 			}
-			$groupName = $group->group_name;
+			$groupName = $group->post_title;
 			$loopCount = 0;
 			while(array_key_exists($groupName, $views) && $loopCount < 10) {
-				$groupName = $group->group_name.$loopCount;
+				$groupName = $group->post_title.$loopCount;
 				$loopCount++;
 			}
-			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->group_id.'">'.$group->group_name.' <span class="count">('.$groupCount.')</span></a> ';
+			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->ID.'">'.$group->post_title.' <span class="count">('.$groupCount.')</span></a> ';
 		}
 		return $views;
 	}
@@ -509,7 +434,7 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
+			$plugins = $this->get_active_plugins();
 			if (is_array($_POST['disabledList'])) {
 				$disabledPlugins = $_POST['disabledList'];
 				update_option("PO_disabled_plugins", $disabledPlugins);
@@ -531,7 +456,7 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
+			$plugins = $this->get_active_plugins();
 			if (preg_match("/^(([0-9])+[,]*)*$/", implode(",", $_POST['orderList'])) && preg_match("/^(([0-9])+[,]*)*$/", implode(",", $_POST['startOrder']))) {
 				$newPlugArray = $_POST['orderList'];
 				$startOrderArray = $_POST['startOrder'];
@@ -554,9 +479,24 @@ class PluginOrganizer {
 		die();
 	}
 
+	function get_active_plugins() {
+		global $PluginOrganizerMU;
+		if (is_object($PluginOrganizerMU)) {
+			remove_filter('option_active_plugins', array($PluginOrganizerMU, 'disable_plugins'), 10, 1);
+		}
+		
+		$plugins = get_option("active_plugins");
+		
+		if (is_object($PluginOrganizerMU)) {
+			add_filter('option_active_plugins', array($PluginOrganizerMU, 'disable_plugins'), 10, 1);
+		}
+		
+		return $plugins;
+	}
+	
 	function reorder_plugins($allPluginList) {
 		global $wpdb;
-		$plugins = get_option("active_plugins");
+		$plugins = $this->get_active_plugins();
 		$networkPluginFound = 0;
 		foreach($plugins as $key=>$pluginFile) {
 			if (is_plugin_active_for_network($pluginFile)) {
@@ -584,10 +524,13 @@ class PluginOrganizer {
 		$newPluginList = Array();
 		$activePluginOrder = Array();
 		
+		$globalPlugins = get_option('PO_disabled_plugins');
+		if (!is_array($globalPlugins)) {
+			$globalPlugins = array();
+		}
+		
 		if (isset($_REQUEST['PO_group_view']) && is_numeric($_REQUEST['PO_group_view'])) {
-			$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-			$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_REQUEST['PO_group_view']), ARRAY_A);
-			$members = unserialize($group['group_members']);
+			$members = get_post_meta($_REQUEST['PO_group_view'], '_PO_group_members', $single=true);
 			$members = stripslashes_deep($members);
 			foreach ($allPluginList as $key=>$val) {
 				if (is_array($members) && in_array($val['Name'], $members)) {
@@ -636,13 +579,13 @@ class PluginOrganizer {
 		global $wpdb;
 		switch ($column_name) {
 			case 'PO_groups' :
-				$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups", ARRAY_A);
+				$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
 				$assignedGroups = "";
 				foreach ($groups as $group) {
-					$members = unserialize($group['group_members']);
+					$members = get_post_meta($group->ID, '_PO_group_members', $single=true);
 					$members = stripslashes_deep($members);
 					if (array_search($plugin['Name'], $members) !== FALSE) {
-						$assignedGroups .= '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group['group_id'].'">'.$group['group_name'].'</a> ,';
+						$assignedGroups .= '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group->ID.'">'.$group->post_title.'</a> ,';
 					}
 				}
 				print rtrim($assignedGroups, ',');
@@ -656,10 +599,9 @@ class PluginOrganizer {
 		global $pagenow, $wpdb;
 		if ($pagenow == "plugins.php" && $original == 'Plugins') {
 			if (isset($_REQUEST['PO_group_view']) && is_numeric($_REQUEST['PO_group_view'])) {
-				$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-				$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_REQUEST['PO_group_view']), ARRAY_A);
-				if (is_array($group)) {
-					return 'Plugin Group: '.$group['group_name'];
+				$group = get_posts(array('ID'=>$_REQUEST['PO_group_view'], 'post_type'=>'plugin_group'));
+				if (is_array($group[0])) {
+					return 'Plugin Group: '.$group[0]->post_title;
 				}
 			}
 		}
@@ -674,12 +616,19 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
+			$plugins = $this->get_active_plugins();
 			if (is_array($_POST['groupList']) && is_numeric($_POST['PO_group']) && $this->validate_field("group_name")) {
-				$wpdb->update($wpdb->prefix."PO_groups", array("group_members"=>serialize($_POST['groupList']), 'group_name'=>$_POST['group_name']), array('group_id'=>$_POST['PO_group']));
+				$post_id = wp_update_post(array('ID'=>$_POST['PO_group'], 'post_title'=>$_POST['group_name']));
+				if ($post_id > 0) {
+					update_post_meta($post_id, "_PO_group_members", $_POST['groupList']);
+				}
 				$returnStatus = "The plugin group has been updated.";
 			} else if (is_array($_POST['groupList']) && $_POST['PO_group'] == "" && $this->validate_field("group_name")) {
-				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['group_name'], "group_members"=>serialize($_POST['groupList'])));
+				$post_id = wp_insert_post(array('post_title'=>$_POST['group_name'], 'post_type'=>'plugin_group', 'post_status'=>'publish'));
+				if (!is_wp_error($post_id)) {
+					update_post_meta($post_id, "_PO_group_members", $_POST['groupList']);
+				}
+					
 				$returnStatus = "The plugin group has been created.";
 			} else {
 				$returnStatus = "Did not recieve the proper variables.  No changes made.";
@@ -692,18 +641,16 @@ class PluginOrganizer {
 	}
 
 	function add_to_group() {
-		global $wpdb;
 		if ( !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 			print "You dont have permissions to access this page.";
 			die();
 		}
 		$returnStatus = "";
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = get_option("active_plugins");
+			$plugins = $this->get_active_plugins();
 			if (is_array($_POST['groupList']) && is_numeric($_POST['PO_group']) && $this->validate_field("group_name")) {
-				$groupQuery = "SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d";
-				$group = $wpdb->get_row($wpdb->prepare($groupQuery, $_POST['PO_group']), ARRAY_A);
-				$members = unserialize($group['group_members']);
+				$members = get_post_meta($_POST['PO_group'], '_PO_group_members', $single=true);
+				$members = stripslashes_deep($members);
 				if (!is_array($members)) {
 					$members = array();
 				}
@@ -714,14 +661,21 @@ class PluginOrganizer {
 						$members[]=$newGroupMember;
 					}
 				}
-				if ($members === unserialize($group['group_members'])) {
+				if ($members === get_post_meta($_POST['PO_group'], '_PO_group_members', $single=true)) {
 					$returnStatus = "The selected plugins were not added to the group because they already belong to it.";
 				} else {
-					$wpdb->update($wpdb->prefix."PO_groups", array("group_members"=>serialize($members), 'group_name'=>$_POST['group_name']), array('group_id'=>$_POST['PO_group']));
+					$post_id = wp_update_post(array('ID'=>$_POST['PO_group'], 'post_title'=>$_POST['group_name']));
+					if ($post_id > 0) {
+						update_post_meta($post_id, "_PO_group_members", $members);
+					}
 					$returnStatus = "The plugin group has been updated.";
 				}
 			} else if (is_array($_POST['groupList']) && $_POST['PO_group'] == "" && $this->validate_field("group_name")) {
-				$wpdb->insert($wpdb->prefix."PO_groups", array("group_name"=>$_POST['group_name'], "group_members"=>serialize($_POST['groupList'])));
+				$post_id = wp_insert_post(array('post_title'=>$_POST['group_name'], 'post_type'=>'plugin_group', 'post_status'=>'publish'));
+				if (!is_wp_error($post_id)) {
+					update_post_meta($post_id, "_PO_group_members", $_POST['groupList']);
+				}
+				
 				$returnStatus = "The plugin group has been created.";
 			} else {
 				$returnStatus = "Did not recieve the proper variables.  No changes made.";
@@ -741,8 +695,7 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if (current_user_can('activate_plugins') && is_numeric($_POST['PO_group'])) {
-			$deleteGroupQuery = "DELETE FROM ".$wpdb->prefix."PO_groups WHERE group_id=%d";
-			$result = $wpdb->query($wpdb->prepare($deleteGroupQuery, $_POST['PO_group']));
+			$result = wp_delete_post($_POST['PO_group'], true);
 			if ($result) {
 				$returnStatus = "The plugin group has been deleted.";
 			} else {
@@ -761,8 +714,7 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if (current_user_can('activate_plugins') && is_numeric($_POST['PO_group'])) {
-			$currGroup = stripslashes_deep($wpdb->get_row($wpdb->prepare("SELECT * FROM ".$wpdb->prefix."PO_groups WHERE group_id = %d", $_POST['PO_group']), ARRAY_A));
-			$members = unserialize($currGroup['group_members']);
+			$members = get_post_meta($_POST['PO_group'], '_PO_group_members', $single=true);
 			if (!is_array($members)) {
 				$members = array();
 			}
@@ -772,10 +724,11 @@ class PluginOrganizer {
 				}
 			}
 			$members = array_values($members);
-			if ($members === unserialize($currGroup['group_members'])) {
+			if ($members === get_post_meta($_POST['PO_group'], '_PO_group_members', $single=true)) {
 				$returnStatus = "The selected plugins were not found in the group.";
 			} else {
-				if ($wpdb->update($wpdb->prefix."PO_groups", array("group_members"=>serialize($members)), array('group_id'=>$_POST['PO_group']))) {
+				$result = update_post_meta($_POST['PO_group'], "_PO_group_members", $members);
+				if ($result) {
 					$returnStatus = "The selected plugins were removed from the group.";
 				} else {
 					$returnStatus = "There was a problem removing the plugins from the group.";
@@ -791,6 +744,7 @@ class PluginOrganizer {
 	function disable_plugin_box() {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$supportedPostTypes = get_option("PO_custom_post_type_support");
+			$supportedPostTypes[] = 'plugin_filter';
 			if (is_array($supportedPostTypes)) {
 				foreach ($supportedPostTypes as $postType) {
 					add_meta_box(
@@ -808,22 +762,26 @@ class PluginOrganizer {
 
 	function get_post_meta_box($post) {
 		global $wpdb;
+		$errMsg = $this->check_mu_plugin();
 		if ($post->ID != "" && is_numeric($post->ID)) {
-			$postPluginsQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
-			$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginsQuery, $post->ID), ARRAY_A);
+			$filterName = $post->post_title;
+			$affectChildren = get_post_meta($post->ID, '_PO_affect_children', $single=true);
+			$disabledPluginList = get_post_meta($post->ID, '_PO_disabled_plugins', $single=true);
+			if (!is_array($disabledPluginList)) {
+				$disabledPluginList = array();
+			}
+
+			$enabledPluginList = get_post_meta($post->ID, '_PO_enabled_plugins', $single=true);
+			if (!is_array($enabledPluginList)) {
+				$enabledPluginList = array();
+			}
+
+			$permalinkFilter = get_post_meta($post->ID, '_PO_permalink', $single=true);
 		} else {
 			$postPlugins = array();
-		}
-		$affectChildren = $postPlugins['children'];
-		
-		$disabledPluginList = unserialize($postPlugins['disabled_plugins']);
-		if (!is_array($disabledPluginList)) {
 			$disabledPluginList = array();
-		}
-		
-		$enabledPluginList = unserialize($postPlugins['enabled_plugins']);
-		if (!is_array($enabledPluginList)) {
 			$enabledPluginList = array();
+			$permalinkFilter = "";
 		}
 		
 		$globalPlugins = get_option('PO_disabled_plugins');
@@ -831,96 +789,76 @@ class PluginOrganizer {
 			$globalPlugins = array();
 		}
 		
-		$plugins = get_plugins();
-		$activePlugins = get_option("active_plugins");
+		$plugins = $this->reorder_plugins(get_plugins());
+		
+		$activePlugins = $this->get_active_plugins();
 		$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
 		require_once($this->absPath . "/tpl/postMetaBox.php");
 	}
 
+	function change_plugin_filter_title($title) {
+		global $post;
+		if (is_object($post) && get_post_type($post->ID) == 'plugin_filter') {
+			if (!isset($_POST['permalinkFilter']) || $_POST['permalinkFilter'] == '') {
+				$randomTitle = "";
+				for($i=0; $i<10; $i++) {
+					$randomTitle .= chr(mt_rand(109,122));
+				}
+				return $randomTitle;
+			} else {
+				return $_POST['permalinkFilter'];
+			}
+		} else {
+			return $title;
+		}
+	}
+	
 	function save_post_meta_box($post_id) {
-		global $wpdb;
-		if ( (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id)) 
-			return $post_id;
-
-
-		if ( !current_user_can( 'edit_page', $post_id ) || !current_user_can( 'activate_plugins' ) ) {
+		$supportedPostTypes = get_option("PO_custom_post_type_support");
+		$supportedPostTypes[] = 'plugin_filter';
+		if ( (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id) || !current_user_can( 'edit_post', $post_id ) || !current_user_can( 'activate_plugins' ) || !in_array(get_post_type($post_id), $supportedPostTypes) || !isset($_POST['poSubmitPostMetaBox'])) {
 			return $post_id;
 		}
 
-		$postSettingsQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
-		$postSettings = $wpdb->get_row($wpdb->prepare($postSettingsQuery, $post_id), ARRAY_A);
-		
-		$postExists = 0;
-		if ($wpdb->num_rows > 0) {
-			$enabledPlugins = unserialize($postSettings['enabled_plugins']);
-			$disabledPlugins = unserialize($postSettings['disabled_plugins']);
-			$postExists = 1;
-		}
-		if (!is_array($enabledPlugins)) {
-			$enabledPlugins = array();
-		}
-		if (!is_array($disabledPlugins)) {
-			$disabledPlugins = array();
+		if (isset($_POST['affectChildren'])) {
+			update_post_meta($post_id, '_PO_affect_children', 1);
+		} else {
+			update_post_meta($post_id, '_PO_affect_children', 0);
 		}
 
-		if (isset($_POST['affect_children'])) {
-			if ($postExists == 1) {
-				$wpdb->update($wpdb->prefix."PO_post_plugins", array("children"=>1), array("post_id"=>$post_id));
-			} else {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>serialize(array()), "disabled_plugins"=>serialize(array()), "permalink"=>get_permalink($post_id), "children"=>1, "post_id"=>$post_id));
+
+		$globalPlugins = get_option('PO_disabled_plugins');
+		if (!is_array($globalPlugins)) {
+			$globalPlugins = array();
+		}
+		$disabledPlugins = array();
+		$enabledPlugins = array();
+			
+		if (isset($_POST['pluginsList']) && is_array($_POST['pluginsList'])) {
+			foreach ($_POST['pluginsList'] as $plugin) {
+				if (!in_array($plugin, $globalPlugins)) {
+					$disabledPlugins[] = $plugin;
+				}
+			}
+
+			foreach ($globalPlugins as $plugin) {
+				if (!in_array($plugin, $_POST['pluginsList'])) {
+					$enabledPlugins[] = $plugin;
+				}
 			}
 		} else {
-			if ($postExists == 1) {
-				$wpdb->update($wpdb->prefix."PO_post_plugins", array("children"=>0), array("post_id"=>$post_id));
+			foreach ($globalPlugins as $plugin) {
+				$enabledPlugins[] = $plugin;
 			}
 		}
 
+		update_post_meta($post_id, '_PO_disabled_plugins', $disabledPlugins);
+		update_post_meta($post_id, '_PO_enabled_plugins', $enabledPlugins);
 
-		if (isset($_POST['disabledPlugins'])) {
-			if ($postExists == 1) {
-				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>serialize($_POST['disabledPlugins'])), array("post_id"=>$post_id));
-			} else {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>serialize(array()), "disabled_plugins"=>serialize($_POST['disabledPlugins']), "permalink"=>get_permalink($post_id), "post_id"=>$post_id));
-			}
+		if (get_post_type($post_id) != 'plugin_filter') {
+			update_post_meta($post_id, '_PO_permalink', get_permalink($post_id));
 		} else {
-			if ($postExists == 1) {
-				$wpdb->update($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>""), array("post_id"=>$post_id));
-			}
-		}
-
-		if (isset($_POST['enabledPlugins'])) {
-			if ($postExists == 1) {
-				 $wpdb->update($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>serialize($_POST['enabledPlugins'])), array("post_id"=>$post_id));
-			} else {
-				$wpdb->insert($wpdb->prefix."PO_post_plugins", array("disabled_plugins"=>serialize(array()), "enabled_plugins"=>serialize($_POST['enabledPlugins']), "permalink"=>get_permalink($post_id), "post_id"=>$post_id));
-			}
-		} else {
-			if ($postExists == 1) {
-				$wpdb->update($wpdb->prefix."PO_post_plugins", array("enabled_plugins"=>""), array("post_id"=>$post_id));
-			}
-		}
-
-
-		##Check to make sure there were plugins enabled or disabled.  Otherwise delete the row.
-		$postSettingsQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
-		$postSettings = $wpdb->get_row($wpdb->prepare($postSettingsQuery, $post_id), ARRAY_A);
-		
-		$postExists = 0;
-		if ($wpdb->num_rows > 0) {
-			$enabledPlugins = unserialize($postSettings['enabled_plugins']);
-			$disabledPlugins = unserialize($postSettings['disabled_plugins']);
-			$postExists = 1;
-		}
-		if (!is_array($enabledPlugins)) {
-			$enabledPlugins = array();
-		}
-		if (!is_array($disabledPlugins)) {
-			$disabledPlugins = array();
-		}
-		
-		if ($postExists == 1 && count($enabledPlugins) == 0 && count($disabledPlugins) == 0) {
-			$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
-			$wpdb->query($wpdb->prepare($deletePluginQuery, $post_id));
+			update_post_meta($post_id, '_PO_permalink', $_POST['permalinkFilter']);
 		}
 	}
 
@@ -944,10 +882,10 @@ class PluginOrganizer {
 			print "You dont have permissions to access this page.";
 			die();
 		}
-		$posts = $wpdb->get_results("SELECT post_id, permalink FROM ".$wpdb->prefix."PO_post_plugins", ARRAY_A);
+		$posts = get_posts(array('post_type'=>get_option("PO_custom_post_type_support")));
 		foreach ($posts as $post) {
-			if (get_permalink($post['post_id']) != stripslashes_deep($post['permalink'])) {
-				if($wpdb->update($wpdb->prefix."PO_post_plugins", array("permalink"=>get_permalink($post['post_id'])), array("post_id"=>$post['post_id']))) {
+			if (get_permalink($post->ID) != get_post_meta($post->ID, '_PO_permalink', $single=true)) {
+				if(update_post_meta($post->ID, '_PO_permalink', get_permalink($post->ID))) {
 					$updatedCount++;
 				} else {
 					$failedCount++;
@@ -985,7 +923,7 @@ class PluginOrganizer {
 	}
 
 	function reset_plugin_order() {
-		$activePlugins = get_option("active_plugins");
+		$activePlugins = $this->get_active_plugins();
 		usort($activePlugins, array($this, 'custom_sort_plugins'));
 		update_option("active_plugins", $activePlugins);
 		update_option("PO_plugin_order", $activePlugins);
@@ -1000,7 +938,7 @@ class PluginOrganizer {
 	}
 	
 	function recreate_plugin_order() {
-		$plugins = get_option("active_plugins");
+		$plugins = $this->get_active_plugins();
 		$pluginOrder = get_option("PO_plugin_order");
 		$newPlugArray = $plugins;
 		$activePlugins = $plugins;
@@ -1028,8 +966,8 @@ class PluginOrganizer {
 		}
 		$result = "";
 		if ($_POST['selected_action'] == 'delete') {
-			if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
-				if (@unlink(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+			if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
+				if (@unlink(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
 					$result = "The MU plugin component has been removed.";
 				} else {
 					$result = "There was an issue removing the MU plugin component!";
@@ -1038,13 +976,13 @@ class PluginOrganizer {
 				$result = "There was an issue removing the MU plugin component!";
 			}
 		} else if ($_POST['selected_action'] == 'move') {
-			if (!file_exists(ABSPATH . "wp-content/mu-plugins/")) {
-				@mkdir(ABSPATH . "wp-content/mu-plugins/");
+			if (!file_exists(WPMU_PLUGIN_DIR)) {
+				@mkdir(WPMU_PLUGIN_DIR);
 			}
 			if (file_exists(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php")) {
-				@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php");
+				@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
 			}
-			if (file_exists(ABSPATH . "wp-content/mu-plugins/PluginOrganizerMU.class.php")) {
+			if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
 				$result = "The MU plugin component has been moved to the mu-plugins folder.";
 			} else {
 				$result = "There was an issue moving the MU plugin component!";
@@ -1144,11 +1082,101 @@ class PluginOrganizer {
 		die();
 	}
 
-	function delete_empty_rows() {
-		$allPostPlugins = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_post_plugins");
-		$allUrlPlugins = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
-		if (is_array()) {
-		}
+	function register_type() {
+		$labels = array(
+			'name' => _x('Plugin Filters', 'post type general name'),
+			'singular_name' => _x('Plugin Filter', 'post type singular name'),
+			'add_new' => _x('Add Plugin Filter', 'neo_theme'),
+			'add_new_item' => __('Add New Plugin Filter'),
+			'edit_item' => __('Edit Plugin Filter'),
+			'new_item' => __('New Plugin Filter'),
+			'view_item' => __('View Plugin Filter'),
+			'search_items' => __('Search Plugin Filter'),
+			'not_found' =>  __('No Plugin Filters found'),
+			'not_found_in_trash' => __('No Plugin Filters found in Trash'), 
+			'parent_item_colon' => 'Parent Plugin Filter:',
+			'parent' => 'Parent Plugin Filter'
+		);
+		$args = array(
+			'labels' => $labels,
+			'public' => true,
+			'publicly_queryable' => true,
+			'show_ui' => true, 
+			'menu_icon' => $this->urlPath . '/image/po-icon-16x16.png', 		
+			'rewrite' => array('slug'=>'plugin_filter'),
+			'hierarchical' => false,
+			'menu_position' => null,
+			'supports' => array('custom-fields'),
+			'capability_type' => 'plugin_filter'
+		); 
+		register_post_type('plugin_filter',$args);
+		
+		$labels = array(
+			'name' => _x('Plugin Groups', 'post type general name'),
+			'singular_name' => _x('Plugin Group', 'post type singular name'),
+			'add_new' => _x('Add Plugin Group', 'neo_theme'),
+			'add_new_item' => __('Add New Plugin Group'),
+			'edit_item' => __('Edit Plugin Group'),
+			'new_item' => __('New Plugin Group'),
+			'view_item' => __('View Plugin Group'),
+			'search_items' => __('Search Plugin Group'),
+			'not_found' =>  __('No PPlugin Groups found'),
+			'not_found_in_trash' => __('No Plugin Groups found in Trash'), 
+			'parent_item_colon' => 'Parent Plugin Group:',
+			'parent' => 'Parent Plugin Group'
+		);
+		$args = array(
+			'labels' => $labels,
+			'public' => false,
+			'publicly_queryable' => false,
+			'show_ui' => false, 
+			'rewrite' => array('slug'=>'plugin_group'),
+			'hierarchical' => false,
+			'menu_position' => null,
+			'supports' => array('custom-fields'),
+			'capability_type' => 'plugin_group'
+		); 
+		register_post_type('plugin_group',$args);
+
+		flush_rewrite_rules( false );
+	}
+	
+	function custom_updated_messages( $messages ) {
+		global $post, $post_ID;
+		$messages['plugin_filter'] = array(
+			0 => '', // Unused. Messages start at index 1.
+			1 => sprintf( __('Plugin Filter updated.'), esc_url( get_permalink($post_ID) ) ),
+			2 => __('Custom field updated.'),
+			3 => __('Custom field deleted.'),
+			4 => __('Plugin Filter updated.'),
+			/* translators: %s: date and time of the revision */
+			5 => isset($_GET['revision']) ? sprintf( __('Plugin Filter restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			6 => sprintf( __('Plugin Filter published.'), esc_url( get_permalink($post_ID) ) ),
+			7 => __('theme saved.'),
+			8 => sprintf( __('Plugin Filter submitted.'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+			9 => sprintf( __('Plugin Filter scheduled for: <strong>%1$s</strong>.'),
+			  // translators: Publish box date format, see http://php.net/date
+			  date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
+			10 => sprintf( __('Plugin Filter draft updated.'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+		);
+
+		$messages['plugin_group'] = array(
+			0 => '', // Unused. Messages start at index 1.
+			1 => sprintf( __('Plugin Group updated.'), esc_url( get_permalink($post_ID) ) ),
+			2 => __('Custom field updated.'),
+			3 => __('Custom field deleted.'),
+			4 => __('Plugin Group updated.'),
+			/* translators: %s: date and time of the revision */
+			5 => isset($_GET['revision']) ? sprintf( __('Plugin Group restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			6 => sprintf( __('Plugin Group published.'), esc_url( get_permalink($post_ID) ) ),
+			7 => __('theme saved.'),
+			8 => sprintf( __('Plugin Group submitted.'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+			9 => sprintf( __('Plugin Group scheduled for: <strong>%1$s</strong>.'),
+			  // translators: Publish box date format, see http://php.net/date
+			  date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
+			10 => sprintf( __('Plugin Group draft updated.'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+		);
+		return $messages;
 	}
 }
 ?>

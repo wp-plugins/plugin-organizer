@@ -1,40 +1,57 @@
+<?php
+if ($errMsg != "") {
+	?>
+	<p style="color: #CC0066;"><?php print $errMsg; ?></p>
+	<?php
+}
+?>
+<?php if(get_post_type($post->ID) == 'plugin_filter') { ?>
+	<div class="metaBoxLabel">
+		Permalink
+	</div>
+	<div class="metaBoxContent">
+		<input type="text" class="poPermalinkInput" size="25" name="permalinkFilter" value="<?php print $permalinkFilter; ?>">
+	</div>
+<?php } ?>
+
 <div class="metaBoxLabel">
 	Settings
 </div>
 <div class="metaBoxContent">
 	NOTE:  By checking this box the plugins disabled or enabled for this page will be used for its children if they have nothing set.
 	<hr>
-	<input type="checkbox" id="affect_children" name="affect_children" value="1" <?php print ($affectChildren == "1")? 'checked="checked"':''; ?>>Also Affect Children
+	<input type="checkbox" id="affectChildren" name="affectChildren" value="1" <?php print ($affectChildren == "1")? 'checked="checked"':''; ?>>Also Affect Children
 </div>
 <div class="metaBoxLabel">
-	Disabled Plugins
+	Plugins
 </div>
-<div class="metaBoxContent">
-	NOTE:  This is a list of all plugins for this site.  If a plugin is checked it will be disabled for this page.  Plugins in <span class="activePlugin">RED</span> are active for this site.
-	<hr>
-	<input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="PO_check_all_disable_plugins();">Select All<br><br>
+<div id="pluginContainer" class="metaBoxContent">
+	<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="" onclick="PO_toggle_all_plugins();">Enable/Disable All<br><br>
 	<?php
+	$count = 0;
 	foreach ($plugins as $key=>$plugin) {
+		$count++;
 		?>
-		<input class="disabled_plugin_check" type="checkbox" name="disabledPlugins[]" value="<?php print $key; ?>" <?php print (in_array($key, $disabledPluginList))? 'checked="checked"':''; ?>><?php print (in_array($key, $activeSitewidePlugins) || in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+		<div class="pluginWrap <?php print (in_array($key, $activeSitewidePlugins) || in_array($key, $activePlugins))? "activePluginWrap" : "inactivePluginWrap"; ?>">
+			<?php 
+			if ((in_array($key, $globalPlugins) && !in_array($key, $enabledPluginList)) || in_array($key, $disabledPluginList)) {
+				?>
+				<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" checked="checked" />
+				<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('<?php print $count; ?>');" />
+				<?php
+			} else {
+				?>
+				<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" />
+				<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('<?php print $count; ?>');" />
+				<?php
+			}
+			print $plugin['Name'];
+			?>
+			<div style="clear: both;"></div>
+		</div>
 		<?php
 	}
 	?>
 </div>
-<div class="metaBoxLabel">
-	Enabled Plugins
-</div>
-<div class="metaBoxContent">
-	NOTE:  This is a list of globally disabled plugins.  If a plugin is checked it will be enabled for this page.  Plugins in <span class="activePlugin">RED</span> are active for this site.
-	<hr>
-	<input type="checkbox" id="selectAllEnablePlugins" name="selectAllEnablePlugins" value="" onclick="PO_check_all_enable_plugins();">Select All<br><br>
-	<?php
-	foreach ($plugins as $key=>$plugin) {
-		if (in_array($key, $globalPlugins)) {
-			?>
-			<input class="enabled_plugin_check" type="checkbox" name="enabledPlugins[]" value="<?php print $key; ?>" <?php print (in_array($key, $enabledPluginList))? 'checked="checked"':''; ?>><?php print (in_array($key, $activeSitewidePlugins) || in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
-			<?php
-		}
-	}
-	?>
-</div>
+<div style="clear: both;"></div>
+<input type="hidden" name="poSubmitPostMetaBox" value="1" />

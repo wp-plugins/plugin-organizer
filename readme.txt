@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5.1
-Stable tag: 2.6.3
+Stable tag: 3.0
 
 
 This plugin allows you to do the following:
@@ -24,9 +24,9 @@ This plugin allows you to do the following:
 1. Extract the downloaded Zip file.
 2. Upload the 'plugin-organizer' directory to the `/wp-content/plugins/` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
-4. You can either use the menu item under settings in the WordPress admin called Organize Plugins or there will be a drop down list for each plugin in the plugin admin page to select the load order.
+4. Use the menu item under settings in the WordPress admin called Plugin Organizer to get the plugin set up.
 
-IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins.  If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful.
+IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins or wherever your mu-plugins folder is located.  If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful.
 
 
 == Frequently Asked Questions ==
@@ -43,7 +43,7 @@ Q. Does this plugin work with custom post types?
 A. Yes it has been tested with custom post types.  You can add support for your custom post types on the settings page.
 
 Q. Does this only apply to WP MU or all types of WP installs?
-"IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins. If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful."
+"IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins or wherever your mu-plugins folder is located. If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful."
 
 A. The mu-plugins folder contains "Must Use" plugins that are loaded before regular plugins. The mu is not related to WordPress MU. This was added to regular WordPress in 3.0 I believe. I only placed this one class in the MU folder because I wanted to have my plugin run as a normal plugin so it could be disabled if needed. 
 
@@ -60,10 +60,19 @@ A.
 1. Plugin admin page example.
 2. Settings page example.
 3. Global plugins page.
-4. URL admin page.
-5. Page edit screen.
+4. Page edit screen.
 
 == Changelog ==
+
+= 3.0 =
+Complete redesign of the plugin.
+Removed all custom db tables and moved the data to the post_meta table.
+Added custom post type plugin_filter to replace the URl admin.
+Added custom post type plugin_group to replace the plugin groups table.
+The plugins displayed on post/pages/custom post types/global plugins page are now sorted and colored similar to the main plugin page.
+There is no longer an enabled and disabled plugin box.  Enabled and disabled plugins are now all managed together to avoid confusion.
+Fixed a bug where the MU plugin chopped the url before checking it so it looped 15 times on the homepage before stopping the search for a fuzzy url.
+Fixed a bug where globally disabled plugins were listed as inactive when the list of active plugins was accessed.
 
 = 2.6.3 =
 Fixing bug that allows plugins to be disabled on the update pages.
@@ -260,6 +269,16 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.0 =
+Complete redesign of the plugin.
+Removed all custom db tables and moved the data to the post_meta table.
+Added custom post type plugin_filter to replace the URl admin.
+Added custom post type plugin_group to replace the plugin groups table.
+The plugins displayed on post/pages/custom post types/global plugins page are now sorted and colored similar to the main plugin page.
+There is no longer an enabled and disabled plugin box.  Enabled and disabled plugins are now all managed together to avoid confusion.
+Fixed a bug where the MU plugin chopped the url before checking it so it looped 15 times on the homepage before stopping the search for a fuzzy url.
+Fixed a bug where globally disabled plugins were listed as inactive when the list of active plugins was accessed.
 
 = 2.6.3 =
 Fixing bug that allows plugins to be disabled on the update pages.

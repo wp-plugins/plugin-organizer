@@ -2,129 +2,152 @@
 /*Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 2.6.3
+Version: 3.0
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2*/
 
 class PluginOrganizerMU {
+	var $ignoreProtocol;
+	var $ignoreArguments;
+	var $requestedPermalink;
+	var $postTypeSupport;
+	var $protocol;
+	function __construct() {
+		$this->ignoreProtocol = get_option('PO_ignore_protocol');
+		$this->ignoreArguments = get_option('PO_ignore_arguments');
+		$this->set_requested_permalink();
+		$this->postTypeSupport = get_option('PO_custom_post_type_support');
+		$this->postTypeSupport[] = 'plugin_filter';
+	}
+	
 	function disable_plugins($pluginList) {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-			if (get_option("PO_version_num") != "2.6.3" && !is_admin()) {
+			if (get_option("PO_version_num") != "3.0" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 				update_option("PO_admin_disable_plugins", "0");
 			} else {
-				$ignoreProtocol = get_option('PO_ignore_protocol');
-				$ignoreArguments = get_option('PO_ignore_arguments');
 				$globalPlugins = get_option("PO_disabled_plugins");
-				if ($ignoreArguments == '1') {
-					$splitPath = explode('?', $_SERVER['REQUEST_URI']);
-					$requestedPath = $splitPath[0];
+				
+				if ($this->ignoreProtocol == '1') {
+					$requestedPost = get_posts(
+										array(
+											'post_type'=>$this->postTypeSupport,
+											'meta_query' => array(
+												'relation' => 'AND',
+												array(
+													'key' => '_PO_permalink', 
+													'value' => '"%' . $this->requestedPermalink . '"',
+													'compare' => 'LIKE'
+												)
+											)
+										));
 				} else {
-					$requestedPath = $_SERVER['REQUEST_URI'];
+					$requestedPost = get_posts(array('post_type'=>$this->postTypeSupport, 'meta_key'=>'_PO_permalink', 'meta_value'=>$this->requestedPermalink));
+				}
+				usort($requestedPost, array($this, 'sort_posts'));
+				
+				$disabledPlugins = array();
+				$enabledPlugins = array();
+				if (isset($requestedPost[0]->ID)) {
+					$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
+					$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
+				}
+				
+				if (!is_array($disabledPlugins)) {
+					$disabledPlugins = array();
 				}
 
-				if ($ignoreProtocol == '1') {
-					$url = $_SERVER['HTTP_HOST'].$requestedPath;
-					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink LIKE %s";
-					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, '%'.$url), ARRAY_A);
-					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s";
-					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, '%'.$url), ARRAY_A);
-				} else {
-					$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-					$url = $protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
-					$postPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s";
-					$postPlugins = $wpdb->get_row($wpdb->prepare($postPluginQuery, $url), ARRAY_A);
-					$urlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s";
-					$urlPlugins = $wpdb->get_row($wpdb->prepare($urlPluginQuery, $url), ARRAY_A);
+				if (!is_array($enabledPlugins)) {
+					$enabledPlugins = array();
 				}
-
-				$disabledPostPlugins = unserialize($postPlugins['disabled_plugins']);
-				$enabledPostPlugins = unserialize($postPlugins['enabled_plugins']);
-				$disabledUrlPlugins = unserialize($urlPlugins['disabled_plugins']);
-				$enabledUrlPlugins = unserialize($urlPlugins['enabled_plugins']);
-				if (!is_array($disabledPostPlugins)) {
-					$disabledPostPlugins = array();
-				}
-
-				if (!is_array($enabledPostPlugins)) {
-					$enabledPostPlugins = array();
-				}
-
-				if (!is_array($disabledUrlPlugins)) {
-					$disabledUrlPlugins = array();
-				}
-
-				if (!is_array($enabledUrlPlugins)) {
-					$enabledUrlPlugins = array();
-				}
-
-				$disabledPlugins = array_merge($disabledPostPlugins, $disabledUrlPlugins);
-				$enabledPlugins = array_merge($enabledPostPlugins, $enabledUrlPlugins);
 
 				if (sizeof($disabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
 					$endChar = '';
-					if (preg_match('/\/$/', $url)) {
+					if (preg_match('/\/$/', $this->requestedPermalink)) {
 						$endChar = '/';
 					}
 
-					$choppedUrl = $url;
+					$choppedUrl = $this->requestedPermalink;
+
+					
+					if ($this->ignoreProtocol == '1') {
+						$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
+					} else {
+						$lastUrl = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
+					}
 
 					//Dont allow an endless loop
 					$loopCount = 0;
-
-					if ($ignoreProtocol == '1') {
-						$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
-					} else {
-						$lastUrl = $protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
-					}
-
-					while ($loopCount < 15 && ($choppedUrl = preg_replace('/\/[^\/]+\/?$/', $endChar, $choppedUrl)) && $choppedUrl != $lastUrl) {
+					$matchFound = 0;
+					
+					while ($loopCount < 15 && $matchFound == 0 && $this->requestedPermalink != $lastUrl && ($this->requestedPermalink = preg_replace('/\/[^\/]+\/?$/', $endChar, $this->requestedPermalink))) {
 						$loopCount++;
-						$matchFound = 0;
-						if ($ignoreProtocol == '1') {
-							$fuzzyPostPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink LIKE %s AND children=1";
-							$fuzzyPostPlugins = $wpdb->get_row($wpdb->prepare($fuzzyPostPluginQuery, '%'.$choppedUrl), ARRAY_A);
-							$matchFound = ($wpdb->num_rows > 0)? 1:$matchFound;
-							$fuzzyUrlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink LIKE %s AND children=1";
-							$fuzzyUrlPlugins = $wpdb->get_row($wpdb->prepare($fuzzyUrlPluginQuery, '%'.$choppedUrl), ARRAY_A);
-							$matchFound = ($wpdb->num_rows > 0)? 1:$matchFound;
+						if ($this->ignoreProtocol == '1') {
+					
+							$fuzzyPost = get_posts(
+										array(
+											'post_type'=>$this->postTypeSupport,
+											'meta_query' => array(
+												'relation' => 'AND',
+												array(
+													'key' => '_PO_permalink', 
+													'value' => '"%' . $this->requestedPermalink . '"',
+													'compare' => 'LIKE'
+												),
+												array(
+													'key' => '_PO_affect_children', 
+													'value' => '1',
+													'compare' => '='
+												)
+											)
+										));
+
+							$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
 						} else {
-							$fuzzyPostPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_post_plugins WHERE permalink = %s AND children=1";
-							$fuzzyPostPlugins = $wpdb->get_row($wpdb->prepare($fuzzyPostPluginQuery, $choppedUrl), ARRAY_A);
-							$matchFound = ($wpdb->num_rows > 0)? 1:$matchFound;
-							$fuzzyUrlPluginQuery = "SELECT * FROM ".$wpdb->prefix."PO_url_plugins WHERE permalink = %s AND children=1";
-							$fuzzyUrlPlugins = $wpdb->get_row($wpdb->prepare($fuzzyUrlPluginQuery, $choppedUrl), ARRAY_A);
-							$matchFound = ($wpdb->num_rows > 0)? 1:$matchFound;
+							$fuzzyPost = get_posts(
+										array(
+											'post_type'=>$this->postTypeSupport,
+											'meta_query' => array(
+												'relation' => 'AND',
+												array(
+													'key' => '_PO_permalink', 
+													'value' => '"' . $this->requestedPermalink . '"',
+													'compare' => '='
+												),
+												array(
+													'key' => '_PO_affect_children', 
+													'value' => '1',
+													'compare' => '='
+												)
+											)
+										));
+							
+							$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
 						}
 
+						
 						if ($matchFound > 0) {
-							$disabledFuzzyPostPlugins = unserialize($fuzzyPostPlugins['disabled_plugins']);
-							$enabledFuzzyPostPlugins = unserialize($fuzzyPostPlugins['enabled_plugins']);
-							$disabledFuzzyUrlPlugins = unserialize($fuzzyUrlPlugins['disabled_plugins']);
-							$enabledFuzzyUrlPlugins = unserialize($fuzzyUrlPlugins['enabled_plugins']);
-							if (!is_array($disabledFuzzyPostPlugins)) {
-								$disabledFuzzyPostPlugins = array();
+							usort($fuzzyPost, array($this, 'sort_posts'));
+							
+							if (isset($fuzzyPost[0]->ID)) {
+								$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
+								$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+							}
+							
+							if (!is_array($disabledFuzzyPlugins)) {
+								$disabledFuzzyPlugins = array();
 							}
 
-							if (!is_array($enabledFuzzyPostPlugins)) {
-								$enabledFuzzyPostPlugins = array();
+							if (!is_array($enabledFuzzyPlugins)) {
+								$enabledFuzzyPlugins = array();
 							}
 
-							if (!is_array($disabledFuzzyUrlPlugins)) {
-								$disabledFuzzyUrlPlugins = array();
-							}
-
-							if (!is_array($enabledFuzzyUrlPlugins)) {
-								$enabledFuzzyUrlPlugins = array();
-							}
-
-							$disabledPlugins = array_merge($disabledPlugins, array_merge($disabledFuzzyPostPlugins, $disabledFuzzyUrlPlugins));
-							$enabledPlugins = array_merge($enabledPlugins, array_merge($enabledFuzzyPostPlugins, $enabledFuzzyUrlPlugins));
-							break;
+							$disabledPlugins = $disabledFuzzyPlugins;
+							$enabledPlugins = $enabledFuzzyPlugins;
 						}
 					}
 				}
@@ -158,6 +181,17 @@ class PluginOrganizerMU {
 		}
 		return $newPluginList;
 	}
+	
+	function sort_posts($a, $b) {
+			if ($a->post_type == 'plugin_filter' && $b->post_type != 'plugin_filter') {
+				return 1;
+			} else if($a->post_type != 'plugin_filter' && $b->post_type == 'plugin_filter') {
+				return -1;
+			} else {
+				return 0;
+			}
+	}
+	
 	function disable_network_plugins($pluginList) {
 		$newPluginList = array();
 		if (is_array($pluginList) && sizeOf($pluginList) > 0) {
@@ -170,10 +204,27 @@ class PluginOrganizerMU {
 		
 		return $newPluginList;
 	}
+
+	function set_requested_permalink() {
+		if ($this->ignoreArguments == '1') {
+			$splitPath = explode('?', $_SERVER['REQUEST_URI']);
+			$requestedPath = $splitPath[0];
+		} else {
+			$requestedPath = $_SERVER['REQUEST_URI'];
+		}
+		
+		if ($this->ignoreProtocol == '1') {
+			$this->requestedPermalink = $_SERVER['HTTP_HOST'].$requestedPath;
+		} else {
+			$this->protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+			$this->requestedPermalink = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
+		}
+	}
 }
 $PluginOrganizerMU = new PluginOrganizerMU();
 
 add_filter('option_active_plugins', array($PluginOrganizerMU, 'disable_plugins'), 10, 1);
 
 add_filter('site_option_active_sitewide_plugins', array($PluginOrganizerMU, 'disable_network_plugins'), 10, 1);
+
 ?>

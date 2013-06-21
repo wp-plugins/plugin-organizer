@@ -98,7 +98,7 @@
 				$customPostTypes = get_post_types();
 				if (is_array($supportedPostTypes)) {
 					foreach ($customPostTypes as $postType) {
-						if (!in_array($postType, array("attachment", "revision", "nav_menu_item"))) {
+						if (!in_array($postType, array("attachment", "revision", "nav_menu_item", "plugin_group", "plugin_filter"))) {
 							print '<input type="checkbox" class="PO_cutom_post_type" name="PO_cutom_post_type[]" value="'.$postType.'" '.((in_array($postType, $supportedPostTypes))? 'checked="checked"' : '').' />'.$postType.'<br />';
 						}
 					}

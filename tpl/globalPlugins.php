@@ -6,24 +6,40 @@
 	<div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">
-	      <form method=post name="po_global_plugin_list" action="">
-	        <div id="pluginListdiv" class="stuffbox" style="width: 98%">
-              <input type="checkbox" id="selectAllDisablePlugins" name="selectAllDisablePlugins" value="" onclick="PO_check_all_disable_plugins();">Select All<br><br>
-			  <?php
-				$count = 1;
-				foreach ($plugins as $key=>$plugin) {
-					?>
-					<input type="checkbox" class="disabled_plugin_check" name="disabledPlugins[]" id="disabled_plugin_<?php print $count; ?>" value="<?php print $key; ?>" <?php print (in_array($key, $disabledPlugins)) ? 'checked="checked"': ''; ?>><?php print (in_array($key, $activeSitewidePlugins) || in_array($key, $activePlugins))? "<span class=\"activePlugin\">".$plugin['Name']."</span>" : $plugin['Name']; ?><br>
+	      <div id="pluginListdiv" class="stuffbox" style="width: 98%">
+              <div id="pluginContainer" class="metaBoxContent">
+					<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="" onclick="PO_toggle_all_plugins();">Enable/Disable All<br><br>
 					<?php
-					$count++;
-				}
-			  ?>
+					$count = 0;
+					foreach ($plugins as $key=>$plugin) {
+						$count++;
+						?>
+						<div class="pluginWrap <?php print (in_array($key, $activeSitewidePlugins) || in_array($key, $activePlugins))? "activePluginWrap" : "inactivePluginWrap"; ?>">
+							<?php 
+							if (in_array($key, $disabledPlugins)) {
+								?>
+								<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" checked="checked" />
+								<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('<?php print $count; ?>');" />
+								<?php
+							} else {
+								?>
+								<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" />
+								<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('<?php print $count; ?>');" />
+								<?php
+							}
+							print $plugin['Name'];
+							?>
+							<div style="clear: both;"></div>
+						</div>
+						<?php
+					}
+					?>
+				<div style="clear: both;"></div>
 			  <div class="inside">
             	<input type=hidden name="page" value="PO_global_plugins">
 				<input type=button name=submit value="Save" onmousedown="PO_submit_global_plugins();">
               </div>
             </div>
-	      </form>
 	    </div>
       </div>
     </div>

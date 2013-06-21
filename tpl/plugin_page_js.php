@@ -4,7 +4,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	foreach($plugins as $key=>$plugin) {
 		$plugins[$key]=$plugin['Name'];
 	}
-	$groups = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+	$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
 	?>
 	<style type="text/css">
 		<?php 
@@ -212,7 +212,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			<?php
 			foreach ($groups as $group) {
 				?>
-				pluginGroups += '<option value="<?php print $group->group_id; ?>"><?php print $group->group_name; ?></option>';
+				pluginGroups += '<option value="<?php print $group->ID; ?>"><?php print $group->post_title; ?></option>';
 				<?php
 			}
 			?>
