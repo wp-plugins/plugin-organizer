@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
-Tested up to: 3.5.1
-Stable tag: 3.0
+Tested up to: 3.5.2
+Stable tag: 3.0.1
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,11 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 3.0.1 =
+Fixed a problem with fuzzy url matching.  " characters were being added to the url so it would never match.
+Commented out the code that deleted the tables and added an option to the databse to prevent multiple imports.  Will add the delete code in a later version to clean up the tables after everyone is stable and has imported their settings.
+Added code to ensure that the old MU plugin is deleted before attempting to copy it from the lib directory.
 
 = 3.0 =
 Complete redesign of the plugin.
@@ -269,6 +274,11 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.0.1 =
+Fixed a problem with fuzzy url matching.  " characters were being added to the url so it would never match.
+Commented out the code that deleted the tables and added an option to the databse to prevent multiple imports.  Will add the delete code in a later version to clean up the tables after everyone is stable and has imported their settings.
+Added code to ensure that the old MU plugin is deleted before attempting to copy it from the lib directory.
 
 = 3.0 =
 Complete redesign of the plugin.

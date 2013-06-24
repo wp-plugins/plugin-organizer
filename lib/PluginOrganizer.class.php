@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.0") {
+		if (get_option("PO_version_num") != "3.0.1") {
 			$this->activate();
 		}
 	}
@@ -28,7 +28,7 @@ class PluginOrganizer {
 				update_post_meta($post_id, '_PO_group_members', unserialize($group->group_members));
 			}
 		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
+		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
 	}
 
 	function move_old_post_plugins() {
@@ -42,7 +42,7 @@ class PluginOrganizer {
 				update_post_meta($post->post_id, '_PO_post_permalink', get_permalink($post->post_id));
 			}
 		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
+		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
 	}
 	
 	function move_old_url_plugins() {
@@ -57,20 +57,23 @@ class PluginOrganizer {
 				update_post_meta($post_id, '_PO_post_permalink', $post->permalink);
 			}
 		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
+		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
 	}
 
 	function activate() {
 		global $wpdb;
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
+		if (get_option('PO_old_groups_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
+			update_option('PO_old_groups_moved', 1);
 			$this->move_old_groups();
 		}
 
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
+		if (get_option('PO_old_posts_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
+			update_option('PO_old_posts_moved', 1);
 			$this->move_old_post_plugins();
 		}
 		
-		if($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
+		if (get_option('PO_old_urls_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
+			update_option('PO_old_urls_moved', 1);
 			$this->move_old_url_plugins();
 		}
 		
@@ -98,8 +101,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0") {
-			update_option("PO_version_num", "3.0");
+		if (get_option("PO_version_num") != "3.0.1") {
+			update_option("PO_version_num", "3.0.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -980,6 +983,7 @@ class PluginOrganizer {
 				@mkdir(WPMU_PLUGIN_DIR);
 			}
 			if (file_exists(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php")) {
+				@unlink(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
 				@copy(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . "/PluginOrganizerMU.class.php", WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
 			}
 			if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
