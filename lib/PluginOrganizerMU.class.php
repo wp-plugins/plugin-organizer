@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.0.1
+Version: 3.0.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -27,7 +27,7 @@ class PluginOrganizerMU {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-			if (get_option("PO_version_num") != "3.0.1" && !is_admin()) {
+			if (get_option("PO_version_num") != "3.0.2" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 				update_option("PO_admin_disable_plugins", "0");
@@ -42,7 +42,7 @@ class PluginOrganizerMU {
 												'relation' => 'AND',
 												array(
 													'key' => '_PO_permalink', 
-													'value' => '"%' . $this->requestedPermalink . '"',
+													'value' => '%' . $this->requestedPermalink,
 													'compare' => 'LIKE'
 												)
 											)
@@ -67,7 +67,7 @@ class PluginOrganizerMU {
 					$enabledPlugins = array();
 				}
 
-				if (sizeof($disabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
+				if (sizeof($disabledPlugins) == 0 && sizeof($enabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
 					$endChar = '';
 					if (preg_match('/\/$/', $this->requestedPermalink)) {
 						$endChar = '/';
@@ -117,7 +117,7 @@ class PluginOrganizerMU {
 												'relation' => 'AND',
 												array(
 													'key' => '_PO_permalink', 
-													'value' => '' . $this->requestedPermalink,
+													'value' => $this->requestedPermalink,
 													'compare' => '='
 												),
 												array(
