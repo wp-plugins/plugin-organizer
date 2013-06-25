@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.0.2
+Version: 3.0.3
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -27,7 +27,7 @@ class PluginOrganizerMU {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-			if (get_option("PO_version_num") != "3.0.2" && !is_admin()) {
+			if (get_option("PO_version_num") != "3.0.3" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 				update_option("PO_admin_disable_plugins", "0");
@@ -35,8 +35,10 @@ class PluginOrganizerMU {
 				$globalPlugins = get_option("PO_disabled_plugins");
 				
 				if ($this->ignoreProtocol == '1') {
+					add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 					$requestedPost = get_posts(
 										array(
+											'suppress_filters'=>false,
 											'post_type'=>$this->postTypeSupport,
 											'meta_query' => array(
 												'relation' => 'AND',
@@ -47,6 +49,7 @@ class PluginOrganizerMU {
 												)
 											)
 										));
+					remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 				} else {
 					$requestedPost = get_posts(array('post_type'=>$this->postTypeSupport, 'meta_key'=>'_PO_permalink', 'meta_value'=>$this->requestedPermalink));
 				}
@@ -90,8 +93,10 @@ class PluginOrganizerMU {
 						$loopCount++;
 						if ($this->ignoreProtocol == '1') {
 					
+							add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 							$fuzzyPost = get_posts(
 										array(
+											'suppress_filters'=>false,
 											'post_type'=>$this->postTypeSupport,
 											'meta_query' => array(
 												'relation' => 'AND',
@@ -109,6 +114,7 @@ class PluginOrganizerMU {
 										));
 
 							$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
+							remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 						} else {
 							$fuzzyPost = get_posts(
 										array(
@@ -182,6 +188,11 @@ class PluginOrganizerMU {
 			$newPluginList = $pluginList;
 		}
 		return $newPluginList;
+	}
+	
+	function fix_where_clause($where) {
+		$where = preg_replace('/%\\\\\\\\%'.preg_replace('/\//', '\/', $this->requestedPermalink).'%/', '%'.$this->requestedPermalink, $where);
+		return $where;
 	}
 	
 	function sort_posts($a, $b) {
