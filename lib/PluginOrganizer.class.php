@@ -14,66 +14,69 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.0.5") {
+		if (get_option("PO_version_num") != "3.0.6") {
 			$this->activate();
 		}
 	}
 	
 	function move_old_groups() {
 		global $wpdb;
-		$groupList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-		foreach ($groupList as $group) {
-			$post_id = wp_insert_post(array('post_title'=>$group->group_name, 'post_type'=>'plugin_group', 'post_status'=>'publish'));
-			if (!is_wp_error($post_id)) {
-				update_post_meta($post_id, '_PO_group_members', unserialize($group->group_members));
+		if (get_option('PO_old_groups_moved') == '') {
+			$groupList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
+			foreach ($groupList as $group) {
+				$post_id = wp_insert_post(array('post_title'=>$group->group_name, 'post_type'=>'plugin_group', 'post_status'=>'publish'));
+				if (!is_wp_error($post_id)) {
+					update_post_meta($post_id, '_PO_group_members', unserialize($group->group_members));
+				}
 			}
 		}
-		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
 	}
 
 	function move_old_post_plugins() {
 		global $wpdb;
-		$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_post_plugins");
-		foreach ($postList as $post) {
-			if (is_numeric($post->post_id)) {
-				update_post_meta($post->post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
-				update_post_meta($post->post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
-				update_post_meta($post->post_id, '_PO_affect_children', $post->children);
-				update_post_meta($post->post_id, '_PO_permalink', get_permalink($post->post_id));
+		if (get_option('PO_old_posts_moved') == '') {
+			$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_post_plugins");
+			foreach ($postList as $post) {
+				if (is_numeric($post->post_id)) {
+					update_post_meta($post->post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
+					update_post_meta($post->post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
+					update_post_meta($post->post_id, '_PO_affect_children', $post->children);
+					update_post_meta($post->post_id, '_PO_permalink', get_permalink($post->post_id));
+				}
 			}
 		}
-		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
 	}
 	
 	function move_old_url_plugins() {
 		global $wpdb;
-		$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
-		foreach ($postList as $post) {
-			$post_id = wp_insert_post(array('post_title'=>$post->permalink, 'post_type'=>'plugin_filter', 'post_status'=>'publish'));
-			if (!is_wp_error($post_id)) {
-				update_post_meta($post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
-				update_post_meta($post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
-				update_post_meta($post_id, '_PO_affect_children', $post->children);
-				update_post_meta($post_id, '_PO_permalink', $post->permalink);
+		if (get_option('PO_old_urls_moved') == '') {
+			$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
+			foreach ($postList as $post) {
+				$post_id = wp_insert_post(array('post_title'=>$post->permalink, 'post_type'=>'plugin_filter', 'post_status'=>'publish'));
+				if (!is_wp_error($post_id)) {
+					update_post_meta($post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
+					update_post_meta($post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
+					update_post_meta($post_id, '_PO_affect_children', $post->children);
+					update_post_meta($post_id, '_PO_permalink', $post->permalink);
+				}
 			}
 		}
-		##$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
 	}
 
 	function activate() {
 		global $wpdb;
-		if (get_option('PO_old_groups_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
-			update_option('PO_old_groups_moved', 1);
+		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
 			$this->move_old_groups();
 		}
 
-		if (get_option('PO_old_posts_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
-			update_option('PO_old_posts_moved', 1);
+		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
 			$this->move_old_post_plugins();
 		}
 		
-		if (get_option('PO_old_urls_moved') == '' && $wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
-			update_option('PO_old_urls_moved', 1);
+		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
 			$this->move_old_url_plugins();
 		}
 		
@@ -84,10 +87,11 @@ class PluginOrganizer {
 			$postTypeSupport[] = 'plugin_filter';
 		}
 		
-		$posts = get_posts(array('posts_per_page'=>-1, 'post_type'=>get_option("PO_custom_post_type_support")));
+		$posts = get_posts(array('meta_key'=>'_PO_post_permalink', 'posts_per_page'=>-1, 'post_type'=>$postTypeSupport));
 		foreach ($posts as $post) {
 			if (get_permalink($post->ID) != get_post_meta($post->ID, '_PO_permalink', $single=true)) {
 				update_post_meta($post->ID, '_PO_permalink', get_permalink($post->ID));
+				delete_post_meta($post->ID, '_PO_post_permalink');
 			}
 		}
 		
@@ -115,8 +119,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0.5") {
-			update_option("PO_version_num", "3.0.5");
+		if (get_option("PO_version_num") != "3.0.6") {
+			update_option("PO_version_num", "3.0.6");
 		}
 
 		//Add capabilities to the administrator role
