@@ -119,8 +119,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0.7") {
-			update_option("PO_version_num", "3.0.7");
+		if (get_option("PO_version_num") != "3.0.8") {
+			update_option("PO_version_num", "3.0.8");
 		}
 
 		//Add capabilities to the administrator role
@@ -151,10 +151,6 @@ class PluginOrganizer {
 			$administrator->add_cap('delete_others_plugin_groups');
 			$administrator->add_cap('delete_published_plugin_groups');
 			$administrator->add_cap('delete_private_plugin_groups');
-		}
-
-		if (wp_count_posts('plugin_group') == 0) {
-			$this->create_default_group();
 		}
 	}
 	
