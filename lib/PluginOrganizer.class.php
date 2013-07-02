@@ -42,7 +42,7 @@ class PluginOrganizer {
 					update_post_meta($post->post_id, '_PO_enabled_plugins', unserialize($post->enabled_plugins));
 					update_post_meta($post->post_id, '_PO_disabled_plugins', unserialize($post->disabled_plugins));
 					update_post_meta($post->post_id, '_PO_affect_children', $post->children);
-					update_post_meta($post->post_id, '_PO_permalink', get_permalink($post->post_id));
+					update_post_meta($post->post_id, '_PO_permalink', $post->permalink);
 				}
 			}
 		}
@@ -119,8 +119,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0.6") {
-			update_option("PO_version_num", "3.0.6");
+		if (get_option("PO_version_num") != "3.0.7") {
+			update_option("PO_version_num", "3.0.7");
 		}
 
 		//Add capabilities to the administrator role
