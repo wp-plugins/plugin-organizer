@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.0.6") {
+		if (get_option("PO_version_num") != "3.0.7") {
 			$this->activate();
 		}
 	}
