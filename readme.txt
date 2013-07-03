@@ -66,6 +66,7 @@ A.
 
 = 3.0.9 =
 Fixing typo in version number check on initialization.
+Got rid of code to fix old custom permalink field
 
 = 3.0.8 =
 Removed a call to wp_count_posts in the activation function.  It may have been causing issues on activation.
@@ -303,6 +304,7 @@ Initial version.
 
 = 3.0.9 =
 Fixing typo in version number check on initialization.
+Got rid of code to fix old custom permalink field
 
 = 3.0.8 =
 Removed a call to wp_count_posts in the activation function.  It may have been causing issues on activation.
