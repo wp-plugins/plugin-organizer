@@ -87,14 +87,6 @@ class PluginOrganizer {
 			$postTypeSupport[] = 'plugin_filter';
 		}
 		
-		$posts = get_posts(array('meta_key'=>'_PO_post_permalink', 'posts_per_page'=>-1, 'post_type'=>$postTypeSupport));
-		foreach ($posts as $post) {
-			if (get_permalink($post->ID) != get_post_meta($post->ID, '_PO_permalink', $single=true)) {
-				update_post_meta($post->ID, '_PO_permalink', get_permalink($post->ID));
-				delete_post_meta($post->ID, '_PO_post_permalink');
-			}
-		}
-		
 		if (!file_exists(WPMU_PLUGIN_DIR)) {
 			@mkdir(WPMU_PLUGIN_DIR);
 		}
