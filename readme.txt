@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.5.2
-Stable tag: 3.0.8
+Stable tag: 3.0.9
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,9 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 3.0.9 =
+Fixing typo in version number check on initialization.
 
 = 3.0.8 =
 Removed a call to wp_count_posts in the activation function.  It may have been causing issues on activation.
@@ -297,6 +300,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.0.9 =
+Fixing typo in version number check on initialization.
 
 = 3.0.8 =
 Removed a call to wp_count_posts in the activation function.  It may have been causing issues on activation.
