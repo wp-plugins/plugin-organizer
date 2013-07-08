@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.0.9") {
+		if (get_option("PO_version_num") != "3.0.10") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0.9") {
-			update_option("PO_version_num", "3.0.9");
+		if (get_option("PO_version_num") != "3.0.10") {
+			update_option("PO_version_num", "3.0.10");
 		}
 
 		//Add capabilities to the administrator role
@@ -593,7 +593,7 @@ class PluginOrganizer {
 				foreach ($groups as $group) {
 					$members = get_post_meta($group->ID, '_PO_group_members', $single=true);
 					$members = stripslashes_deep($members);
-					if (array_search($plugin['Name'], $members) !== FALSE) {
+					if (is_array($members) && array_search($plugin['Name'], $members) !== FALSE) {
 						$assignedGroups .= '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group->ID.'">'.$group->post_title.'</a> ,';
 					}
 				}
