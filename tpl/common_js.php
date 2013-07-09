@@ -5,34 +5,46 @@
 		jQuery(".pluginsList").each(function() {  
 			var splitID = this.id.split('_');
 			if (toggle) {
-				PO_set_on_off(splitID[1], 1);
+				PO_set_on_off('pluginsButton_'+splitID[1], 'plugins_'+splitID[1], 1);
 			} else {
-				PO_set_on_off(splitID[1], 0);
+				PO_set_on_off('pluginsButton_'+splitID[1], 'plugins_'+splitID[1], 0);
 			}
 		});  
 	}
 
-	function PO_toggle_on_off(buttonID) {
-		if (jQuery('#pluginsButton_'+buttonID).hasClass('pluginsButtonOff')) {
-			PO_set_on_off(buttonID, 1);
+	function PO_toggle_all_mobile_plugins() {
+		var toggle = jQuery("#toggleAllMobilePlugins").attr('checked');
+		jQuery(".mobilePluginsList").each(function() {  
+			var splitID = this.id.split('_');
+			if (toggle) {
+				PO_set_on_off('mobilePluginsButton_'+splitID[1], 'mobilePlugins_'+splitID[1], 1);
+			} else {
+				PO_set_on_off('mobilePluginsButton_'+splitID[1], 'mobilePlugins_'+splitID[1], 0);
+			}
+		});  
+	}
+
+	function PO_toggle_on_off(buttonID, checkboxID) {
+		if (jQuery('#'+buttonID).hasClass('pluginsButtonOff')) {
+			PO_set_on_off(buttonID, checkboxID, 1);
 		} else {
-			PO_set_on_off(buttonID, 0);
+			PO_set_on_off(buttonID, checkboxID, 0);
 		}
 	}
 	
-	function PO_set_on_off(buttonID, onOff) {
+	function PO_set_on_off(buttonID, checkboxID, onOff) {
 		if (onOff == 1) {
-			jQuery('#plugins_'+buttonID).attr('checked', false);
-			jQuery('#pluginsButton_'+buttonID).attr('src', '<?php print $this->urlPath; ?>/image/on-button.png');
-			jQuery('#pluginsButton_'+buttonID).attr('alt', 'On');
-			jQuery('#pluginsButton_'+buttonID).removeClass('pluginsButtonOff');
-			jQuery('#pluginsButton_'+buttonID).addClass('pluginsButtonOn');
+			jQuery('#'+checkboxID).attr('checked', false);
+			jQuery('#'+buttonID).attr('src', '<?php print $this->urlPath; ?>/image/on-button.png');
+			jQuery('#'+buttonID).attr('alt', 'On');
+			jQuery('#'+buttonID).removeClass('pluginsButtonOff');
+			jQuery('#'+buttonID).addClass('pluginsButtonOn');
 		} else {
-			jQuery('#plugins_'+buttonID).attr('checked', true);
-			jQuery('#pluginsButton_'+buttonID).attr('src', '<?php print $this->urlPath; ?>/image/off-button.png');
-			jQuery('#pluginsButton_'+buttonID).attr('alt', 'Off');
-			jQuery('#pluginsButton_'+buttonID).removeClass('pluginsButtonOn');
-			jQuery('#pluginsButton_'+buttonID).addClass('pluginsButtonOff');
+			jQuery('#'+checkboxID).attr('checked', true);
+			jQuery('#'+buttonID).attr('src', '<?php print $this->urlPath; ?>/image/off-button.png');
+			jQuery('#'+buttonID).attr('alt', 'Off');
+			jQuery('#'+buttonID).removeClass('pluginsButtonOn');
+			jQuery('#'+buttonID).addClass('pluginsButtonOff');
 		}
 	}
 	

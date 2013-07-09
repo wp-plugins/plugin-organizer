@@ -2,12 +2,31 @@
 if ( current_user_can( 'activate_plugins' ) ) {
 	?>
 	<script type="text/javascript" language="javascript">
+		function PO_submit_mobile_user_agents() {
+			var mobileUserAgents = jQuery('#PO_mobile_user_agents').val();
+			var load_element = jQuery('#PO-browser-string-div .inside');
+			var revertHtml = load_element.html();
+			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_mobile_user_agents'), { 'PO_mobile_user_agents': mobileUserAgents, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+				alert(result);
+				load_element.html(revertHtml);
+				jQuery('#PO_mobile_user_agents').val(mobileUserAgents);
+			});
+		}
+	
 		function PO_submit_disable_settings() {
 			var disable_plugins = 0;
+			var disable_mobile_plugins = 0;
 			var admin_disable_plugins = 0;
 			jQuery('.PO-disable-plugins').each(function() {
 				if (this.checked) {
 					disable_plugins = this.value;
+				}
+			});
+
+			jQuery('.PO-disable-mobile-plugins').each(function() {
+				if (this.checked) {
+					disable_mobile_plugins = this.value;
 				}
 			});
 
@@ -20,11 +39,17 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			var load_element = jQuery('#PO-disable-settings-div .inside');
 			var revertHtml = load_element.html();
 			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_disable_plugin_settings'), { 'PO_disable_plugins': disable_plugins, 'PO_admin_disable_plugins': admin_disable_plugins, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_disable_plugin_settings'), { 'PO_disable_plugins': disable_plugins, 'PO_disable_mobile_plugins': disable_mobile_plugins, 'PO_admin_disable_plugins': admin_disable_plugins, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 				alert(result);
 				load_element.html(revertHtml);
 				jQuery('.PO-disable-plugins').each(function() {
 					if (this.value == disable_plugins) {
+						this.checked = true;
+					}
+				});
+
+				jQuery('.PO-disable-mobile-plugins').each(function() {
+					if (this.value == disable_mobile_plugins) {
 						this.checked = true;
 					}
 				});

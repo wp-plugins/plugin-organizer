@@ -31,7 +31,14 @@
 				<input type="radio" name="PO_disable_plugins" class="PO-disable-plugins" value="1" <?php print ($selectiveLoad == "1")? "checked='checked'":""; ?>> Enable<br />
 				<input type="radio" name="PO_disable_plugins" class="PO-disable-plugins" value="0" <?php print ($selectiveLoad != "1")? "checked='checked'":""; ?>> Disable
 				<br />
-				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to /wp-content/mu-plugins before it will take affect.  If you don't have an mu-plugins folder you need to create it.
+				NOTE:  When this option is enabled you must move the PluginOrganizerMU.class.php file from /wp-content/plugins/plugin_organizer/lib to <?php print WPMU_PLUGIN_DIR; ?> before it will take affect.  If you don't have an mu-plugins folder you need to create it.
+				<br /><br /><br />
+				<strong>Selective Mobile Plugin Loading:</strong><br />
+				<?php $selectiveMobileLoad = get_option("PO_disable_mobile_plugins"); ?>
+				<input type="radio" name="PO_disable_mobile_plugins" class="PO-disable-mobile-plugins" value="1" <?php print ($selectiveMobileLoad == "1")? "checked='checked'":""; ?>> Enable<br />
+				<input type="radio" name="PO_disable_mobile_plugins" class="PO-disable-mobile-plugins" value="0" <?php print ($selectiveMobileLoad != "1")? "checked='checked'":""; ?>> Disable
+				<br />
+				NOTE:  When this option is enabled plugins will be disabled differently for mobile browsers. The first option must be enabled before this one will take affect.
 				<br /><br /><br />
 				<strong>Admin Areas:</strong><br />
 				<?php $selectiveAdminLoad = get_option("PO_admin_disable_plugins"); ?>
@@ -105,6 +112,22 @@
 				}
 				?>
 				<input type="button" name="add-post-support" value="Save Post Types" onmousedown="PO_submit_post_type_support();">
+			  </div>
+		    </div>
+		  <br /><br />
+		    <div id="PO-browser-string-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_mobile_user_agents">Mobile User Agents</label></h3>
+			  <div class="inside">
+				<textarea name="PO_mobile_user_agents" id="PO_mobile_user_agents" rows="7" cols="50" style="width: 100%;"><?php
+					$userAgents = get_option("PO_mobile_user_agents");
+					if (is_array($userAgents)) {
+						foreach ($userAgents as $agent) {
+							print $agent . "\n";
+						}
+					}
+				?></textarea>
+				<br />
+				<input type="button" name="save-user-agents" value="Save User Agents" onmousedown="PO_submit_mobile_user_agents();">
 			  </div>
 		    </div>
 		  <br /><br />

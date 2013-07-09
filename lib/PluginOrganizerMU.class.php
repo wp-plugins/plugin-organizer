@@ -3,37 +3,42 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.0.10
+Version: 3.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
 */
 
 class PluginOrganizerMU {
-	var $ignoreProtocol;
-	var $ignoreArguments;
-	var $requestedPermalink;
-	var $postTypeSupport;
-	var $protocol;
+	var $ignoreProtocol, $ignoreArguments, $requestedPermalink, $postTypeSupport;
+	var $protocol, $mobile, $detectMobile;
 	function __construct() {
 		$this->ignoreProtocol = get_option('PO_ignore_protocol');
 		$this->ignoreArguments = get_option('PO_ignore_arguments');
 		$this->set_requested_permalink();
 		$this->postTypeSupport = get_option('PO_custom_post_type_support');
 		$this->postTypeSupport[] = 'plugin_filter';
+		$this->detectMobile = get_option('PO_disable_mobile_plugins');
+		if ($this->detectMobile == 1) {
+			$this->detect_mobile();
+		}
 	}
 	
 	function disable_plugins($pluginList) {
 		global $wpdb, $pagenow;
 		$newPluginList = array();
 		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-			if (get_option("PO_version_num") != "3.0.10" && !is_admin()) {
+			if (get_option("PO_version_num") != "3.1" && !is_admin()) {
 				$newPluginList = $pluginList;
 				update_option("PO_disable_plugins", "0");
 				update_option("PO_admin_disable_plugins", "0");
 			} else {
-				$globalPlugins = get_option("PO_disabled_plugins");
-				
+				if ($this->detectMobile == 1 && $this->mobile) {
+					$globalPlugins = get_option("PO_disabled_mobile_plugins");
+				} else {
+					$globalPlugins = get_option("PO_disabled_plugins");
+				}
+
 				if ($this->ignoreProtocol == '1') {
 					add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 					$requestedPost = get_posts(
@@ -58,8 +63,13 @@ class PluginOrganizerMU {
 				$disabledPlugins = array();
 				$enabledPlugins = array();
 				if (isset($requestedPost[0]->ID)) {
-					$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
-					$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
+					if ($this->detectMobile == 1 && $this->mobile) {
+						$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
+						$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
+					} else {
+						$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
+						$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
+					}
 				}
 				
 				if (!is_array($disabledPlugins)) {
@@ -142,8 +152,13 @@ class PluginOrganizerMU {
 							usort($fuzzyPost, array($this, 'sort_posts'));
 							
 							if (isset($fuzzyPost[0]->ID)) {
-								$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
-								$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+								if ($this->detectMobile == 1 && $this->mobile) {
+									$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
+									$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
+								} else {
+									$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
+									$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+								}
 							}
 							
 							if (!is_array($disabledFuzzyPlugins)) {
@@ -234,6 +249,22 @@ class PluginOrganizerMU {
 		} else {
 			$this->protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
 			$this->requestedPermalink = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
+		}
+	}
+
+	function detect_mobile() {
+		$userAgent = $_SERVER['HTTP_USER_AGENT'];
+		$mobileAgents = get_option('PO_mobile_user_agents');
+		if (!is_array($mobileAgents)) {
+			$mobileAgents = array();
+		}
+		$this->mobile = false;
+
+		foreach ( $mobileAgents as $agent ) {
+			if ( $agent != "" && preg_match( "#".preg_replace('/#/', '?', preg_quote($agent))."#i", $userAgent ) ) {
+				$this->mobile = true;
+				break;
+			}
 		}
 	}
 }

@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.0.10") {
+		if (get_option("PO_version_num") != "3.1") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.0.10") {
-			update_option("PO_version_num", "3.0.10");
+		if (get_option("PO_version_num") != "3.1") {
+			update_option("PO_version_num", "3.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -225,19 +225,19 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			add_action('admin_head-plugins.php', array($this, 'plugin_page_js'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
-			add_action('admin_head-post-new.php', array($this, 'admin_styles'));
+			add_action('admin_head-post-new.php', array($this, 'admin_css'));
 			add_action('admin_head-post-new.php', array($this, 'common_js'));
 			
-			add_action('admin_head-post.php', array($this, 'admin_styles'));
+			add_action('admin_head-post.php', array($this, 'admin_css'));
 			add_action('admin_head-post.php', array($this, 'common_js'));
 			
 			$plugin_page=add_submenu_page('options-general.php', 'Plugin Organizer Settings', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
-			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_css'));
 			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 			
 			$plugin_page=add_submenu_page('edit.php?post_type=plugin_filter', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
-			add_action('admin_head-'.$plugin_page, array($this, 'admin_styles'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_css'));
 			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 		}
@@ -261,72 +261,8 @@ class PluginOrganizer {
 		require_once($this->absPath . "/tpl/settings_page_js.php");
 	}
 
-	function admin_styles() {
-		?>
-		<style type="text/css">
-			#icon-po-settings {
-				background: url("<?php print $this->urlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
-			}
-			#icon-po-global {
-				background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
-			}
-
-			.activePlugin {
-				color: #990033;
-			}
-
-			.badInputLabel {
-				color: #990033;
-				font-weight: bold;
-			}
-			.badInput {
-				background-color: #990033;
-			}
-			.metaBoxLabel {
-				font-size: 20px;
-				line-height: 22px;
-				padding: 5px;
-				float: left;
-				clear: both;
-				width: 100px;
-			}
-			.metaBoxContent {
-				border: 2px outset #000000;
-				margin-bottom: 20px;
-				float: left;
-				width: 100%;
-			}
-			.metaBoxContent input[type="checkbox"], .plugin-organizer_page_PO_global_plugins input[type="checkbox"], .plugin-organizer_page_PO_global_plugins input[type="radio"], .toplevel_page_Plugin_Organizer input[type="checkbox"], .toplevel_page_Plugin_Organizer input[type="radio"], .plugin-organizer_page_PO_url_admin input[type="checkbox"], .plugin-organizer_page_PO_url_admin input[type="radio"] {
-				margin: 0px 3px 0px 3px !important;
-			}
-
-			.poPermalinkInput, .poFilterNameInput {
-				width: 90%;
-				margin: 10px;
-			}
-
-			.pluginWrap {
-				padding: 4px 0px;
-				border-bottom: 1px solid #cccccc;
-				line-height: 26px;
-			}
-
-			.pluginsList {
-				display: none;
-			}
-			
-			.pluginsButton {
-				vertical-align: middle;
-				margin: 0px 3px;
-			}
-
-			.inactivePluginWrap {
-				background-color: #cccccc;
-				border-bottom: 1px solid #ffffff;
-			}
-			
-		</style>
-		<?php
+	function admin_css() {
+		require_once($this->absPath . "/tpl/admin_css.php");
 	}
 		
 	function check_mu_plugin() {
@@ -358,10 +294,14 @@ class PluginOrganizer {
 			$errMsg = $this->check_mu_plugin();
 			$plugins = $this->reorder_plugins(get_plugins());
 			$disabledPlugins = get_option('PO_disabled_plugins');
+			$disabledMobilePlugins = get_option('PO_disabled_mobile_plugins');
 			$activePlugins = $this->get_active_plugins();
 			$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
 			if (!is_array($disabledPlugins)) {
 				$disabledPlugins = array();
+			}
+			if (!is_array($disabledMobilePlugins)) {
+				$disabledMobilePlugins = array();
 			}
 			require_once($this->absPath . "/tpl/globalPlugins.php");
 		} else {
@@ -443,16 +383,26 @@ class PluginOrganizer {
 		}
 		$returnStatus = "";
 		if ( current_user_can( 'activate_plugins' ) ) {
-			$plugins = $this->get_active_plugins();
 			if (is_array($_POST['disabledList'])) {
 				$disabledPlugins = $_POST['disabledList'];
 				update_option("PO_disabled_plugins", $disabledPlugins);
-				$returnStatus = "Global plugin list has been saved.";
+				$returnStatus .= "Global plugin list has been saved.\n";
 			} else {
-				$returnStatus = "Did not recieve the proper variables.  No changes made.";
+				update_option("PO_disabled_plugins", array());
+				$returnStatus .= "Global mobile plugin list has been saved.\n";
+			}
+			if (get_option('PO_disable_mobile_plugins') == 1) {
+				if (is_array($_POST['disabledMobileList'])) {
+					$disabledMobilePlugins = $_POST['disabledMobileList'];
+					update_option("PO_disabled_mobile_plugins", $disabledMobilePlugins);
+					$returnStatus .= "Global mobile plugin list has been saved.\n";
+				} else {
+					update_option("PO_disabled_mobile_plugins", array());
+					$returnStatus .= "Global mobile plugin list has been saved.\n";
+				}
 			}
 		} else {
-			$returnStatus = "You dont have permissions to access this page.";
+			$returnStatus .= "You dont have permissions to access this page.\n";
 		}
 		print $returnStatus;
 		die();
@@ -785,17 +735,35 @@ class PluginOrganizer {
 				$enabledPluginList = array();
 			}
 
+			$disabledMobilePluginList = get_post_meta($post->ID, '_PO_disabled_mobile_plugins', $single=true);
+			if (!is_array($disabledMobilePluginList)) {
+				$disabledMobilePluginList = array();
+			}
+
+			$enabledMobilePluginList = get_post_meta($post->ID, '_PO_enabled_mobile_plugins', $single=true);
+			if (!is_array($enabledMobilePluginList)) {
+				$enabledMobilePluginList = array();
+			}
+
 			$permalinkFilter = get_post_meta($post->ID, '_PO_permalink', $single=true);
 		} else {
-			$postPlugins = array();
+			$filterName = "";
+			$affectChildren = 0;
 			$disabledPluginList = array();
 			$enabledPluginList = array();
+			$disabledMobilePluginList = array();
+			$enabledMobilePluginList = array();
 			$permalinkFilter = "";
 		}
 		
 		$globalPlugins = get_option('PO_disabled_plugins');
 		if (!is_array($globalPlugins)) {
 			$globalPlugins = array();
+		}
+
+		$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
+		if (!is_array($globalMobilePlugins)) {
+			$globalMobilePlugins = array();
 		}
 		
 		$plugins = $this->reorder_plugins(get_plugins());
@@ -863,6 +831,37 @@ class PluginOrganizer {
 
 		update_post_meta($post_id, '_PO_disabled_plugins', $disabledPlugins);
 		update_post_meta($post_id, '_PO_enabled_plugins', $enabledPlugins);
+
+
+		if (get_option('PO_disable_mobile_plugins') == 1) {
+			$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
+			if (!is_array($globalMobilePlugins)) {
+				$globalMobilePlugins = array();
+			}
+			$disabledMobilePlugins = array();
+			$enabledMobilePlugins = array();
+				
+			if (isset($_POST['mobilePluginsList']) && is_array($_POST['mobilePluginsList'])) {
+				foreach ($_POST['mobilePluginsList'] as $plugin) {
+					if (!in_array($plugin, $globalMobilePlugins)) {
+						$disabledMobilePlugins[] = $plugin;
+					}
+				}
+
+				foreach ($globalMobilePlugins as $plugin) {
+					if (!in_array($plugin, $_POST['mobilePluginsList'])) {
+						$enabledMobilePlugins[] = $plugin;
+					}
+				}
+			} else {
+				foreach ($globalMobilePlugins as $plugin) {
+					$enabledMobilePlugins[] = $plugin;
+				}
+			}
+			update_post_meta($post_id, '_PO_disabled_mobile_plugins', $disabledMobilePlugins);
+			update_post_meta($post_id, '_PO_enabled_mobile_plugins', $enabledMobilePlugins);
+		}
+
 
 		if (get_post_type($post_id) != 'plugin_filter') {
 			update_post_meta($post_id, '_PO_permalink', get_permalink($post_id));
@@ -1061,16 +1060,23 @@ class PluginOrganizer {
 		$result = "";
 		if (preg_match("/^(1|0)$/", $_POST['PO_disable_plugins'])) {
 			update_option("PO_disable_plugins", $_POST['PO_disable_plugins']);
-			$result = "Update was successful.";
+			$result .= "The selective plugin loading setting was saved successfully.\n";
 		} else {
-			$result = "Update failed.";
+			$result .= "There was a problem saving the selective plugin loading setting.\n";
+		}
+
+		if (preg_match("/^(1|0)$/", $_POST['PO_disable_mobile_plugins'])) {
+			update_option("PO_disable_mobile_plugins", $_POST['PO_disable_mobile_plugins']);
+			$result .= "The selective mobile plugin loading setting was saved successfully.\n";
+		} else {
+			$result .= "There was a problem saving the selective mobile plugin loading setting.\n";
 		}
 
 		if (preg_match("/^(1|0)$/", $_POST['PO_admin_disable_plugins'])) {
 			update_option("PO_admin_disable_plugins", $_POST['PO_admin_disable_plugins']);
-			$result .= "Update was successful.";
+			$result .= "The admin areas setting was saved successfully.\n";
 		} else {
-			$result .= "Update failed.";
+			$result .= "There was a problem saving the admin areas setting.\n";
 		}
 		print $result;
 		die();
@@ -1092,6 +1098,24 @@ class PluginOrganizer {
 		die();
 	}
 
+	function save_mobile_user_agents() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		
+		$userAgents = preg_replace("/\\r\\n/", "\n", $_POST['PO_mobile_user_agents']);
+		$userAgents = explode("\n", $userAgents);
+		if (!is_array($userAgents)) {
+			$userAgents = array();
+		}
+		
+		if (update_option('PO_mobile_user_agents', $userAgents)) {
+			print "The user agents were saved.";
+		}
+		die();
+	}
+	
 	function register_type() {
 		$labels = array(
 			'name' => _x('Plugin Filters', 'post type general name'),
