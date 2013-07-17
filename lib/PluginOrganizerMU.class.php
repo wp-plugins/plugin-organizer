@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.1
+Version: 3.1.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -24,183 +24,190 @@ class PluginOrganizerMU {
 		}
 	}
 	
-	function disable_plugins($pluginList) {
+	function disable_plugins($pluginList, $networkPlugin=0) {
 		global $wpdb, $pagenow;
-		$newPluginList = array();
-		if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-			if (get_option("PO_version_num") != "3.1" && !is_admin()) {
-				$newPluginList = $pluginList;
-				update_option("PO_disable_plugins", "0");
-				update_option("PO_admin_disable_plugins", "0");
-			} else {
-				if ($this->detectMobile == 1 && $this->mobile) {
-					$globalPlugins = get_option("PO_disabled_mobile_plugins");
+		if (isset($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && is_array($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && $networkPlugin == 0) {
+			$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
+		} else {
+			$newPluginList = array();
+			if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
+				if (get_option("PO_version_num") != "3.1.1" && !is_admin()) {
+					$newPluginList = $pluginList;
+					update_option("PO_disable_plugins", "0");
+					update_option("PO_admin_disable_plugins", "0");
 				} else {
-					$globalPlugins = get_option("PO_disabled_plugins");
-				}
-
-				if ($this->ignoreProtocol == '1') {
-					add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-					$requestedPost = get_posts(
-										array(
-											'suppress_filters'=>false,
-											'post_type'=>$this->postTypeSupport,
-											'meta_query' => array(
-												'relation' => 'AND',
-												array(
-													'key' => '_PO_permalink', 
-													'value' => '%' . $this->requestedPermalink,
-													'compare' => 'LIKE'
-												)
-											)
-										));
-					remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-				} else {
-					$requestedPost = get_posts(array('post_type'=>$this->postTypeSupport, 'meta_key'=>'_PO_permalink', 'meta_value'=>$this->requestedPermalink));
-				}
-				usort($requestedPost, array($this, 'sort_posts'));
-				
-				$disabledPlugins = array();
-				$enabledPlugins = array();
-				if (isset($requestedPost[0]->ID)) {
 					if ($this->detectMobile == 1 && $this->mobile) {
-						$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
-						$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
+						$globalPlugins = get_option("PO_disabled_mobile_plugins");
 					} else {
-						$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
-						$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
-					}
-				}
-				
-				if (!is_array($disabledPlugins)) {
-					$disabledPlugins = array();
-				}
-
-				if (!is_array($enabledPlugins)) {
-					$enabledPlugins = array();
-				}
-
-				if (sizeof($disabledPlugins) == 0 && sizeof($enabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
-					$endChar = '';
-					if (preg_match('/\/$/', $this->requestedPermalink)) {
-						$endChar = '/';
+						$globalPlugins = get_option("PO_disabled_plugins");
 					}
 
-					$choppedUrl = $this->requestedPermalink;
-
-					
 					if ($this->ignoreProtocol == '1') {
-						$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
+						add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
+						$requestedPost = get_posts(
+											array(
+												'suppress_filters'=>false,
+												'post_type'=>$this->postTypeSupport,
+												'meta_query' => array(
+													'relation' => 'AND',
+													array(
+														'key' => '_PO_permalink', 
+														'value' => '%' . $this->requestedPermalink,
+														'compare' => 'LIKE'
+													)
+												)
+											));
+						remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
 					} else {
-						$lastUrl = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
+						$requestedPost = get_posts(array('post_type'=>$this->postTypeSupport, 'meta_key'=>'_PO_permalink', 'meta_value'=>$this->requestedPermalink));
+					}
+					usort($requestedPost, array($this, 'sort_posts'));
+					
+					$disabledPlugins = array();
+					$enabledPlugins = array();
+					if (isset($requestedPost[0]->ID)) {
+						if ($this->detectMobile == 1 && $this->mobile) {
+							$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
+							$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
+						} else {
+							$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
+							$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
+						}
+					}
+					
+					if (!is_array($disabledPlugins)) {
+						$disabledPlugins = array();
 					}
 
-					//Dont allow an endless loop
-					$loopCount = 0;
-					$matchFound = 0;
-					
-					while ($loopCount < 15 && $matchFound == 0 && $this->requestedPermalink != $lastUrl && ($this->requestedPermalink = preg_replace('/\/[^\/]+\/?$/', $endChar, $this->requestedPermalink))) {
-						$loopCount++;
-						if ($this->ignoreProtocol == '1') {
-					
-							add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-							$fuzzyPost = get_posts(
-										array(
-											'suppress_filters'=>false,
-											'post_type'=>$this->postTypeSupport,
-											'meta_query' => array(
-												'relation' => 'AND',
-												array(
-													'key' => '_PO_permalink', 
-													'value' => '%' . $this->requestedPermalink,
-													'compare' => 'LIKE'
-												),
-												array(
-													'key' => '_PO_affect_children', 
-													'value' => '1',
-													'compare' => '='
-												)
-											)
-										));
+					if (!is_array($enabledPlugins)) {
+						$enabledPlugins = array();
+					}
 
-							$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
-							remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-						} else {
-							$fuzzyPost = get_posts(
-										array(
-											'post_type'=>$this->postTypeSupport,
-											'meta_query' => array(
-												'relation' => 'AND',
-												array(
-													'key' => '_PO_permalink', 
-													'value' => $this->requestedPermalink,
-													'compare' => '='
-												),
-												array(
-													'key' => '_PO_affect_children', 
-													'value' => '1',
-													'compare' => '='
-												)
-											)
-										));
-							
-							$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
+					if (sizeof($disabledPlugins) == 0 && sizeof($enabledPlugins) == 0 && get_option("PO_fuzzy_url_matching") == "1") {
+						$endChar = '';
+						if (preg_match('/\/$/', $this->requestedPermalink)) {
+							$endChar = '/';
 						}
+
+						$choppedUrl = $this->requestedPermalink;
 
 						
-						if ($matchFound > 0) {
-							usort($fuzzyPost, array($this, 'sort_posts'));
+						if ($this->ignoreProtocol == '1') {
+							$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
+						} else {
+							$lastUrl = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
+						}
+
+						//Dont allow an endless loop
+						$loopCount = 0;
+						$matchFound = 0;
+						
+						while ($loopCount < 15 && $matchFound == 0 && $this->requestedPermalink != $lastUrl && ($this->requestedPermalink = preg_replace('/\/[^\/]+\/?$/', $endChar, $this->requestedPermalink))) {
+							$loopCount++;
+							if ($this->ignoreProtocol == '1') {
+						
+								add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
+								$fuzzyPost = get_posts(
+											array(
+												'suppress_filters'=>false,
+												'post_type'=>$this->postTypeSupport,
+												'meta_query' => array(
+													'relation' => 'AND',
+													array(
+														'key' => '_PO_permalink', 
+														'value' => '%' . $this->requestedPermalink,
+														'compare' => 'LIKE'
+													),
+													array(
+														'key' => '_PO_affect_children', 
+														'value' => '1',
+														'compare' => '='
+													)
+												)
+											));
+
+								$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
+								remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
+							} else {
+								$fuzzyPost = get_posts(
+											array(
+												'post_type'=>$this->postTypeSupport,
+												'meta_query' => array(
+													'relation' => 'AND',
+													array(
+														'key' => '_PO_permalink', 
+														'value' => $this->requestedPermalink,
+														'compare' => '='
+													),
+													array(
+														'key' => '_PO_affect_children', 
+														'value' => '1',
+														'compare' => '='
+													)
+												)
+											));
+								
+								$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
+							}
+
 							
-							if (isset($fuzzyPost[0]->ID)) {
-								if ($this->detectMobile == 1 && $this->mobile) {
-									$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
-									$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
-								} else {
-									$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
-									$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+							if ($matchFound > 0) {
+								usort($fuzzyPost, array($this, 'sort_posts'));
+								
+								if (isset($fuzzyPost[0]->ID)) {
+									if ($this->detectMobile == 1 && $this->mobile) {
+										$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
+										$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
+									} else {
+										$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
+										$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+									}
 								}
-							}
-							
-							if (!is_array($disabledFuzzyPlugins)) {
-								$disabledFuzzyPlugins = array();
-							}
+								
+								if (!is_array($disabledFuzzyPlugins)) {
+									$disabledFuzzyPlugins = array();
+								}
 
-							if (!is_array($enabledFuzzyPlugins)) {
-								$enabledFuzzyPlugins = array();
-							}
+								if (!is_array($enabledFuzzyPlugins)) {
+									$enabledFuzzyPlugins = array();
+								}
 
-							$disabledPlugins = $disabledFuzzyPlugins;
-							$enabledPlugins = $enabledFuzzyPlugins;
+								$disabledPlugins = $disabledFuzzyPlugins;
+								$enabledPlugins = $enabledFuzzyPlugins;
+							}
 						}
 					}
-				}
 
-				if (is_array($globalPlugins)) {
-					foreach ($pluginList as $plugin) {
-						if (in_array($plugin, $globalPlugins) && (!preg_match('/plugin-organizer.php$/', $plugin) || !is_admin())) {
-							if (in_array($plugin, $enabledPlugins)) {
+					if (is_array($globalPlugins)) {
+						foreach ($pluginList as $plugin) {
+							if (in_array($plugin, $globalPlugins) && (!preg_match('/plugin-organizer.php$/', $plugin) || !is_admin())) {
+								if (in_array($plugin, $enabledPlugins)) {
+									$newPluginList[] = $plugin;
+								}
+							} else {
 								$newPluginList[] = $plugin;
 							}
-						} else {
-							$newPluginList[] = $plugin;
 						}
+						$pluginList = $newPluginList;
+						$newPluginList = array();
 					}
-					$pluginList = $newPluginList;
-					$newPluginList = array();
-				}
 
-				if (is_array($disabledPlugins)) {
-					foreach ($pluginList as $plugin) {
-						if (!in_array($plugin, $disabledPlugins)) {
-							$newPluginList[] = $plugin;
+					if (is_array($disabledPlugins)) {
+						foreach ($pluginList as $plugin) {
+							if (!in_array($plugin, $disabledPlugins)) {
+								$newPluginList[] = $plugin;
+							}
 						}
+					} else {
+						$newPluginList = $pluginList;
 					}
-				} else {
-					$newPluginList = $pluginList;
 				}
+			} else {
+				$newPluginList = $pluginList;
 			}
-		} else {
-			$newPluginList = $pluginList;
+			if ($networkPlugin == 0) {
+				$GLOBALS["PO_CACHED_PLUGIN_LIST"] = $newPluginList;
+			}
 		}
 		return $newPluginList;
 	}
@@ -221,16 +228,21 @@ class PluginOrganizerMU {
 	}
 	
 	function disable_network_plugins($pluginList) {
-		if (!isset($GLOBALS['wp_taxonomies'])) {
-			$GLOBALS['wp_taxonomies'] = array();
-		}
-		$newPluginList = array();
-		if (is_array($pluginList) && sizeOf($pluginList) > 0) {
-			$tempPluginList = array_keys($pluginList);
-			$tempPluginList = $this->disable_plugins($tempPluginList);
-			foreach($tempPluginList as $pluginFile) {
-				$newPluginList[$pluginFile] = $pluginList[$pluginFile];
+		if (isset($GLOBALS["PO_CACHED_NET_PLUGINS"]) && is_array($GLOBALS["PO_CACHED_NET_PLUGINS"])) {
+			$newPluginList = $GLOBALS["PO_CACHED_NET_PLUGINS"];
+		} else {
+			if (!isset($GLOBALS['wp_taxonomies'])) {
+				$GLOBALS['wp_taxonomies'] = array();
 			}
+			$newPluginList = array();
+			if (is_array($pluginList) && sizeOf($pluginList) > 0) {
+				$tempPluginList = array_keys($pluginList);
+				$tempPluginList = $this->disable_plugins($tempPluginList, 1);
+				foreach($tempPluginList as $pluginFile) {
+					$newPluginList[$pluginFile] = $pluginList[$pluginFile];
+				}
+			}
+			$GLOBALS["PO_CACHED_NET_PLUGINS"] = $newPluginList;
 		}
 		
 		return $newPluginList;
