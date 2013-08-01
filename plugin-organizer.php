@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Plugin Organizer
-Plugin URI: http://wpmason.com
+Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
 Version: 3.1.1
 Author: Jeff Sterup
