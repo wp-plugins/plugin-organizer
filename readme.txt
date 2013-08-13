@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
-Tested up to: 3.5.2
-Stable tag: 3.1.1
+Tested up to: 3.6
+Stable tag: 3.2
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,11 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 3.2 =
+Adding the ability to change the order of etwork activated plugins.
+Adding a field to set the name of a plugin filter instead of just using the permalink.
+Fixed logic in MU plugin that would stop it from looking if a post was found with an empty array of disabled plugins.
 
 = 3.1.1 =
 Adding cache variable to store the plugin list so it is only created once per page load instead of every time the active_plugins option is retrieved.
@@ -310,6 +315,11 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.2 =
+Adding the ability to change the order of etwork activated plugins.
+Adding a field to set the name of a plugin filter instead of just using the permalink.
+Fixed logic in MU plugin that would stop it from looking if a post was found with an empty array of disabled plugins.
 
 = 3.1.1 =
 Adding cache variable to store the plugin list so it is only created once per page load instead of every time the active_plugins option is retrieved.

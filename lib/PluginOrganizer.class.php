@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.1.1") {
+		if (get_option("PO_version_num") != "3.2") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.1.1") {
-			update_option("PO_version_num", "3.1.1");
+		if (get_option("PO_version_num") != "3.2") {
+			update_option("PO_version_num", "3.2");
 		}
 
 		//Add capabilities to the administrator role
@@ -446,6 +446,20 @@ class PluginOrganizer {
 		
 		$plugins = get_option("active_plugins");
 		
+		#print_r($plugins);
+		$networkPlugins = get_site_option('active_sitewide_plugins');
+		$networkPluginMissing = 0;
+		foreach($networkPlugins as $key=>$pluginFile) {
+			if (!array_search($key, $plugins)) {
+				$plugins[] = $key;
+				$networkPluginMissing = 1;
+			}
+		}
+		#print_r($plugins);
+		if ($networkPluginMissing == 1) {
+			update_option("active_plugins", $plugins);
+		}
+		
 		if (is_object($PluginOrganizerMU)) {
 			add_filter('option_active_plugins', array($PluginOrganizerMU, 'disable_plugins'), 10, 1);
 		}
@@ -456,16 +470,7 @@ class PluginOrganizer {
 	function reorder_plugins($allPluginList) {
 		global $wpdb;
 		$plugins = $this->get_active_plugins();
-		$networkPluginFound = 0;
-		foreach($plugins as $key=>$pluginFile) {
-			if (is_plugin_active_for_network($pluginFile)) {
-				$networkPluginFound = 1;
-				array_splice($plugins, $key, 1);
-			}
-		}
-		if ($networkPluginFound == 1) {
-			update_option("active_plugins", $plugins);
-		}
+		
 		
 		if (is_admin() && $this->pluginPageActions == 1 && (!isset($_REQUEST['PO_group_view']) || !is_numeric($_REQUEST['PO_group_view']))) {
 			$perPage = get_user_option("plugins_per_page");
@@ -775,8 +780,16 @@ class PluginOrganizer {
 
 	function change_plugin_filter_title($title) {
 		global $post;
+		$supportedPostTypes = get_option("PO_custom_post_type_support");
+		$supportedPostTypes[] = 'plugin_filter';
+		if ( (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id) || !current_user_can( 'edit_post', $post_id ) || !current_user_can( 'activate_plugins' ) || !in_array(get_post_type($post_id), $supportedPostTypes) || !isset($_POST['poSubmitPostMetaBox'])) {
+			return $title;
+		}
+		
 		if (is_object($post) && get_post_type($post->ID) == 'plugin_filter') {
-			if (!isset($_POST['permalinkFilter']) || $_POST['permalinkFilter'] == '') {
+			if (isset($_POST['filterName']) && $_POST['filterName'] != '') {
+				return $_POST['filterName'];
+			} else if (!isset($_POST['permalinkFilter']) || $_POST['permalinkFilter'] == '') {
 				$randomTitle = "";
 				for($i=0; $i<10; $i++) {
 					$randomTitle .= chr(mt_rand(109,122));
@@ -1133,11 +1146,10 @@ class PluginOrganizer {
 		);
 		$args = array(
 			'labels' => $labels,
-			'public' => true,
-			'publicly_queryable' => true,
+			'public' => false,
+			'publicly_queryable' => false,
 			'show_ui' => true, 
 			'menu_icon' => $this->urlPath . '/image/po-icon-16x16.png', 		
-			'rewrite' => array('slug'=>'plugin_filter'),
 			'hierarchical' => false,
 			'menu_position' => null,
 			'supports' => array('custom-fields'),
@@ -1164,15 +1176,12 @@ class PluginOrganizer {
 			'public' => false,
 			'publicly_queryable' => false,
 			'show_ui' => false, 
-			'rewrite' => array('slug'=>'plugin_group'),
 			'hierarchical' => false,
 			'menu_position' => null,
 			'supports' => array('custom-fields'),
 			'capability_type' => 'plugin_group'
 		); 
 		register_post_type('plugin_group',$args);
-
-		flush_rewrite_rules( false );
 	}
 	
 	function custom_updated_messages( $messages ) {
@@ -1211,6 +1220,38 @@ class PluginOrganizer {
 			10 => sprintf( __('Plugin Group draft updated.'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
 		);
 		return $messages;
+	}
+
+	function deactivated_plugin($plugin, $networkWide = null) {
+		global $wpdb;
+		if ($networkWide != null) {
+			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM wp_blogs" ) );
+			foreach ($sites as $site) {
+				if (switch_to_blog($site->blog_id)) {
+					$activePlugins = $this->get_active_plugins();
+					$activePlugins = array_values(array_diff($activePlugins, array($plugin)));
+					update_option('active_plugins', $activePlugins);
+				}
+			}
+			restore_current_blog();
+		}
+	}
+
+	function activated_plugin($plugin, $networkWide = null) {
+		global $wpdb;
+		if ($networkWide != null) {
+			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM wp_blogs" ) );
+			foreach ($sites as $site) {
+				if (switch_to_blog($site->blog_id)) {
+					$activePlugins = $this->get_active_plugins();
+					if (!in_array($plugin, $activePlugins)) {
+						$activePlugins[] = $plugin;
+						update_option('active_plugins', $activePlugins);
+					}
+				}
+			}
+			restore_current_blog();
+		}
 	}
 }
 ?>

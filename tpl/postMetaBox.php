@@ -7,6 +7,12 @@ if ($errMsg != "") {
 ?>
 <?php if(get_post_type($post->ID) == 'plugin_filter') { ?>
 	<div class="metaBoxLabel">
+		Name
+	</div>
+	<div class="metaBoxContent">
+		<input type="text" class="poFilterNameInput" size="25" name="filterName" value="<?php print $filterName; ?>">
+	</div>
+	<div class="metaBoxLabel">
 		Permalink
 	</div>
 	<div class="metaBoxContent">

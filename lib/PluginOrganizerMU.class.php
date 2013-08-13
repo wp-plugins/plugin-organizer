@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.1.1
+Version: 3.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -31,7 +31,7 @@ class PluginOrganizerMU {
 		} else {
 			$newPluginList = array();
 			if (get_option("PO_disable_plugins") == "1" && ((get_option('PO_admin_disable_plugins') != "1" && !is_admin()) || (get_option('PO_admin_disable_plugins') == "1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))))) {
-				if (get_option("PO_version_num") != "3.1.1" && !is_admin()) {
+				if (get_option("PO_version_num") != "3.2" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
@@ -65,13 +65,18 @@ class PluginOrganizerMU {
 					
 					$disabledPlugins = array();
 					$enabledPlugins = array();
-					if (isset($requestedPost[0]->ID)) {
-						if ($this->detectMobile == 1 && $this->mobile) {
-							$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
-							$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
-						} else {
-							$disabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_disabled_plugins', $single=true);
-							$enabledPlugins = get_post_meta($requestedPost[0]->ID, '_PO_enabled_plugins', $single=true);
+					foreach($requestedPost as $currPost) {
+						if (isset($currPost->ID)) {
+							if ($this->detectMobile == 1 && $this->mobile) {
+								$disabledPlugins = get_post_meta($currPost->ID, '_PO_disabled_mobile_plugins', $single=true);
+								$enabledPlugins = get_post_meta($currPost->ID, '_PO_enabled_mobile_plugins', $single=true);
+							} else {
+								$disabledPlugins = get_post_meta($currPost->ID, '_PO_disabled_plugins', $single=true);
+								$enabledPlugins = get_post_meta($currPost->ID, '_PO_enabled_plugins', $single=true);
+							}
+							if ((is_array($disabledPlugins) && sizeof($disabledPlugins) > 0) || (is_array($enabledPlugins) && sizeof($enabledPlugins) > 0)) {
+								break;
+							}
 						}
 					}
 					
@@ -152,28 +157,37 @@ class PluginOrganizerMU {
 
 							
 							if ($matchFound > 0) {
+								$matchFound = 0;
 								usort($fuzzyPost, array($this, 'sort_posts'));
 								
-								if (isset($fuzzyPost[0]->ID)) {
-									if ($this->detectMobile == 1 && $this->mobile) {
-										$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_mobile_plugins', $single=true);
-										$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_mobile_plugins', $single=true);
-									} else {
-										$disabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_disabled_plugins', $single=true);
-										$enabledFuzzyPlugins = get_post_meta($fuzzyPost[0]->ID, '_PO_enabled_plugins', $single=true);
+								foreach($fuzzyPost as $currPost) {
+									if (isset($currPost->ID)) {
+										if ($this->detectMobile == 1 && $this->mobile) {
+											$disabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_disabled_mobile_plugins', $single=true);
+											$enabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_enabled_mobile_plugins', $single=true);
+										} else {
+											$disabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_disabled_plugins', $single=true);
+											$enabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_enabled_plugins', $single=true);
+										}
+									}
+									if ((is_array($disabledFuzzyPlugins) && sizeof($disabledFuzzyPlugins) > 0) || (is_array($enabledFuzzyPlugins) && sizeof($enabledFuzzyPlugins) > 0)) {
+										$matchFound = 1;
+										break;
 									}
 								}
 								
-								if (!is_array($disabledFuzzyPlugins)) {
-									$disabledFuzzyPlugins = array();
-								}
+								if ($matchFound > 0) {
+									if (!is_array($disabledFuzzyPlugins)) {
+										$disabledFuzzyPlugins = array();
+									}
 
-								if (!is_array($enabledFuzzyPlugins)) {
-									$enabledFuzzyPlugins = array();
-								}
+									if (!is_array($enabledFuzzyPlugins)) {
+										$enabledFuzzyPlugins = array();
+									}
 
-								$disabledPlugins = $disabledFuzzyPlugins;
-								$enabledPlugins = $enabledFuzzyPlugins;
+									$disabledPlugins = $disabledFuzzyPlugins;
+									$enabledPlugins = $enabledFuzzyPlugins;
+								}
 							}
 						}
 					}

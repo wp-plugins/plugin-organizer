@@ -4,6 +4,19 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	foreach($plugins as $key=>$plugin) {
 		$plugins[$key]=$plugin['Name'];
 	}
+	
+	$activePlugins = $this->get_active_plugins();
+	$hiddenPlugins = array();
+	$lastPluginName = '';
+	foreach($activePlugins as $key=>$plugin) {
+		if (is_plugin_active_for_network($plugin)) {
+			$pluginID = preg_split('/\//', $plugin);
+			$lastPluginID = preg_split('/\//', $activePlugins[$key-1]);
+			$hiddenPlugins[] = array($plugin, $pluginID[0], $lastPluginID[0], $plugins[$plugin], array_search($plugin, $activePlugins));
+			
+		}
+	}
+	
 	$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
 	?>
 	<style type="text/css">
@@ -28,6 +41,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	</style>
 	<script type="text/javascript" language="javascript">
 		var pluginList = <?php print json_encode($plugins); ?>;
+		var hiddenPlugins = <?php print json_encode($hiddenPlugins); ?>;
 		function PO_save_draggable_plugin_order() {
 			var orderList = new Array();
 			var startOrderList = new Array();
@@ -204,8 +218,15 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			return returnStatus;
 		}
 		
-		
+
 		jQuery(document).ready(function () {
+			var colspanCount = jQuery('#the-list tr:first td').length - 2;
+			
+			for(var i=0; i<hiddenPlugins.length; i++) {
+				jQuery('#'+hiddenPlugins[i][2]).after('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+				
+			}
+			
 			var pluginGroups = '';
 			pluginGroups += '<option value="">-- Select Group --</option>';
 			pluginGroups += '<option value="-- New Group --">-- New Group --</option>';
@@ -216,7 +237,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				<?php
 			}
 			?>
-			pluginGroups += '</select><input type="text" name="PO_new_group_name" style="display: none;">';
+			pluginGroups += '</select><input type="text" name="PO_new_group_name" style="display: none;float: left;">';
 			
 			var bulkActionList = new Array();
 			jQuery('.tablenav.top .actions select[name=action] option').each(function() {
@@ -242,8 +263,8 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			bulkListReplacement += '</select>';
 			jQuery('.tablenav.top .actions select[name=action]').remove();
 			jQuery('.tablenav.bottom .actions select[name=action2]').remove();
-			jQuery('.tablenav.top .actions:first').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' Groups: <select name="PO_group_name_select">'+pluginGroups);
-			jQuery('.tablenav.bottom .actions:first').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' Groups: <select name="PO_group_name_select2">'+pluginGroups);
+			jQuery('.tablenav.top .actions:first').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' <div style="float: left;padding-top: 5px;">Groups: </div><select name="PO_group_name_select">'+pluginGroups);
+			jQuery('.tablenav.bottom .actions:first').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' <div style="float: left;padding-top: 5px;">Groups: </div><select name="PO_group_name_select2">'+pluginGroups);
 			jQuery('#doaction, #doaction2').click(function() {
 				return PO_submit_plugin_action(this);
 			});
