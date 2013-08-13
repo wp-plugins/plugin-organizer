@@ -64,6 +64,9 @@ A.
 
 == Changelog ==
 
+= 3.2.1 =
+Removed hard coded table prefix and added the correct base_prefix variable in PluginOrganizer class.
+
 = 3.2 =
 Adding the ability to change the order of etwork activated plugins.
 Adding a field to set the name of a plugin filter instead of just using the permalink.
@@ -315,6 +318,9 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.2.1 =
+Removed hard coded table prefix and added the correct base_prefix variable in PluginOrganizer class.
 
 = 3.2 =
 Adding the ability to change the order of etwork activated plugins.

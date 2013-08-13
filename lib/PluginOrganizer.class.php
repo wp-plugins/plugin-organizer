@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.2") {
+		if (get_option("PO_version_num") != "3.2.1") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.2") {
-			update_option("PO_version_num", "3.2");
+		if (get_option("PO_version_num") != "3.2.1") {
+			update_option("PO_version_num", "3.2.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -1225,7 +1225,7 @@ class PluginOrganizer {
 	function deactivated_plugin($plugin, $networkWide = null) {
 		global $wpdb;
 		if ($networkWide != null) {
-			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM wp_blogs" ) );
+			$sites = $wpdb->get_results("SELECT blog_id FROM ".$wpdb->base_prefix."blogs");
 			foreach ($sites as $site) {
 				if (switch_to_blog($site->blog_id)) {
 					$activePlugins = $this->get_active_plugins();
@@ -1240,7 +1240,7 @@ class PluginOrganizer {
 	function activated_plugin($plugin, $networkWide = null) {
 		global $wpdb;
 		if ($networkWide != null) {
-			$sites = $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM wp_blogs" ) );
+			$sites = $wpdb->get_results("SELECT blog_id FROM ".$wpdb->base_prefix."blogs");
 			foreach ($sites as $site) {
 				if (switch_to_blog($site->blog_id)) {
 					$activePlugins = $this->get_active_plugins();
