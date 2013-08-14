@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.2.2") {
+		if (get_option("PO_version_num") != "3.2.3") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.2.2") {
-			update_option("PO_version_num", "3.2.2");
+		if (get_option("PO_version_num") != "3.2.3") {
+			update_option("PO_version_num", "3.2.3");
 		}
 
 		//Add capabilities to the administrator role
@@ -880,17 +880,6 @@ class PluginOrganizer {
 			update_post_meta($post_id, '_PO_permalink', get_permalink($post_id));
 		} else {
 			update_post_meta($post_id, '_PO_permalink', $_POST['permalinkFilter']);
-		}
-	}
-
-	function delete_plugin_lists($post_id) {
-		global $wpdb;
-		if ( !current_user_can( 'edit_page', $post_id ) ) {
-			return $post_id;
-		}
-		if (is_numeric($post_id)) {
-			$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_post_plugins WHERE post_id = %d";
-			$wpdb->query($wpdb->prepare($deletePluginQuery, $post_id));
 		}
 	}
 
