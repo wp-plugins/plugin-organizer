@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.2.1") {
+		if (get_option("PO_version_num") != "3.2.2") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.2.1") {
-			update_option("PO_version_num", "3.2.1");
+		if (get_option("PO_version_num") != "3.2.2") {
+			update_option("PO_version_num", "3.2.2");
 		}
 
 		//Add capabilities to the administrator role
@@ -934,8 +934,14 @@ class PluginOrganizer {
 			print "You dont have permissions to access this page.";
 			die();
 		}
-		update_option("PO_custom_post_type_support", $_POST['PO_cutom_post_type']);
-		if (sizeof(array_diff(get_option("PO_custom_post_type_support"), $_POST['PO_cutom_post_type'])) == 0) {
+		if (is_array($_POST['PO_cutom_post_type'])) {
+			$submittedPostTypes = $_POST['PO_cutom_post_type'];
+		} else {
+			$submittedPostTypes = array();
+		}
+		
+		update_option("PO_custom_post_type_support", $submittedPostTypes);
+		if (sizeof(array_diff(get_option("PO_custom_post_type_support"), $submittedPostTypes)) == 0) {
 			print "Post types saved.";
 		} else {
 			print "Saving post types failed!";
