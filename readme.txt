@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
 Tested up to: 3.6
-Stable tag: 3.2.3
+Stable tag: 3.2.4
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,10 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 3.2.4 =
+Added functionality to delete all the options that PO creates upon deactivation.  
+Added functionality to delet all custom post types created by PO upon deactivation.
 
 = 3.2.3 =
 Removed function that deleted the plugin arrays for a post when custom DB's were used. left over from old code.
@@ -324,6 +328,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 3.2.4 =
+Added functionality to delete all the options that PO creates upon deactivation.  
+Added functionality to delet all custom post types created by PO upon deactivation.
 
 = 3.2.3 =
 Removed function that deleted the plugin arrays for a post when custom DB's were used. left over from old code.

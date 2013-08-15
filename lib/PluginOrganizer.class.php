@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.2.3") {
+		if (get_option("PO_version_num") != "3.2.4") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.2.3") {
-			update_option("PO_version_num", "3.2.3");
+		if (get_option("PO_version_num") != "3.2.4") {
+			update_option("PO_version_num", "3.2.4");
 		}
 
 		//Add capabilities to the administrator role
@@ -154,14 +154,33 @@ class PluginOrganizer {
 			$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
 			$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
 
+			delete_option("PO_mobile_user_agents");
+			delete_option("PO_disabled_plugins");
+			delete_option("PO_disabled_mobile_plugins");
+			delete_option("PO_ignore_arguments");
+			delete_option("PO_ignore_protocol");
+			delete_option("PO_plugin_order");
+			delete_option("PO_default_group");
 			delete_option("PO_preserve_settings");
 			delete_option("PO_alternate_admin");
 			delete_option("PO_fuzzy_url_matching");
 			delete_option("PO_version_num");
 			delete_option("PO_custom_post_type_support");
 			delete_option("PO_disable_plugins");
+			delete_option("PO_disable_mobile_plugins");
 			delete_option("PO_admin_disable_plugins");
+
+			delete_post_meta_by_key('_PO_affect_children');
+			delete_post_meta_by_key('_PO_disabled_plugins');
+			delete_post_meta_by_key('_PO_enabled_plugins');
+			delete_post_meta_by_key('_PO_disabled_mobile_plugins');
+			delete_post_meta_by_key('_PO_enabled_mobile_plugins');
+			delete_post_meta_by_key('_PO_permalink');
 			
+			$customPosts = get_posts(array('post_type'=>array('plugin_filter', 'plugin_group'), 'posts_per_page'=>-1));
+			foreach($customPosts as $customPost) {
+				wp_delete_post( $customPost->ID, true);
+			}
 		}
 		if (file_exists(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php")) {
 			@unlink(WPMU_PLUGIN_DIR . "/PluginOrganizerMU.class.php");
