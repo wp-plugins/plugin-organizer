@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "3.2.5") {
+		if (get_option("PO_version_num") != "3.2.6") {
 			$this->activate();
 		}
 	}
@@ -111,8 +111,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "3.2.5") {
-			update_option("PO_version_num", "3.2.5");
+		if (get_option("PO_version_num") != "3.2.6") {
+			update_option("PO_version_num", "3.2.6");
 		}
 
 		//Add capabilities to the administrator role
@@ -143,6 +143,21 @@ class PluginOrganizer {
 			$administrator->add_cap('delete_others_plugin_groups');
 			$administrator->add_cap('delete_published_plugin_groups');
 			$administrator->add_cap('delete_private_plugin_groups');
+		}
+
+		//Make sure all active plugins are valid
+		$activePlugins = $this->get_active_plugins();
+		$newActivePlugins = array();
+		$pluginDisabled = 0;
+		foreach ($activePlugins as $key=>$plugin) {
+			if (file_exists(WP_PLUGIN_DIR . "/" . $plugin)) {
+				$newActivePlugins[] = $plugin;
+			} else {
+				$pluginDisabled = 1;
+			}
+		}
+		if ($pluginDisabled == 1) {
+			update_option("active_plugins", $plugins);
 		}
 	}
 	
@@ -469,7 +484,7 @@ class PluginOrganizer {
 		$networkPlugins = get_site_option('active_sitewide_plugins');
 		$networkPluginMissing = 0;
 		foreach($networkPlugins as $key=>$pluginFile) {
-			if (!array_search($key, $plugins)) {
+			if (!array_search($key, $plugins) && file_exists(WP_PLUGIN_DIR . "/" . $key)) {
 				$plugins[] = $key;
 				$networkPluginMissing = 1;
 			}
