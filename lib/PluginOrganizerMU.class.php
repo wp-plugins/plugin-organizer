@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 3.2.6
+Version: 4.0
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -11,7 +11,7 @@ License: GPL2
 
 class PluginOrganizerMU {
 	var $ignoreProtocol, $ignoreArguments, $requestedPermalink, $postTypeSupport;
-	var $protocol, $mobile, $detectMobile;
+	var $protocol, $mobile, $detectMobile, $requestedPermalinkHash, $permalinkSearchField;
 	function __construct() {
 		$this->ignoreProtocol = get_option('PO_ignore_protocol');
 		$this->ignoreArguments = get_option('PO_ignore_arguments');
@@ -32,7 +32,7 @@ class PluginOrganizerMU {
 			if (isset($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && is_array($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && $networkPlugin == 0) {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
-				if (get_option("PO_version_num") != "3.2.6" && !is_admin()) {
+				if (get_option("PO_version_num") != "4.0" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
@@ -44,40 +44,30 @@ class PluginOrganizerMU {
 					}
 
 					if ($this->ignoreProtocol == '1') {
-						add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-						$requestedPost = get_posts(
-											array(
-												'suppress_filters'=>false,
-												'post_type'=>$this->postTypeSupport,
-												'meta_query' => array(
-													'relation' => 'AND',
-													array(
-														'key' => '_PO_permalink', 
-														'value' => '%' . $this->requestedPermalink,
-														'compare' => 'LIKE'
-													)
-												)
-											));
-						remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
+						$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish' AND secure = %d";
+						$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash, $this->secure), ARRAY_A);
 					} else {
-						$requestedPost = get_posts(array('post_type'=>$this->postTypeSupport, 'meta_key'=>'_PO_permalink', 'meta_value'=>$this->requestedPermalink));
+						$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish'";
+						$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash), ARRAY_A);
 					}
-					usort($requestedPost, array($this, 'sort_posts'));
+					if (!is_array($requestedPost)) {
+						$requestedPost = array();
+					} else if (sizeOf($requestedPost) > 1) {
+						usort($requestedPost, array($this, 'sort_posts'));
+					}
 					
 					$disabledPlugins = array();
 					$enabledPlugins = array();
 					foreach($requestedPost as $currPost) {
-						if (isset($currPost->ID)) {
-							if ($this->detectMobile == 1 && $this->mobile) {
-								$disabledPlugins = get_post_meta($currPost->ID, '_PO_disabled_mobile_plugins', $single=true);
-								$enabledPlugins = get_post_meta($currPost->ID, '_PO_enabled_mobile_plugins', $single=true);
-							} else {
-								$disabledPlugins = get_post_meta($currPost->ID, '_PO_disabled_plugins', $single=true);
-								$enabledPlugins = get_post_meta($currPost->ID, '_PO_enabled_plugins', $single=true);
-							}
-							if ((is_array($disabledPlugins) && sizeof($disabledPlugins) > 0) || (is_array($enabledPlugins) && sizeof($enabledPlugins) > 0)) {
-								break;
-							}
+						if ($this->detectMobile == 1 && $this->mobile) {
+							$disabledPlugins = @unserialize($currPost['disabled_mobile_plugins']);
+							$enabledPlugins = @unserialize($currPost['enabled_mobile_plugins']);
+						} else {
+							$disabledPlugins = @unserialize($currPost['disabled_plugins']);
+							$enabledPlugins = @unserialize($currPost['enabled_plugins']);
+						}
+						if ((is_array($disabledPlugins) && sizeof($disabledPlugins) > 0) || (is_array($enabledPlugins) && sizeof($enabledPlugins) > 0)) {
+							break;
 						}
 					}
 					
@@ -98,60 +88,24 @@ class PluginOrganizerMU {
 						$choppedUrl = $this->requestedPermalink;
 
 						
-						if ($this->ignoreProtocol == '1') {
-							$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
-						} else {
-							$lastUrl = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$endChar;
-						}
-
+						$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
+						
 						//Dont allow an endless loop
 						$loopCount = 0;
 						$matchFound = 0;
 						
 						while ($loopCount < 15 && $matchFound == 0 && $this->requestedPermalink != $lastUrl && ($this->requestedPermalink = preg_replace('/\/[^\/]+\/?$/', $endChar, $this->requestedPermalink))) {
 							$loopCount++;
+							$this->requestedPermalinkHash = md5($this->requestedPermalink);
 							if ($this->ignoreProtocol == '1') {
 						
-								add_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
-								$fuzzyPost = get_posts(
-											array(
-												'suppress_filters'=>false,
-												'post_type'=>$this->postTypeSupport,
-												'meta_query' => array(
-													'relation' => 'AND',
-													array(
-														'key' => '_PO_permalink', 
-														'value' => '%' . $this->requestedPermalink,
-														'compare' => 'LIKE'
-													),
-													array(
-														'key' => '_PO_affect_children', 
-														'value' => '1',
-														'compare' => '='
-													)
-												)
-											));
-
+								$fuzzyPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish' AND secure = %d AND children = 1";
+								$fuzzyPost = $wpdb->get_results($wpdb->prepare($fuzzyPostQuery, $this->requestedPermalinkHash, $this->secure), ARRAY_A);
 								$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
-								remove_filter('posts_where', array($this, 'fix_where_clause'), 10, 2);
+								
 							} else {
-								$fuzzyPost = get_posts(
-											array(
-												'post_type'=>$this->postTypeSupport,
-												'meta_query' => array(
-													'relation' => 'AND',
-													array(
-														'key' => '_PO_permalink', 
-														'value' => $this->requestedPermalink,
-														'compare' => '='
-													),
-													array(
-														'key' => '_PO_affect_children', 
-														'value' => '1',
-														'compare' => '='
-													)
-												)
-											));
+								$fuzzyPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish' AND children = 1";
+								$fuzzyPost = $wpdb->get_results($wpdb->prepare($fuzzyPostQuery, $this->requestedPermalinkHash), ARRAY_A);
 								
 								$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
 							}
@@ -159,17 +113,19 @@ class PluginOrganizerMU {
 							
 							if ($matchFound > 0) {
 								$matchFound = 0;
-								usort($fuzzyPost, array($this, 'sort_posts'));
-								
+								if (!is_array($fuzzyPost)) {
+									$fuzzyPost = array();
+								} else if (sizeOf($fuzzyPost) > 0) {
+									usort($fuzzyPost, array($this, 'sort_posts'));
+								}
+
 								foreach($fuzzyPost as $currPost) {
-									if (isset($currPost->ID)) {
-										if ($this->detectMobile == 1 && $this->mobile) {
-											$disabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_disabled_mobile_plugins', $single=true);
-											$enabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_enabled_mobile_plugins', $single=true);
-										} else {
-											$disabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_disabled_plugins', $single=true);
-											$enabledFuzzyPlugins = get_post_meta($currPost->ID, '_PO_enabled_plugins', $single=true);
-										}
+									if ($this->detectMobile == 1 && $this->mobile) {
+										$disabledFuzzyPlugins = @unserialize($currPost['disabled_mobile_plugins']);
+										$enabledFuzzyPlugins = @unserialize($currPost['enabled_mobile_plugins']);
+									} else {
+										$disabledFuzzyPlugins = @unserialize($currPost['disabled_plugins']);
+										$enabledFuzzyPlugins = @unserialize($currPost['enabled_plugins']);
 									}
 									if ((is_array($disabledFuzzyPlugins) && sizeof($disabledFuzzyPlugins) > 0) || (is_array($enabledFuzzyPlugins) && sizeof($enabledFuzzyPlugins) > 0)) {
 										$matchFound = 1;
@@ -227,15 +183,10 @@ class PluginOrganizerMU {
 		return $newPluginList;
 	}
 	
-	function fix_where_clause($where) {
-		$where = preg_replace('/%\\\\\\\\%'.preg_replace('/\//', '\/', $this->requestedPermalink).'%/', '%'.$this->requestedPermalink, $where);
-		return $where;
-	}
-	
 	function sort_posts($a, $b) {
-			if ($a->post_type == 'plugin_filter' && $b->post_type != 'plugin_filter') {
+			if ($a['post_type'] == 'plugin_filter' && $b['post_type'] != 'plugin_filter') {
 				return 1;
-			} else if($a->post_type != 'plugin_filter' && $b->post_type == 'plugin_filter') {
+			} else if($a['post_type'] != 'plugin_filter' && $b['post_type'] == 'plugin_filter') {
 				return -1;
 			} else {
 				return 0;
@@ -267,16 +218,22 @@ class PluginOrganizerMU {
 		if ($this->ignoreArguments == '1') {
 			$splitPath = explode('?', $_SERVER['REQUEST_URI']);
 			$requestedPath = $splitPath[0];
+			$this->permalinkSearchField = 'permalink_hash';
 		} else {
 			$requestedPath = $_SERVER['REQUEST_URI'];
+			$this->permalinkSearchField = 'permalink_hash_args';
 		}
 		
-		if ($this->ignoreProtocol == '1') {
-			$this->requestedPermalink = $_SERVER['HTTP_HOST'].$requestedPath;
+		$this->requestedPermalink = $_SERVER['HTTP_HOST'].$requestedPath;
+		$this->requestedPermalinkHash = md5($this->requestedPermalink);
+
+		if ($this->ignoreProtocol == '0') {
+			$this->secure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1 : 0;
 		} else {
-			$this->protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-			$this->requestedPermalink = $this->protocol.'://'.$_SERVER['HTTP_HOST'].$requestedPath;
+			$this->secure = 0;
 		}
+
+
 	}
 
 	function detect_mobile() {

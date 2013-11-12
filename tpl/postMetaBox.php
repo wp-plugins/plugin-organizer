@@ -16,7 +16,7 @@ if ($errMsg != "") {
 		Permalink
 	</div>
 	<div class="metaBoxContent">
-		<input type="text" class="poPermalinkInput" size="25" name="permalinkFilter" value="<?php print $permalinkFilter; ?>">
+		<input type="text" class="poPermalinkInput" size="25" name="permalinkFilter" value="<?php print ($permalinkFilter != "") ? (($secure == 1)? "https://":"http://") . $permalinkFilter : ""; ?>">
 	</div>
 <?php } ?>
 
