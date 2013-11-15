@@ -10,9 +10,9 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	$lastPluginName = '';
 	foreach($activePlugins as $key=>$plugin) {
 		if (is_plugin_active_for_network($plugin)) {
-			$pluginID = preg_split('/\//', $plugin);
-			$lastPluginID = preg_split('/\//', $activePlugins[$key-1]);
-			$hiddenPlugins[] = array($plugin, $pluginID[0], $lastPluginID[0], $plugins[$plugin], array_search($plugin, $activePlugins));
+			$pluginID = sanitize_title($plugins[$plugin]);
+			$lastPluginID = (isset($activePlugins[$key-1]))? sanitize_title($plugins[$activePlugins[$key-1]]) : 'first item in the list';
+			$hiddenPlugins[] = array($plugin, $pluginID, $lastPluginID, $plugins[$plugin], array_search($plugin, $activePlugins));
 			
 		}
 	}
@@ -223,7 +223,11 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			var colspanCount = jQuery('#the-list tr:first td').length - 2;
 			
 			for(var i=0; i<hiddenPlugins.length; i++) {
-				jQuery('#'+hiddenPlugins[i][2]).after('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+				if (hiddenPlugins[i][2] == "first item in the list") {
+					jQuery('#the-list').prepend('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+				} else {
+					jQuery('#'+hiddenPlugins[i][2]).after('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+				}
 				
 			}
 			

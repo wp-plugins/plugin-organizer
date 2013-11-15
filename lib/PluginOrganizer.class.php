@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "4.0") {
+		if (get_option("PO_version_num") != "4.0.1") {
 			$this->activate();
 		}
 	}
@@ -207,8 +207,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "4.0") {
-			update_option("PO_version_num", "4.0");
+		if (get_option("PO_version_num") != "4.0.1") {
+			update_option("PO_version_num", "4.0.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -575,7 +575,7 @@ class PluginOrganizer {
 		if (is_array($networkPlugins)) {
 			$networkPluginMissing = 0;
 			foreach($networkPlugins as $key=>$pluginFile) {
-				if (!array_search($key, $plugins) && file_exists(WP_PLUGIN_DIR . "/" . $key)) {
+				if (array_search($key, $plugins) === FALSE && file_exists(WP_PLUGIN_DIR . "/" . $key)) {
 					$plugins[] = $key;
 					$networkPluginMissing = 1;
 				}
