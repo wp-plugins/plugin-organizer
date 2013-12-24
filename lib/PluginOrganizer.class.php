@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "4.0.1") {
+		if (get_option("PO_version_num") != "4.0.2") {
 			$this->activate();
 		}
 	}
@@ -207,8 +207,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "4.0.1") {
-			update_option("PO_version_num", "4.0.1");
+		if (get_option("PO_version_num") != "4.0.2") {
+			update_option("PO_version_num", "4.0.2");
 		}
 
 		//Add capabilities to the administrator role
@@ -984,13 +984,13 @@ class PluginOrganizer {
 		}
 
 
+		$disabledMobilePlugins = array();
+		$enabledMobilePlugins = array();
 		if (get_option('PO_disable_mobile_plugins') == 1) {
 			$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
 			if (!is_array($globalMobilePlugins)) {
 				$globalMobilePlugins = array();
 			}
-			$disabledMobilePlugins = array();
-			$enabledMobilePlugins = array();
 				
 			if (isset($_POST['mobilePluginsList']) && is_array($_POST['mobilePluginsList'])) {
 				foreach ($_POST['mobilePluginsList'] as $plugin) {

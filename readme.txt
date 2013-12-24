@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.1
-Tested up to: 3.7.1
-Stable tag: 4.0.1
+Tested up to: 3.8
+Stable tag: 4.0.2
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,10 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 4.0.2 =
+Fixed bug where the plugin load order was not displayed correctly on the page after activating a new plugin.
+Fixed an undefined variable warning on line 986 of PluginOrganizer.class.php
 
 = 4.0.1 =
 Fixed an issue where a network activated plugin wasn't added to the plugin page if it is set to load first.
@@ -343,6 +347,10 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 4.0.2 =
+Fixed bug where the plugin load order was not displayed correctly on the page after activating a new plugin.
+Fixed an undefined variable warning on line 986 of PluginOrganizer.class.php
 
 = 4.0.1 =
 Fixed an issue where a network activated plugin wasn't added to the plugin page if it is set to load first.
