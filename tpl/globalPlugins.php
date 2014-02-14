@@ -1,8 +1,9 @@
 <div class="wrap" id="wrap">
-    <div class="icon32" id="icon-po-global"> <br /> </div>
+    <div class="po-setting-icon" id="icon-po-global"> <br /> </div>
 
-    <h2>Global Plugins</h2>
-    <p>Select the plugins you would like to disable site wide.  This will allow you to not load the plugin on any page unless it is specifically allowed in the post or page.</p>
+    <h2 class="po-setting-title">Global Plugins</h2>
+    <div style="clear: both;"></div>
+	<p>Select the plugins you would like to disable site wide.  This will allow you to not load the plugin on any page unless it is specifically allowed in the post or page.</p>
 	<div id="poststuff" class="metabox-holder">
       <div id="post-body">
         <div id="post-body-content">

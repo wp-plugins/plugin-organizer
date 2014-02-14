@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "4.0.2") {
+		if (get_option("PO_version_num") != "4.1") {
 			$this->activate();
 		}
 	}
@@ -207,8 +207,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "4.0.2") {
-			update_option("PO_version_num", "4.0.2");
+		if (get_option("PO_version_num") != "4.1") {
+			update_option("PO_version_num", "4.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -337,6 +337,12 @@ class PluginOrganizer {
 			return true;
 		} else {
 			return false;
+		}
+	}
+	
+	function check_plugin_order_access() {
+		if (get_option('PO_order_access_net_admin') == 1 && !current_user_can('manage_network')) {
+			$this->pluginPageActions = "0";
 		}
 	}
 	
@@ -1040,7 +1046,7 @@ class PluginOrganizer {
 			$postStatus = 'publish';
 		}
 		
-		if (sizeof($enabledPlugins) > 0 || sizeof($disabledPlugins) > 0 || sizeof($enabledMobilePlugins) > 0 || sizeof($disabledMobilePlugins) > 0) {
+		if (sizeof($enabledPlugins) > 0 || sizeof($disabledPlugins) > 0 || sizeof($enabledMobilePlugins) > 0 || sizeof($disabledMobilePlugins) > 0 || get_post_type($post_id) == "plugin_filter") {
 			if ($postExists == 1) {
 				$wpdb->update($wpdb->prefix."PO_plugins", array("permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$affectChildren, "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "secure"=>$secure, "post_type"=>get_post_type($post_id), "status"=>$postStatus), array("post_id"=>$post_id));
 			} else {
@@ -1332,6 +1338,22 @@ class PluginOrganizer {
 		die();
 	}
 	
+	function submit_order_access_net_admin() {
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		
+		if (preg_match("/^(1|0)$/", $_POST['PO_order_access_net_admin'])) {
+			update_option('PO_order_access_net_admin', $_POST['PO_order_access_net_admin']);
+			$result = "Update was successful.";
+		} else {
+			$result = "Update failed.";
+		}
+		print $result;
+		die();
+	}
+		
 	function register_type() {
 		$labels = array(
 			'name' => _x('Plugin Filters', 'post type general name'),

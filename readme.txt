@@ -2,9 +2,9 @@
 Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
-Requires at least: 3.1
+Requires at least: 3.8
 Tested up to: 3.8
-Stable tag: 4.0.2
+Stable tag: 4.1
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,12 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 4.1 =
+Fixed bug where the permalink for a plugin filter was not saved if no plugins were selected.
+Fixed some formatting issues on the plugins page.
+Fixed the missing icons on the admin pages that happened with WP 3.8.
+Added functionality to only allow network admins access to changing the plugin load order on multisite installs.
 
 = 4.0.2 =
 Fixed bug where the plugin load order was not displayed correctly on the page after activating a new plugin.
@@ -347,6 +353,12 @@ improved the ajax requests on the plugin admin page.
 Initial version.
 
 == Upgrade Notice ==
+
+= 4.1 =
+Fixed bug where the permalink for a plugin filter was not saved if no plugins were selected.
+Fixed some formatting issues on the plugins page.
+Fixed the missing icons on the admin pages that happened with WP 3.8.
+Added functionality to only allow network admins access to changing the plugin load order on multisite installs.
 
 = 4.0.2 =
 Fixed bug where the plugin load order was not displayed correctly on the page after activating a new plugin.

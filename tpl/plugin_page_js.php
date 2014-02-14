@@ -41,7 +41,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 	</style>
 	<script type="text/javascript" language="javascript">
 		var pluginList = <?php print json_encode($plugins); ?>;
-		var hiddenPlugins = <?php print json_encode($hiddenPlugins); ?>;
+		var hiddenPlugins = <?php print ($this->pluginPageActions == '1')? json_encode($hiddenPlugins) : json_encode(array()) ; ?>;
 		function PO_save_draggable_plugin_order() {
 			var orderList = new Array();
 			var startOrderList = new Array();
@@ -256,10 +256,10 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			bulkListReplacement += '<option value="add_to_plugin_group">Add To Group</option>';
 			bulkListReplacement += '<option value="save_plugin_group">Save Group</option>';
 			bulkListReplacement += '<option value="delete_plugin_group">Delete Group</option>';
-			bulkListReplacement += '<option value="reset_to_default_order">Reset To Default Order</option>';
 			<?php 
 			if ($this->pluginPageActions == '1' && !isset($_REQUEST['PO_group_view']) && (!isset($_REQUEST['plugin_status']) || $_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active')) {
 				?>
+				bulkListReplacement += '<option value="reset_to_default_order">Reset To Default Order</option>';
 				bulkListReplacement += '<option value="save_load_order">Save plugin load order</option>';
 				<?php
 			}
@@ -269,6 +269,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			jQuery('.tablenav.bottom .actions select[name=action2]').remove();
 			jQuery('.tablenav.top .actions:first').html('<select name="action">'+bulkListReplacement+jQuery('.tablenav.top .actions').html()+' <div style="float: left;padding-top: 5px;">Groups: </div><select name="PO_group_name_select">'+pluginGroups);
 			jQuery('.tablenav.bottom .actions:first').html('<select name="action2">'+bulkListReplacement+jQuery('.tablenav.bottom .actions').html()+' <div style="float: left;padding-top: 5px;">Groups: </div><select name="PO_group_name_select2">'+pluginGroups);
+			jQuery('#doaction, #doaction2').css('float', 'right');
 			jQuery('#doaction, #doaction2').click(function() {
 				return PO_submit_plugin_action(this);
 			});

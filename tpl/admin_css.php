@@ -3,7 +3,19 @@
 		background: url("<?php print $this->urlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
 	}
 	#icon-po-global {
+		float: left;
 		background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
+	}
+
+	.po-setting-icon {
+		float: left;
+		width: 32px;
+		height: 32px;
+		margin: 8px 5px 0px 0px;
+	}
+
+	.po-setting-title {
+		float: left;
 	}
 
 	.activePlugin {

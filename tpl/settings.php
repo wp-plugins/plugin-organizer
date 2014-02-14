@@ -1,8 +1,9 @@
 <div id="wrap">
-    <div class="icon32" id="icon-po-settings"> <br /> </div>
+    <div class="po-setting-icon" id="icon-po-settings"> <br /> </div>
 
-    <h2>Settings</h2>
-    <p>Genral Settings</p>
+    <h2 class="po-setting-title">Settings</h2>
+    <div style="clear: both;"></div>
+	<p>Genral Settings</p>
 	<?php
 	if ($errMsg != "") {
 		?>
@@ -90,6 +91,16 @@
 			  </div>
 		    </div>
 		  <br /><br />
+		    <div id="PO-order-access-net-admin-div" class="stuffbox" style="width: 98%">
+			  <h3><label for="PO_order_access_net_admin">Only allow network admins to change plugin load order?</label></h3>
+			  <div class="inside">
+				<?php $orderAccessNetAdmin = get_option("PO_order_access_net_admin"); ?>
+				<input type="radio" name="PO_order_access_net_admin" class="PO-order-access-net-admin-radio" value="1" <?php print ($orderAccessNetAdmin === "1")? "checked='checked'":""; ?> />Yes<br />
+				<input type="radio" name="PO_order_access_net_admin" class="PO-order-access-net-admin-radio" value="0" <?php print ($orderAccessNetAdmin === "0" || $orderAccessNetAdmin == '')? "checked='checked'":""; ?> />No<br />
+				<input type="button" name="submit_order_access_net_admin" value="Submit" onmousedown="PO_submit_order_access_net_admin();">
+			  </div>
+		    </div>
+		  <br /><br />  
 		    <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
 			  <div class="inside">

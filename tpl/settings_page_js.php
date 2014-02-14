@@ -198,6 +198,27 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				});
 			});
 		}
+
+		function PO_submit_order_access_net_admin() {
+			var order_access_net_admin = '';
+			jQuery('.PO-order-access-net-admin-radio').each(function() {
+				if (this.checked) {
+					order_access_net_admin = this.value;
+				}
+			});
+			var load_element = jQuery('#PO-order-access-net-admin-div .inside');
+			var revertHtml = load_element.html();
+			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_submit_order_access_net_admin'), { 'PO_order_access_net_admin': order_access_net_admin, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+				alert(result);
+				load_element.html(revertHtml);
+				jQuery('.PO-order-access-net-admin-radio').each(function() {
+					if (this.value == order_access_net_admin) {
+						this.checked = true;
+					}
+				});
+			});
+		}
 	</script>
 	<?php
 }
