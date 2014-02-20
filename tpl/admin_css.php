@@ -54,7 +54,7 @@
 	}
 
 	.pluginsList, .mobilePluginsList {
-		display: none;
+		display: none !important;
 	}
 	
 	.pluginsButton {
