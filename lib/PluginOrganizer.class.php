@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "4.1") {
+		if (get_option("PO_version_num") != "4.1.1") {
 			$this->activate();
 		}
 	}
@@ -207,8 +207,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "4.1") {
-			update_option("PO_version_num", "4.1");
+		if (get_option("PO_version_num") != "4.1.1") {
+			update_option("PO_version_num", "4.1.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -341,7 +341,7 @@ class PluginOrganizer {
 	}
 	
 	function check_plugin_order_access() {
-		if (get_option('PO_order_access_net_admin') == 1 && !current_user_can('manage_network')) {
+		if (is_multisite() && get_option('PO_order_access_net_admin') == 1 && !current_user_can('manage_network')) {
 			$this->pluginPageActions = "0";
 		}
 	}
