@@ -35,12 +35,12 @@ if ($errMsg != "") {
 	<div class="pluginWrap">
 		<div class="toggleContainer">
 			Standard<br />
-			<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="" onclick="PO_toggle_all_plugins();">Toggle
+			<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="" onclick="PO_toggle_all('toggleAllPlugins', 'pluginsList', 'pluginsButton_', 'plugins_');">Toggle
 		</div>
 		<?php if (get_option('PO_disable_mobile_plugins') == 1) { ?>
 			<div class="toggleContainer">
 				Mobile<br />
-				<input type="checkbox" id="toggleAllMobilePlugins" name="toggleAllMobilePlugins" value="" onclick="PO_toggle_all_mobile_plugins();">Toggle
+				<input type="checkbox" id="toggleAllMobilePlugins" name="toggleAllMobilePlugins" value="" onclick="PO_toggle_all('toggleAllMobilePlugins', 'mobilePluginsList', 'mobilePluginsButton_', 'mobilePlugins_');">Toggle
 			</div>
 		<?php } ?>
 		<div style="clear: both;"></div>
@@ -85,6 +85,82 @@ if ($errMsg != "") {
 			<?php } ?>
 			<div class="pluginLabel">
 				<?php print $plugin['Name']; ?>
+			</div>
+			<div style="clear: both;"></div>
+		</div>
+		<?php
+	}
+	?>
+</div>
+<div style="clear: both;"></div>
+
+<div class="metaBoxLabel">
+	Plugin Groups
+</div>
+<div id="pluginGroupContainer" class="metaBoxContent">
+	<div class="pluginWrap">
+		<div class="toggleContainer">
+			Standard<br />
+			<input type="checkbox" id="toggleAllPluginGroups" name="toggleAllPluginGroups" value="" onclick="PO_toggle_all('toggleAllPluginGroups', 'pluginGroupList', 'pluginGroupButton_', 'pluginGroup_');">Toggle
+		</div>
+		<?php if (get_option('PO_disable_mobile_plugins') == 1) { ?>
+			<div class="toggleContainer">
+				Mobile<br />
+				<input type="checkbox" id="toggleAllMobilePluginGroups" name="toggleAllMobilePluginGroups" value="" onclick="PO_toggle_all('toggleAllMobilePluginGroups', 'mobilePluginGroupList', 'mobilePluginGroupButton_', 'mobilePluginGroup_');">Toggle
+			</div>
+		<?php } ?>
+		<div style="clear: both;"></div>
+	</div>
+	<?php
+	$count = 0;
+	foreach ($groupList as $key=>$group) {
+		$count++;
+		?>
+		<div class="pluginWrap activePluginGroupWrap">
+			<div class="toggleContainer">
+				<?php 
+				if ((in_array($group->ID, $globalGroups) && !in_array($group->ID, $enabledGroupList)) || in_array($group->ID, $disabledGroupList)) {
+					?>
+					<input type="checkbox" class="pluginGroupList" id="pluginGroup_<?php print $count; ?>" name="pluginGroupList[]" value="<?php print $group->ID; ?>" checked="checked" />
+					<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<?php
+				} else {
+					?>
+					<input type="checkbox" class="pluginGroupList" id="pluginGroup_<?php print $count; ?>" name="pluginGroupList[]" value="<?php print $group->ID; ?>" />
+					<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<?php
+				}
+				?>
+			</div>
+			<?php if (get_option('PO_disable_mobile_plugins') == 1) { ?>
+				<div class="toggleContainer">
+					<?php 
+					if ((in_array($group->ID, $globalMobileGroups) && !in_array($group->ID, $enabledMobileGroupList)) || in_array($group->ID, $disabledMobileGroupList)) {
+						?>
+						<input type="checkbox" class="mobilePluginGroupList" id="mobilePluginGroup_<?php print $count; ?>" name="mobilePluginGroupList[]" value="<?php print $group->ID; ?>" checked="checked" />
+						<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<?php
+					} else {
+						?>
+						<input type="checkbox" class="mobilePluginGroupList" id="mobilePluginGroup_<?php print $count; ?>" name="mobilePluginGroupList[]" value="<?php print $group->ID; ?>" />
+						<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<?php
+					}
+					?>
+				</div>
+			<?php } ?>
+			<div class="pluginLabel">
+				<?php print $group->post_title; ?>
+				<?php 
+				$groupMembers = get_post_meta($group->ID, "_PO_group_members", $single=true);
+				if (is_array($groupMembers)) {
+					print '<select style="margin-left: 10px;" name=""><option disabled="disabled">-- Plugin List --</option>';
+					foreach($groupMembers as $plugin) {
+						print '<option disabled="disabled">'.$plugins[$plugin]['Name'].'</option>';
+					}
+					print '</select>';
+				}
+				?>
 			</div>
 			<div style="clear: both;"></div>
 		</div>

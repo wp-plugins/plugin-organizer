@@ -14,126 +14,69 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "4.1.1") {
+		if (get_option("PO_version_num") != "5.0") {
 			$this->activate();
 		}
-	}
-	
-	function move_old_groups() {
-		global $wpdb;
-		if (get_option('PO_old_groups_moved') == '') {
-			$groupList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_groups");
-			foreach ($groupList as $group) {
-				$post_id = wp_insert_post(array('post_title'=>$group->group_name, 'post_type'=>'plugin_group', 'post_status'=>'publish'));
-				if (!is_wp_error($post_id)) {
-					update_post_meta($post_id, '_PO_group_members', unserialize($group->group_members));
-				}
-			}
-			update_option('PO_old_groups_moved', 1);
-		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_groups");
-	}
-
-	function move_old_post_plugins() {
-		global $wpdb;
-		if (get_option('PO_old_posts_moved') == '') {
-			$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_post_plugins");
-			foreach ($postList as $post) {
-				if (is_numeric($post->post_id)) {
-					$secure=0;
-					if (preg_match('/^.{1,5}:\/\//', $post->permalink, $matches)) {
-						switch ($matches[0]) {
-							case "https://":
-								$secure=1;
-								break;
-							default:
-								$secure=0;
-						}
-					}
-					
-					$permalink = preg_replace('/^.{1,5}:\/\//', '', $post->permalink);
-					$splitPermalink = explode('?', $permalink);
-					$permalinkNoArgs = $splitPermalink[0];
-
-					$wpdb->insert($wpdb->prefix."PO_plugins", array("enabled_plugins"=>$post->enabled_plugins, "disabled_plugins"=>$post->disabled_plugins, "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "secure"=>$secure, "children"=>$post->children, "post_id"=>$post->post_id));
-				}
-			}
-			update_option('PO_old_posts_moved', 1);
-		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_post_plugins");
-	}
-	
-	function move_old_url_plugins() {
-		global $wpdb;
-		if (get_option('PO_old_urls_moved') == '') {
-			$postList = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."PO_url_plugins");
-			foreach ($postList as $post) {
-				$post_id = wp_insert_post(array('post_title'=>$post->permalink, 'post_type'=>'plugin_filter', 'post_status'=>'publish'));
-				if (!is_wp_error($post_id)) {
-					$secure=0;
-					if (preg_match('/^.{1,5}:\/\//', $post->permalink, $matches)) {
-						switch ($matches[0]) {
-							case "https://":
-								$secure=1;
-								break;
-							default:
-								$secure=0;
-						}
-					}
-					
-					$permalink = preg_replace('/^.{1,5}:\/\//', '', $post->permalink);
-					$splitPermalink = explode('?', $permalink);
-					$permalinkNoArgs = $splitPermalink[0];
-
-					$wpdb->insert($wpdb->prefix."PO_plugins", array("enabled_plugins"=>$post->enabled_plugins, "disabled_plugins"=>$post->disabled_plugins, "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "secure"=>$secure, "children"=>$post->children, "post_id"=>$post_id));
-				}
-			}
-			update_option('PO_old_urls_moved', 1);
-		}
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."PO_url_plugins");
 	}
 
 	function move_old_posts($oldPosts) {
 		global $wpdb;
-		update_option('PO_old_posts_moved', '');
-		if (get_option('PO_old_posts_moved') == '') {
-			foreach($oldPosts as $post) {
-				$enabledMobilePlugins = get_post_meta($post->ID, '_PO_enabled_mobile_plugins', $single=true);
-				$disabledMobilePlugins = get_post_meta($post->ID, '_PO_disabled_mobile_plugins', $single=true);
-				$enabledPlugins = get_post_meta($post->ID, '_PO_enabled_plugins', $single=true);
-				$disabledPlugins = get_post_meta($post->ID, '_PO_disabled_plugins', $single=true);
-				$children = get_post_meta($post->ID, '_PO_affect_children', $single=true);
-				
-				$secure=0;
-				if (preg_match('/^.{1,5}:\/\//', get_post_meta($post->ID, '_PO_permalink', $single=true), $matches)) {
-					switch ($matches[0]) {
-						case "https://":
-							$secure=1;
-							break;
-						default:
-							$secure=0;
-					}
-				}
-				
-				$permalink = preg_replace('/^.{1,5}:\/\//', '', get_post_meta($post->ID, '_PO_permalink', $single=true));
-				
-				$splitPermalink = explode('?', $permalink);
-				$permalinkNoArgs = $splitPermalink[0];
-
-				$wpdb->insert($wpdb->prefix."PO_plugins", array("enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "post_type"=>get_post_type($post->ID), "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$children, "secure"=>$secure, "post_id"=>$post->ID));
-			}
-			update_option('PO_old_posts_moved', 1);
+		foreach($oldPosts as $post) {
+			$enabledMobilePlugins = get_post_meta($post->ID, '_PO_enabled_mobile_plugins', $single=true);
+			$disabledMobilePlugins = get_post_meta($post->ID, '_PO_disabled_mobile_plugins', $single=true);
+			$enabledPlugins = get_post_meta($post->ID, '_PO_enabled_plugins', $single=true);
+			$disabledPlugins = get_post_meta($post->ID, '_PO_disabled_plugins', $single=true);
+			$children = get_post_meta($post->ID, '_PO_affect_children', $single=true);
 			
+			$secure=0;
+			if (preg_match('/^.{1,5}:\/\//', get_post_meta($post->ID, '_PO_permalink', $single=true), $matches)) {
+				switch ($matches[0]) {
+					case "https://":
+						$secure=1;
+						break;
+					default:
+						$secure=0;
+				}
+			}
+			
+			$permalink = preg_replace('/^.{1,5}:\/\//', '', get_post_meta($post->ID, '_PO_permalink', $single=true));
+			
+			$splitPermalink = explode('?', $permalink);
+			$permalinkNoArgs = $splitPermalink[0];
 
-			delete_post_meta_by_key('_PO_affect_children');
-			delete_post_meta_by_key('_PO_disabled_plugins');
-			delete_post_meta_by_key('_PO_enabled_plugins');
-			delete_post_meta_by_key('_PO_disabled_mobile_plugins');
-			delete_post_meta_by_key('_PO_enabled_mobile_plugins');
-			delete_post_meta_by_key('_PO_permalink');
+			$wpdb->insert($wpdb->prefix."PO_plugins", array("enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "post_type"=>get_post_type($post->ID), "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$children, "secure"=>$secure, "post_id"=>$post->ID));
 		}
+		update_option('PO_old_posts_moved', 1);
+		
+
+		delete_post_meta_by_key('_PO_affect_children');
+		delete_post_meta_by_key('_PO_disabled_plugins');
+		delete_post_meta_by_key('_PO_enabled_plugins');
+		delete_post_meta_by_key('_PO_disabled_mobile_plugins');
+		delete_post_meta_by_key('_PO_enabled_mobile_plugins');
+		delete_post_meta_by_key('_PO_permalink');
 	}
 
+	function correct_group_members() {
+		$plugins = get_plugins();
+		$pluginList = array();
+		foreach ($plugins as $key=>$plugin) {
+			$pluginList[$plugin['Name']] = $key;
+		}
+		$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
+		foreach($groups as $group) {
+			$newGroupMembers = array();
+			$groupMembers = get_post_meta($group->ID, '_PO_group_members', $single=true);
+			foreach($groupMembers as $member) {
+				if (array_key_exists($member, $pluginList)) {
+					$newGroupMembers[] = $pluginList[$member];
+				}
+			}
+			update_post_meta($group->ID, '_PO_group_members', $newGroupMembers);
+		}
+		update_option('PO_group_members_corrected', 1);
+	}
+	
 	function activate() {
 		global $wpdb;
 		$poPluginTableSQL = "CREATE TABLE ".$wpdb->prefix."PO_plugins (
@@ -149,6 +92,10 @@ class PluginOrganizer {
 			enabled_plugins longtext NOT NULL,
 			disabled_mobile_plugins longtext NOT NULL,
 			enabled_mobile_plugins longtext NOT NULL,
+			disabled_groups longtext NOT NULL,
+			enabled_groups longtext NOT NULL,
+			disabled_mobile_groups longtext NOT NULL,
+			enabled_mobile_groups longtext NOT NULL,
 			PRIMARY KEY PO_post_id (post_id),
 			KEY PO_permalink_hash (permalink_hash),
 			KEY PO_permalink_hash_args (permalink_hash_args)
@@ -158,19 +105,39 @@ class PluginOrganizer {
 			dbDelta($poPluginTableSQL);
 		}
 
-		###Move old tables
-		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_groups'") == $wpdb->prefix."PO_groups") {
-			$this->move_old_groups();
+		//Add new columns to PO_plugins table
+		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_plugins";
+		$showColumnResults = $wpdb->get_results($showColumnSql);
+		$newColumns = array(
+			'disabled_groups' => array(0, 'longtext NOT NULL'),
+			'enabled_groups' => array(0, 'longtext NOT NULL'),
+			'disabled_mobile_groups' => array(0, 'longtext NOT NULL'),
+			'enabled_mobile_groups' => array(0, 'longtext NOT NULL')
+		);
+		foreach ($showColumnResults as $column) {
+			if (array_key_exists($column->Field, $newColumns)) {
+				$newColumns[$column->Field][0] = 1;
+			}
 		}
 
-		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_post_plugins'") == $wpdb->prefix."PO_post_plugins") {
-			$this->move_old_post_plugins();
+		foreach ($newColumns as $column=>$value) {
+			if ($value[0] == 0) {
+				$addColumnSql = "ALTER TABLE ".$wpdb->prefix."PO_plugins ADD COLUMN " . $column . " " . $value[1] . ";";
+				$addColumnResult = $wpdb->query($addColumnSql);
+			}
+		}
+
+		##Cleanup from previous versions
+		delete_option('PO_old_posts_moved');
+		delete_option('PO_old_urls_moved');
+		delete_option('PO_old_groups_moved');
+		
+		
+		##Correct group members
+		if (get_option('PO_group_members_corrected') == '') {
+			$this->correct_group_members();
 		}
 		
-		if ($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->prefix."PO_url_plugins'") == $wpdb->prefix."PO_url_plugins") {
-			$this->move_old_url_plugins();
-		}
-
 		$postTypeSupport = get_option("PO_custom_post_type_support");
 		if (!is_array($postTypeSupport)) {
 			$postTypeSupport = array('plugin_filter');
@@ -207,8 +174,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "4.1.1") {
-			update_option("PO_version_num", "4.1.1");
+		if (get_option("PO_version_num") != "5.0") {
+			update_option("PO_version_num", "5.0");
 		}
 
 		//Add capabilities to the administrator role
@@ -226,6 +193,9 @@ class PluginOrganizer {
 			$administrator->add_cap('delete_others_plugin_filters');
 			$administrator->add_cap('delete_published_plugin_filters');
 			$administrator->add_cap('delete_private_plugin_filters');
+			$administrator->add_cap('edit_filter_group');
+			$administrator->add_cap('manage_filter_groups');
+			
 
 			$administrator->add_cap('edit_plugin_group');
 			$administrator->add_cap('edit_plugin_groups');
@@ -305,6 +275,8 @@ class PluginOrganizer {
 			$administrator->remove_cap('delete_others_plugin_filters');
 			$administrator->remove_cap('delete_published_plugin_filters');
 			$administrator->remove_cap('delete_private_plugin_filters');
+			$administrator->remove_cap('edit_filter_group');
+			$administrator->remove_cap('manage_filter_groups');
 
 			$administrator->remove_cap('edit_plugin_group');
 			$administrator->remove_cap('edit_plugin_groups');
@@ -425,13 +397,22 @@ class PluginOrganizer {
 			$plugins = $this->reorder_plugins(get_plugins());
 			$disabledPlugins = get_option('PO_disabled_plugins');
 			$disabledMobilePlugins = get_option('PO_disabled_mobile_plugins');
+			$disabledGroups = get_option('PO_disabled_groups');
+			$disabledMobileGroups = get_option('PO_disabled_mobile_groups');
 			$activePlugins = $this->get_active_plugins();
 			$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
+			$groupList = get_posts(array('posts_per_page'=>-1, 'post_type'=>'plugin_group'));
 			if (!is_array($disabledPlugins)) {
 				$disabledPlugins = array();
 			}
 			if (!is_array($disabledMobilePlugins)) {
 				$disabledMobilePlugins = array();
+			}
+			if (!is_array($disabledGroups)) {
+				$disabledGroups = array();
+			}
+			if (!is_array($disabledMobileGroups)) {
+				$disabledMobileGroups = array();
 			}
 			require_once($this->absPath . "/tpl/globalPlugins.php");
 		} else {
@@ -460,9 +441,9 @@ class PluginOrganizer {
 			$views = array_reverse($views, true);
 		}
 		foreach ($groups as $group) {
-			$group_members = get_post_meta($group->ID, '_PO_group_members', $single=true);
-			if (isset($group_members[0]) && $group_members[0] != 'EMPTY') {
-				$groupCount = sizeof($group_members);
+			$groupMembers = get_post_meta($group->ID, '_PO_group_members', $single=true);
+			if (isset($groupMembers[0]) && $groupMembers[0] != 'EMPTY') {
+				$groupCount = sizeof($groupMembers);
 			} else {
 				$groupCount = 0;
 			}
@@ -521,6 +502,16 @@ class PluginOrganizer {
 				update_option("PO_disabled_plugins", array());
 				$returnStatus .= "Global plugin list has been saved.\n";
 			}
+			
+			if (is_array($_POST['disabledGroupList']) && $_POST['disabledGroupList'][0] != 'EMPTY') {
+				$disabledGroups = $_POST['disabledGroupList'];
+				update_option("PO_disabled_groups", $disabledGroups);
+				$returnStatus .= "Global group list has been saved.\n";
+			} else {
+				update_option("PO_disabled_groups", array());
+				$returnStatus .= "Global group list has been saved.\n";
+			}
+			
 			if (get_option('PO_disable_mobile_plugins') == 1) {
 				if (is_array($_POST['disabledMobileList']) && $_POST['disabledMobileList'][0] != 'EMPTY') {
 					$disabledMobilePlugins = $_POST['disabledMobileList'];
@@ -529,6 +520,15 @@ class PluginOrganizer {
 				} else {
 					update_option("PO_disabled_mobile_plugins", array());
 					$returnStatus .= "Global mobile plugin list has been saved.\n";
+				}
+
+				if (is_array($_POST['disabledMobileGroupList']) && $_POST['disabledMobileGroupList'][0] != 'EMPTY') {
+					$disabledMobileGroups = $_POST['disabledMobileGroupList'];
+					update_option("PO_disabled_mobile_groups", $disabledMobileGroups);
+					$returnStatus .= "Global mobile group list has been saved.\n";
+				} else {
+					update_option("PO_disabled_mobile_groups", array());
+					$returnStatus .= "Global mobile group list has been saved.\n";
 				}
 			}
 		} else {
@@ -651,6 +651,26 @@ class PluginOrganizer {
 	}
 
 
+	function get_pf_column_headers($columns) {
+		$columns['PO_PF_permalink'] = __('Permalink');
+		return $columns;
+	}
+
+	function set_pf_custom_column_values($column_name, $post_id ) {
+		global $wpdb;
+		switch ($column_name) {
+			case 'PO_PF_permalink' :
+				$postSettingsQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
+				$postSettings = $wpdb->get_row($wpdb->prepare($postSettingsQuery, $post_id), ARRAY_A);
+				if (isset($postSettings['permalink'])) {
+					print $postSettings['permalink'];
+				}
+				break;
+			default:
+		}
+	}
+	
+	
 	function get_column_headers($columns) {
 		$count = 0;
 		$newColumns = array();
@@ -680,7 +700,7 @@ class PluginOrganizer {
 				foreach ($groups as $group) {
 					$members = get_post_meta($group->ID, '_PO_group_members', $single=true);
 					$members = stripslashes_deep($members);
-					if (is_array($members) && array_search($plugin['Name'], $members) !== FALSE) {
+					if (is_array($members) && array_search($pluginPath, $members) !== FALSE) {
 						$assignedGroups .= '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group->ID.'">'.$group->post_title.'</a> ,';
 					}
 				}
@@ -886,6 +906,26 @@ class PluginOrganizer {
 				$enabledMobilePluginList = array();
 			}
 
+			$disabledGroupList = @unserialize($postSettings['disabled_groups']);
+			if (!is_array($disabledGroupList)) {
+				$disabledGroupList = array();
+			}
+
+			$enabledGroupList = @unserialize($postSettings['enabled_groups']);
+			if (!is_array($enabledGroupList)) {
+				$enabledGroupList = array();
+			}
+
+			$disabledMobileGroupList = @unserialize($postSettings['disabled_mobile_groups']);
+			if (!is_array($disabledMobileGroupList)) {
+				$disabledMobileGroupList = array();
+			}
+
+			$enabledMobileGroupList = @unserialize($postSettings['enabled_mobile_groups']);
+			if (!is_array($enabledMobileGroupList)) {
+				$enabledMobileGroupList = array();
+			}
+
 			$permalinkFilter = $postSettings['permalink'];
 			$secure = $postSettings['secure'];
 		} else {
@@ -895,6 +935,10 @@ class PluginOrganizer {
 			$enabledPluginList = array();
 			$disabledMobilePluginList = array();
 			$enabledMobilePluginList = array();
+			$disabledGroupList = array();
+			$enabledGroupList = array();
+			$disabledMobileGroupList = array();
+			$enabledMobileGroupList = array();
 			$permalinkFilter = "";
 			$secure=0;
 		}
@@ -908,11 +952,24 @@ class PluginOrganizer {
 		if (!is_array($globalMobilePlugins)) {
 			$globalMobilePlugins = array();
 		}
+
+		$globalGroups = get_option('PO_disabled_groups');
+		if (!is_array($globalGroups)) {
+			$globalGroups = array();
+		}
+
+		$globalMobileGroups = get_option('PO_disabled_mobile_groups');
+		if (!is_array($globalMobileGroups)) {
+			$globalMobileGroups = array();
+		}
+		
 		
 		$plugins = $this->reorder_plugins(get_plugins());
 		
 		$activePlugins = $this->get_active_plugins();
 		$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
+		
+		$groupList = get_posts(array('posts_per_page'=>-1, 'post_type'=>'plugin_group'));
 		require_once($this->absPath . "/tpl/postMetaBox.php");
 	}
 
@@ -942,7 +999,8 @@ class PluginOrganizer {
 	}
 	
 	function save_post_meta_box($post_id) {
-		global $wpdb;
+		global $wp_rewrite, $wpdb;
+
 		$supportedPostTypes = get_option("PO_custom_post_type_support");
 		$supportedPostTypes[] = 'plugin_filter';
 		if ( (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id) || !current_user_can( 'edit_post', $post_id ) || !current_user_can( 'activate_plugins' ) || !in_array(get_post_type($post_id), $supportedPostTypes) || !isset($_POST['poSubmitPostMetaBox'])) {
@@ -990,6 +1048,7 @@ class PluginOrganizer {
 		}
 
 
+		### Mobile plugins
 		$disabledMobilePlugins = array();
 		$enabledMobilePlugins = array();
 		if (get_option('PO_disable_mobile_plugins') == 1) {
@@ -1018,13 +1077,74 @@ class PluginOrganizer {
 		}
 
 
+		
+		##Groups
+		$globalGroups = get_option('PO_disabled_groups');
+		if (!is_array($globalGroups)) {
+			$globalGroups = array();
+		}
+		$disabledGroups = array();
+		$enabledGroups = array();
+			
+		if (isset($_POST['pluginGroupList']) && is_array($_POST['pluginGroupList'])) {
+			foreach ($_POST['pluginGroupList'] as $group) {
+				if (!in_array($group, $globalGroups)) {
+					$disabledGroups[] = $group;
+				}
+			}
+
+			foreach ($globalGroups as $group) {
+				if (!in_array($group, $_POST['pluginGroupList'])) {
+					$enabledGroups[] = $group;
+				}
+			}
+		} else {
+			foreach ($globalGroups as $group) {
+				$enabledGroups[] = $group;
+			}
+		}
+
+
+		$disabledMobileGroups = array();
+		$enabledMobileGroups = array();
+		if (get_option('PO_disable_mobile_plugins') == 1) {
+			$globalMobileGroups = get_option('PO_disable_mobile_groups');
+			if (!is_array($globalMobileGroups)) {
+				$globalMobileGroups = array();
+			}
+				
+			if (isset($_POST['mobilePluginGroupList']) && is_array($_POST['mobilePluginGroupList'])) {
+				foreach ($_POST['mobilePluginGroupList'] as $group) {
+					if (!in_array($group, $globalMobileGroups)) {
+						$disabledMobileGroups[] = $group;
+					}
+				}
+
+				foreach ($globalMobileGroups as $group) {
+					if (!in_array($group, $_POST['mobilePluginGroupList'])) {
+						$enabledMobileGroups[] = $group;
+					}
+				}
+			} else {
+				foreach ($globalMobileGroups as $group) {
+					$enabledMobileGroups[] = $group;
+				}
+			}
+		}
+		
+		
 		if (get_post_type($post_id) != 'plugin_filter') {
 			$permalink = get_permalink($post_id);
 		} else {
 			$permalink = $_POST['permalinkFilter'];
 		}
 
-		
+		if ( $wp_rewrite->use_trailing_slashes ) {
+			$permalink = trailingslashit($permalink);
+		} else {
+			$permalink = untrailingslashit($permalink);
+		}
+
 		$secure=0;
 		if (preg_match('/^.{1,5}:\/\//', $permalink, $matches)) {
 			switch ($matches[0]) {
@@ -1046,11 +1166,11 @@ class PluginOrganizer {
 			$postStatus = 'publish';
 		}
 		
-		if (sizeof($enabledPlugins) > 0 || sizeof($disabledPlugins) > 0 || sizeof($enabledMobilePlugins) > 0 || sizeof($disabledMobilePlugins) > 0 || get_post_type($post_id) == "plugin_filter") {
+		if (sizeof($enabledPlugins) > 0 || sizeof($disabledPlugins) > 0 || sizeof($enabledMobilePlugins) > 0 || sizeof($disabledMobilePlugins) > 0 || sizeof($enabledGroups) > 0 || sizeof($disabledGroups) > 0 || sizeof($enabledMobileGroups) > 0 || sizeof($disabledMobileGroups) > 0 || get_post_type($post_id) == "plugin_filter") {
 			if ($postExists == 1) {
-				$wpdb->update($wpdb->prefix."PO_plugins", array("permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$affectChildren, "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "secure"=>$secure, "post_type"=>get_post_type($post_id), "status"=>$postStatus), array("post_id"=>$post_id));
+				$wpdb->update($wpdb->prefix."PO_plugins", array("permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$affectChildren, "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "enabled_groups"=>serialize($enabledGroups), "disabled_groups"=>serialize($disabledGroups), "enabled_mobile_groups"=>serialize($enabledMobileGroups), "disabled_mobile_groups"=>serialize($disabledMobileGroups), "secure"=>$secure, "post_type"=>get_post_type($post_id), "status"=>$postStatus), array("post_id"=>$post_id));
 			} else {
-				$wpdb->insert($wpdb->prefix."PO_plugins", array("post_id"=>$post_id, "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$affectChildren, "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "secure"=>$secure, "post_type"=>get_post_type($post_id), "status"=>$postStatus));
+				$wpdb->insert($wpdb->prefix."PO_plugins", array("post_id"=>$post_id, "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "children"=>$affectChildren, "enabled_plugins"=>serialize($enabledPlugins), "disabled_plugins"=>serialize($disabledPlugins), "enabled_mobile_plugins"=>serialize($enabledMobilePlugins), "disabled_mobile_plugins"=>serialize($disabledMobilePlugins), "enabled_groups"=>serialize($enabledGroups), "disabled_groups"=>serialize($disabledGroups), "enabled_mobile_groups"=>serialize($enabledMobileGroups), "disabled_mobile_groups"=>serialize($disabledMobileGroups), "secure"=>$secure, "post_type"=>get_post_type($post_id), "status"=>$postStatus));
 			}
 		} else if ($postExists == 1) {
 			$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
@@ -1354,6 +1474,33 @@ class PluginOrganizer {
 		die();
 	}
 		
+	function register_taxonomy() {
+		$labels = array(
+			'name' => _x( 'Filter Groups', 'taxonomy general name' ),
+			'singular_name' => _x( 'Filter Group', 'taxonomy singular name' ),
+			'search_items' =>  __( 'Search Filter Groups' ),
+			'all_items' => __( 'All Filter Groups' ),
+			'parent_item' => __( 'Parent Filter Group' ),
+			'parent_item_colon' => __( 'Parent Filter Group:' ),
+			'edit_item' => __( 'Edit Filter Group' ),
+			'update_item' => __( 'Update Filter Group' ),
+			'add_new_item' => __( 'Add New Filter Group' ),
+			'new_item_name' => __( 'New Filter Group Name' )
+		);
+
+		$settings = array(
+			'hierarchical' => true,
+			'public' => true,
+			'capability_type' => 'filter_group',
+			'labels' => $labels,
+			'show_ui' => true,
+			'capabilities' => array('assign_terms'=>'edit_filter_group','manage_terms' => 'manage_filter_groups','edit_terms' => 'manage_filter_groups','delete_terms' => 'manage_filter_groups'),
+			'rewrite' => array( 'slug' => 'filter_group' )
+		);
+
+		register_taxonomy('filter_group', array('plugin_filter'), $settings);
+	}
+	
 	function register_type() {
 		$labels = array(
 			'name' => _x('Plugin Filters', 'post type general name'),

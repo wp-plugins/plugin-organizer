@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
-Tested up to: 3.8
-Stable tag: 4.1.1
+Tested up to: 3.8.1
+Stable tag: 5.0
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,12 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.0 =
+Added ability to use plugin groups to disable/enable plugins.
+Added taxonomy to group plugin filters.
+Fixed a problem with plugin filter permalinks not having the ending slash if the permalink structure uses it.
+Cleaned up old code.
 
 = 4.1.1 =
 Fixed bug where no users could reorder plugins if site was not a multisite install.
@@ -357,251 +363,8 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 4.1.1 =
-Fixed bug where no users could reorder plugins if site was not a multisite install.
-
-= 4.1 =
-Fixed bug where the permalink for a plugin filter was not saved if no plugins were selected.
-Fixed some formatting issues on the plugins page.
-Fixed the missing icons on the admin pages that happened with WP 3.8.
-Added functionality to only allow network admins access to changing the plugin load order on multisite installs.
-
-= 4.0.2 =
-Fixed bug where the plugin load order was not displayed correctly on the page after activating a new plugin.
-Fixed an undefined variable warning on line 986 of PluginOrganizer.class.php
-
-= 4.0.1 =
-Fixed an issue where a network activated plugin wasn't added to the plugin page if it is set to load first.
-Changed the jquery on plugins.php to use the proper id for a plugin row.  Some plugin names differ from their slug.
-Fixed an issue where a plugin would be added to the active list multiple times if it was network activated and first in the load order.
-
-= 4.0 =
-Moved the storage of the permalink and plugin lists to a custom table to fix an issue with http://core.trac.wordpress.org/ticket/25690.  
-Added the use of an md5 hash on permalinks to allow effective indexing and searching using the index.
-
-= 3.2.6 =
-Fixed an issue where active_sitewide_plugins is sometimes set to an empty array even though the site is not multisite enabled.  This caused a 0 to be appended to the active plugins array and an error message to appear.
-
-= 3.2.5 =
-Fixed an issue where the MU plugin would only allow one plugin to be activated during bulk activation.
-
-= 3.2.4 =
-Added functionality to delete all the options that PO creates upon deactivation.  
-Added functionality to delete all custom post types created by PO upon deactivation.
-
-= 3.2.3 =
-Removed function that deleted the plugin arrays for a post when custom DB's were used. left over from old code.
-
-= 3.2.2 =
-Fixed missing post type checkboxes on settings page when saved with nothing selected.
-
-= 3.2.1 =
-Removed hard coded table prefix and added the correct base_prefix variable in PluginOrganizer class.
-
-= 3.2 =
-Adding the ability to change the order of network activated plugins.
-Adding a field to set the name of a plugin filter instead of just using the permalink.
-Fixed logic in MU plugin that would stop it from looking if a post was found with an empty array of disabled plugins.
-
-= 3.1.1 =
-Adding cache variable to store the plugin list so it is only created once per page load instead of every time the active_plugins option is retrieved.
-
-= 3.1 =
-Adding the ability to target specific browsers.  Useful for loading specific plugins for mobile browsers.
-
-= 3.0.10 =
-Fixing warning from searching empty array in group members on plugins page.
-
-= 3.0.9 =
-Fixing typo in version number check on initialization.
-Got rid of code to fix old custom permalink field
-
-= 3.0.8 =
-Removed a call to wp_count_posts in the activation function.  It may have been causing issues on activation.
-
-= 3.0.7 =
-Removed a call to get_permalink in the activation function.  It may have been causing issues on multisite activation.
-
-= 3.0.6 =
-Fixed an issue with activation where too many posts on the site caused the php to run out of memory and the activation to fail.
-
-= 3.0.5 =
-Fixed issue on multisite where the $GLOBALS['wp_taxonomies'] array hadn't been created yet so a php warning was thrown.
-
-= 3.0.4 =
-Fixed a typo that caused imported filters to not have a permalink.
-Added code to repair anyones database that has already been upgraded with bad permalinks.
-
-= 3.0.3 =
-Fixed an issue with the advanced meta query from get_posts adding % characters and escaping my % character.
-
-= 3.0.2 =
-Fixed an issue when using ignore protocol the first query wouldn't match.
-Fixed an issue where a post is found on the first query but no plugins have been disabled so the enabled plugins are overlooked.
-
-= 3.0.1 =
-Fixed a problem with fuzzy url matching.  " characters were being added to the url so it would never match.
-Commented out the code that deleted the tables and added an option to the databse to prevent multiple imports.  Will add the delete code in a later version to clean up the tables after everyone is stable and has imported their settings.
-Added code to ensure that the old MU plugin is deleted before attempting to copy it from the lib directory.
-
-= 3.0 =
-Complete redesign of the plugin.
-Removed all custom db tables and moved the data to the post_meta table.
-Added custom post type plugin_filter to replace the URl admin.
-Added custom post type plugin_group to replace the plugin groups table.
-The plugins displayed on post/pages/custom post types/global plugins page are now sorted and colored similar to the main plugin page.
-There is no longer an enabled and disabled plugin box.  Enabled and disabled plugins are now all managed together to avoid confusion.
-Fixed a bug where the MU plugin chopped the url before checking it so it looped 15 times on the homepage before stopping the search for a fuzzy url.
-Fixed a bug where globally disabled plugins were listed as inactive when the list of active plugins was accessed.
-
-= 2.6.3 =
-Fixing bug that allows plugins to be disabled on the update pages.
-
-= 2.6.2 =
-Fixing PHP notices
-
-= 2.6.1 =
-Fixing bad characters added during commit
-
-= 2.6 =
-Fixed error on windows when inserting into po_post_plugins without specifying all fields.
-Added ability to effect children of posts, pages, custom post types.
-Redesign of the post edit screen meta box.
-
-= 2.5.9 =
-Missed a file when committing 2.5.8.
-
-= 2.5.8 =
-Fixing grouping issues.  
-Plugin names were not being escaped when building the group list for display so they werent showing up.
-On the recently active screen the plugin organizer actions were duplicated and so when adding to group the group name was duplicated.
-
-= 2.5.7 =
-Fixing more bad characters being added by svn or wordpress.org.
-
-= 2.5.6 =
-Replacing Icons because they were released under creative commons and not gpl.
-
-= 2.5.5 =
-Fixing missing db table error message when the table exists on windows server.
-
-= 2.5.4 =
-Fixing bad characters being added by svn or wordpress.org.
-
-= 2.5.3 =
-Fixed a jquery issue with wp 3.5
-
-= 2.5.2 =
-Added warnings on settings page if the database tables are missing.
-Removed default value for longtext database fields.  Caused issues on windows.
-
-= 2.5.1 =
-Fixed a problem with URL admin not saving edited URLs
-Changed the first menu item to settings under Plugin Organizer
-
-= 2.5 =
-Removed PHP notice errors.
-The plugin organizer plugin can no longer be disabled on the admin.
-Added better support for multi-site.
-The plugin will now correct plugins that are network activated and activated on the local site so they are only network activated.  This fixes an error where more plugins were seen as active than were displayed on the plugins page.
-The plugin organizer features will not load on the network admin.
-Network activated plugins can now be disabled.
-
-= 2.4 =
-Adding ability to ignore arguments to a URL.  You can now enter URLs into the URL admin with arguments so that http://yoururl.com/page/?foo=2&bar=3 will have different plugins loaded than http://yoururl.com/page/?foo=1&bar=4 and http://yoururl.com/page/.
-Fixed URL admin so that it checks to make sure the URL was entered into the database before saying it was successful.
-
-= 2.3.3 =
-Undoing a change that was done in 2.3.1 to the request uri that removed arguments from the uri.  It is causing some issues for some users.  Will redesign and create a later release to optionally remove the arguments. 
-
-= 2.3.2 =
-When the user hadnt set the number of plugins displayed per page it was being defaulted to 20.  Changed it to default to 999.
-Set $endChar to an empty string in PluginOrganizerMU.class.php to prevent debug notices.
-
-= 2.3.1 =
-Fixed a javascript error on the URL admin page.
-Fixed logic for Global plugins where all plugins were disabled none where getting disabled.
-Fixed use of REQUEST_URI.  Now it Splits the REQUEST_URI to trim off URL arguments.
-Added ability to reset plugin order back to wordpress default.
-Renamed some javascript functions and consolidated some of them.
-
-= 2.3 =
-Removed the old admin pages.  The plugins can now be managed directly on the plugins page.
-Redesigned the settings page to use ajax queries instead of reloading the page to save settings.
-Redesigned the URL admin to use ajax to save and edit URL's instead of reloading the page.
-Moved most of the javascript out of the main class and into template files.
-Added a setting to preserve the plugin data when it is deactivated.  The plugin data including database tables and MU plugin file can now be removed on deactivation.
-
-= 2.2.1 =
-Added ability to ignore the protocol when matching the requested URL by checking a checkbox on the settings page.
-
-= 2.2 =
-Added Fuzzy URL matching to the arbitrary URL admin.  URLs can now effect their children.
-Added nonce checking to URL admin.
-Restructured forms on the main settings page.
-
-= 2.1.3 =
-Added checks to ensure plugin load order cant be changed when all plugins are not viewable on the page.
-
-= 2.1.2 =
-Fixed group view on plugin organizer page when the plugins per page has been set too low or extremely high.
-Fixed setting of the show old admin page when either save settings button is clicked.
-
-= 2.1.1 =
-Adding option to show the old admin pages.
-
-= 2.1 =
-Added better group management to the plugin admin page.
-Removed group management pages from the menu.
-
-= 2.0 =
-Added drag and drop functionality to the plugin admin page.
-Added group links to the top of the plugin admin page that replace the group dropdown.
-Added better checking to make sure the plugin load order can only be changed when all plugins are being displayed.
-
-= 1.2.3 =
-Fixed URL admin page.  Enabled plugins list wasnt saving on creation.
-
-= 1.2.2 =
-Fixed typo in recreate permalinks function.
-Centralized the nonce generation so the PluginOrganizer class now holds it.
-
-= 1.2.1 =
-Adding license tag to header and replacing global path variables with path variables inside the PluginOrganizer class.
-
-= 1.2 =
-Removed a conditional and some whitespace from the main plugin file becasue it may have been causing issues with activation.  
-
-= 1.1 =
-Added option to settings page so the selective plugin loading can be enabled or disabled for the admin pages seperately to prevent problems.
-
-= 1.0 =
-Added ability to disable plugins in the admin using the Arbitrary URL admin page.
-Fixed some flow issues and html problems on the PO admin pages.
-Properly escaped all queries
-
-= 0.9 =
-Added plugin management for url's that don't have a post tied to them.
-
-= 0.8.1 =
-Added missing tpl/globalPlugins.php file.
-
-= 0.8 =
-Adding custom post type support.
-
-= 0.7.3 =
-Fixed activation errors when mu-plugins folder is not writable.
-
-= 0.7.2 =
-Bug fixes for plugin admin page.  Plugin order could be lost on activation or deactivation.  Top bulk actions fixed.
-
-= 0.7.1 =
-Fixing plugin admin page.  Could cause plugins to be disabled in old version.
-
-= 0.7 =
-Fixes for jQuery 1.4.4
-
-= 0.6 =
-Added functionality to disable plugins globally and selectively enable them for posts and pages.
-Added functionality to create the mu-plugins folder and move the MU plugin class when activated.
-New databse layout.  Will be created when plugin is activated.
+= 5.0 =
+Added ability to use plugin groups to disable/enable plugins.
+Added taxonomy to group plugin filters.
+Fixed a problem with plugin filter permalinks not having the ending slash if the permalink structure uses it.
+Cleaned up old code.

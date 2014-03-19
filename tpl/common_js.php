@@ -1,25 +1,13 @@
 <script language="javascript" src="<?php print $this->urlPath; ?>/js/validation.js"></script>
 <script language="javascript" type="text/javascript">
-	function PO_toggle_all_plugins() {
-		var toggle = jQuery("#toggleAllPlugins").attr('checked');
-		jQuery(".pluginsList").each(function() {  
+	function PO_toggle_all(toggleCheckbox, itemClass, buttonID, itemID) {
+		var toggle = jQuery("#"+toggleCheckbox).attr('checked');
+		jQuery("."+itemClass).each(function() {  
 			var splitID = this.id.split('_');
 			if (toggle) {
-				PO_set_on_off('pluginsButton_'+splitID[1], 'plugins_'+splitID[1], 1);
+				PO_set_on_off(buttonID+splitID[1], itemID+splitID[1], 1);
 			} else {
-				PO_set_on_off('pluginsButton_'+splitID[1], 'plugins_'+splitID[1], 0);
-			}
-		});  
-	}
-
-	function PO_toggle_all_mobile_plugins() {
-		var toggle = jQuery("#toggleAllMobilePlugins").attr('checked');
-		jQuery(".mobilePluginsList").each(function() {  
-			var splitID = this.id.split('_');
-			if (toggle) {
-				PO_set_on_off('mobilePluginsButton_'+splitID[1], 'mobilePlugins_'+splitID[1], 1);
-			} else {
-				PO_set_on_off('mobilePluginsButton_'+splitID[1], 'mobilePlugins_'+splitID[1], 0);
+				PO_set_on_off(buttonID+splitID[1], itemID+splitID[1], 0);
 			}
 		});  
 	}

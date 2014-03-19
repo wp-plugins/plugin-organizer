@@ -80,7 +80,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			}
 			jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
 				if (this.checked) {
-					groupList[groupList.length] = pluginList[jQuery(this).val()];
+					groupList[groupList.length] = jQuery(this).val();
 				}
 			});
 			if (group_name == '' || group_name == '-- Select Group --') {
@@ -109,7 +109,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			}
 			jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
 				if (this.checked) {
-					groupList[groupList.length] = pluginList[jQuery(this).val()];
+					groupList[groupList.length] = jQuery(this).val();
 				}
 			});
 			if (group_name == '' || group_name == '-- Select Group --') {
@@ -137,7 +137,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				var groupList = new Array();
 				jQuery('tr.active input:checkbox[name*=checked], tr.inactive input:checkbox[name*=checked]').each(function() {
 					if (this.checked) {
-						groupList[groupList.length] = pluginList[jQuery(this).val()];
+						groupList[groupList.length] = jQuery(this).val();
 					}
 				});
 				
@@ -224,9 +224,9 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			
 			for(var i=0; i<hiddenPlugins.length; i++) {
 				if (hiddenPlugins[i][2] == "first item in the list") {
-					jQuery('#the-list').prepend('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+					jQuery('#the-list').prepend('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th class="check-column"></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
 				} else {
-					jQuery('#'+hiddenPlugins[i][2]).after('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
+					jQuery('#'+hiddenPlugins[i][2]).after('<tr class="active" id="'+hiddenPlugins[i][1]+'" style="cursor: move;"><th class="check-column"></th><td class="PO_draghandle column-PO_draghandle"></td><td class="plugin-title"><strong>'+hiddenPlugins[i][3]+'</strong></td><td class="column-description desc" colspan="'+colspanCount+'"><div class="plugin-description"><input type="hidden" value="'+hiddenPlugins[i][4]+'" id="start_order_'+hiddenPlugins[i][4]+'" class="start_order"><p>This is a network activated plugin.  It is only here to let you change its load order for this site.  Go to the network dashboard to activate/deactivate it.</p></div></td></tr>');
 				}
 				
 			}

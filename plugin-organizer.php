@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 4.1.1
+Version: 5.0
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -61,9 +61,12 @@ if (!is_network_admin()) {
 
 	add_action('manage_plugins_columns', array($PluginOrganizer, 'get_column_headers'));
 	add_filter('manage_plugins_custom_column', array($PluginOrganizer, 'set_custom_column_values'), 10, 3);
+	add_action('manage_edit-plugin_filter_columns', array($PluginOrganizer, 'get_pf_column_headers'));
+	add_filter('manage_plugin_filter_posts_custom_column', array($PluginOrganizer, 'set_pf_custom_column_values'), 10, 3);
 	add_filter('gettext', array($PluginOrganizer, 'change_page_title'), 10, 2);
 	add_filter('title_save_pre', array($PluginOrganizer, 'change_plugin_filter_title'));
 	add_action('init', array($PluginOrganizer, 'register_type'));
+	add_action('init', array($PluginOrganizer, 'register_taxonomy'));
 	add_filter('post_updated_messages', array($PluginOrganizer, 'custom_updated_messages'));
 	add_filter('transition_post_status', array($PluginOrganizer, 'update_post_status'), 10, 3);
 }

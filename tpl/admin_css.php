@@ -47,22 +47,22 @@
 		margin: 10px;
 	}
 
-	.pluginWrap {
+	.pluginWrap, .groupWrap {
 		padding: 0px;
 		border-bottom: 1px solid #cccccc;
 		line-height: 26px;
 	}
 
-	.pluginsList, .mobilePluginsList {
+	.pluginsList, .mobilePluginsList, .pluginGroupList, .mobilePluginGroupList {
 		display: none !important;
 	}
 	
-	.pluginsButton {
+	.pluginsButton, .pluginGroupButton {
 		vertical-align: middle;
 		margin: 0px 3px;
 	}
 
-	.inactivePluginWrap {
+	.inactivePluginWrap, .inactivePluginGroupWrap {
 		background-color: #cccccc;
 		border-bottom: 1px solid #ffffff;
 	}
@@ -78,5 +78,10 @@
 	.pluginLabel {
 		padding-left: 10px;
 		float: left;
+	}
+
+	.pluginListHead {
+		font-size: 18px !important;
+		border-bottom: 2px solid #000000;
 	}
 </style>
