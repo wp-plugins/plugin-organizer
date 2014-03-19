@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 3.8.1
-Stable tag: 5.0
+Stable tag: 5.0.1
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,9 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.0.1 =
+Moved function call to correct old group members from the activation function to the init call.
 
 = 5.0 =
 Added ability to use plugin groups to disable/enable plugins.
@@ -363,8 +366,5 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.0 =
-Added ability to use plugin groups to disable/enable plugins.
-Added taxonomy to group plugin filters.
-Fixed a problem with plugin filter permalinks not having the ending slash if the permalink structure uses it.
-Cleaned up old code.
+= 5.0.1 =
+Moved function call to correct old group members from the activation function to the init call.

@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.0
+Version: 5.0.1
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -20,6 +20,7 @@ register_deactivation_hook(__FILE__, array($PluginOrganizer, 'deactivate'));
 
 add_action( 'activated_plugin',  array($PluginOrganizer, 'activated_plugin' ), 10, 2 );
 add_action( 'deactivated_plugin',  array($PluginOrganizer, 'deactivated_plugin' ), 10, 2 );
+add_action('init',  array($PluginOrganizer, 'correct_group_members'));
 
 if (!is_network_admin()) {
 	add_action('init',  array($PluginOrganizer, 'setup_nonce'));

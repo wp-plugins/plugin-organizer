@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.0") {
+		if (get_option("PO_version_num") != "5.0.1") {
 			$this->activate();
 		}
 	}
@@ -58,23 +58,25 @@ class PluginOrganizer {
 	}
 
 	function correct_group_members() {
-		$plugins = get_plugins();
-		$pluginList = array();
-		foreach ($plugins as $key=>$plugin) {
-			$pluginList[$plugin['Name']] = $key;
-		}
-		$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
-		foreach($groups as $group) {
-			$newGroupMembers = array();
-			$groupMembers = get_post_meta($group->ID, '_PO_group_members', $single=true);
-			foreach($groupMembers as $member) {
-				if (array_key_exists($member, $pluginList)) {
-					$newGroupMembers[] = $pluginList[$member];
-				}
+		if (get_option('PO_group_members_corrected') != 1) {
+			$plugins = get_plugins();
+			$pluginList = array();
+			foreach ($plugins as $key=>$plugin) {
+				$pluginList[$plugin['Name']] = $key;
 			}
-			update_post_meta($group->ID, '_PO_group_members', $newGroupMembers);
+			$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
+			foreach($groups as $group) {
+				$newGroupMembers = array();
+				$groupMembers = get_post_meta($group->ID, '_PO_group_members', $single=true);
+				foreach($groupMembers as $member) {
+					if (array_key_exists($member, $pluginList)) {
+						$newGroupMembers[] = $pluginList[$member];
+					}
+				}
+				update_post_meta($group->ID, '_PO_group_members', $newGroupMembers);
+			}
+			update_option('PO_group_members_corrected', 1);
 		}
-		update_option('PO_group_members_corrected', 1);
 	}
 	
 	function activate() {
@@ -132,12 +134,6 @@ class PluginOrganizer {
 		delete_option('PO_old_urls_moved');
 		delete_option('PO_old_groups_moved');
 		
-		
-		##Correct group members
-		if (get_option('PO_group_members_corrected') == '') {
-			$this->correct_group_members();
-		}
-		
 		$postTypeSupport = get_option("PO_custom_post_type_support");
 		if (!is_array($postTypeSupport)) {
 			$postTypeSupport = array('plugin_filter');
@@ -174,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.0") {
-			update_option("PO_version_num", "5.0");
+		if (get_option("PO_version_num") != "5.0.1") {
+			update_option("PO_version_num", "5.0.1");
 		}
 
 		//Add capabilities to the administrator role
