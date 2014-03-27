@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.0.2") {
+		if (get_option("PO_version_num") != "5.0.3") {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.0.2") {
-			update_option("PO_version_num", "5.0.2");
+		if (get_option("PO_version_num") != "5.0.3") {
+			update_option("PO_version_num", "5.0.3");
 		}
 
 		//Add capabilities to the administrator role
@@ -626,7 +626,7 @@ class PluginOrganizer {
 			$members = get_post_meta($_REQUEST['PO_group_view'], '_PO_group_members', $single=true);
 			$members = stripslashes_deep($members);
 			foreach ($allPluginList as $key=>$val) {
-				if (is_array($members) && in_array($val['Name'], $members)) {
+				if (is_array($members) && in_array($key, $members)) {
 					$activePlugins[$key] = $val;
 					$activePluginOrder[] = array_search($key, $plugins);
 				}
