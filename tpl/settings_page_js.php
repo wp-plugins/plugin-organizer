@@ -127,11 +127,15 @@ if ( current_user_can( 'activate_plugins' ) ) {
 		
 		function PO_submit_redo_permalinks() {
 			var load_element = jQuery('#redo-permalinks-div .inside');
+			var old_site_address = jQuery('#PO-old-site-address').val();
+			var new_site_address = jQuery('#PO-new-site-address').val();
 			var revertHtml = load_element.html();
 			load_element.html('<div style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></div>');
-			jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+			jQuery.post(encodeURI(ajaxurl + '?action=PO_redo_permalinks'), { PO_nonce: '<?php print $this->nonce; ?>', 'old_site_address': old_site_address, 'new_site_address': new_site_address }, function (result) {
 				alert(result);
 				load_element.html(revertHtml);
+				jQuery('#PO-old-site-address').val(old_site_address);
+				jQuery('#PO-new-site-address').val(new_site_address);
 			});
 		}
 

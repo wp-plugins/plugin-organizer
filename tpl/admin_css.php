@@ -53,7 +53,7 @@
 		line-height: 26px;
 	}
 
-	.pluginsList, .mobilePluginsList, .pluginGroupList, .mobilePluginGroupList {
+	.pluginsList, .mobilePluginsList, .pluginGroupList, .mobilePluginGroupList, #toggleAllPlugins, #toggleAllMobilePlugins, #toggleAllPluginGroups, #toggleAllMobilePluginGroups, #toggleAllGroups, #toggleAllMobileGroups {
 		display: none !important;
 	}
 	
@@ -71,12 +71,12 @@
 		width: 80px;
 		float: left;
 		text-align: center;
-		padding: 5px 0px;
+		padding: 10px 5px;
 		border-right: 1px solid #000000;
 	}
 	
 	.pluginLabel {
-		padding-left: 10px;
+		padding: 10px 0px 10px 10px;
 		float: left;
 	}
 

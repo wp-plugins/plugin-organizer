@@ -104,6 +104,11 @@
 		    <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
 			  <div class="inside">
+				Old site address (optional): <input type="text" name="PO_old_site_address" id="PO-old-site-address" /><br />
+				New site address (optional): <input type="text" name="PO_new_site_address" id="PO-new-site-address" value="<?php print preg_replace('/^.{1,5}:\/\//', '', get_site_url()); ?>" /><br />
+				<br />
+				If you are changing your site address you can enter your new and old addresses to update your plugin filters.  If you don't enter the new and old site addresses your plugin filters will not be updated.  All other post types will be updated by getting the new permalink from wordpress.<br />
+				WARNING:  This does a regular expression search on your permalinks for the string you enter in the old address box and replaces it with the string you put in the new addres box so be careful what you enter.  This can't be undone.<br />
 				<input type="button" name="redo-permalinks" value="Recreate Permalinks" onmousedown="PO_submit_redo_permalinks();" />
 			  </div>
 		    </div>

@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 3.8.1
-Stable tag: 5.0.3
+Stable tag: 5.1
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,10 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.1 =
+Added ability to fix permalinks for plugin filters through the settings page.
+Created new on of images.
 
 = 5.0.3 =
 Fixed issue with group views on the plugins page.
@@ -372,5 +376,6 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.0.3 =
-Fixed issue with group views on the plugins page.
+= 5.1 =
+Added ability to fix permalinks for plugin filters through the settings page.
+Created new on of images.

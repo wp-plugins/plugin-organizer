@@ -35,12 +35,14 @@ if ($errMsg != "") {
 	<div class="pluginWrap">
 		<div class="toggleContainer">
 			Standard<br />
-			<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="" onclick="PO_toggle_all('toggleAllPlugins', 'pluginsList', 'pluginsButton_', 'plugins_');">Toggle
+			<input type="checkbox" id="toggleAllPlugins" name="toggleAllPlugins" value="">
+			<img src="<?php print $this->urlPath; ?>/image/toggle-on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="toggleAllPluginsButton" onclick="PO_toggle_on_off('toggleAllPluginsButton', 'toggleAllPlugins', 'toggle-');PO_toggle_all('toggleAllPlugins', 'pluginsList', 'pluginsButton_', 'plugins_');" />
 		</div>
 		<?php if (get_option('PO_disable_mobile_plugins') == 1) { ?>
 			<div class="toggleContainer">
 				Mobile<br />
-				<input type="checkbox" id="toggleAllMobilePlugins" name="toggleAllMobilePlugins" value="" onclick="PO_toggle_all('toggleAllMobilePlugins', 'mobilePluginsList', 'mobilePluginsButton_', 'mobilePlugins_');">Toggle
+				<input type="checkbox" id="toggleAllMobilePlugins" name="toggleAllMobilePlugins" value="">
+				<img src="<?php print $this->urlPath; ?>/image/toggle-on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="toggleAllMobilePluginsButton" onclick="PO_toggle_on_off('toggleAllMobilePluginsButton', 'toggleAllMobilePlugins', 'toggle-');PO_toggle_all('toggleAllMobilePlugins', 'mobilePluginsList', 'mobilePluginsButton_', 'mobilePlugins_');" />
 			</div>
 		<?php } ?>
 		<div style="clear: both;"></div>
@@ -56,12 +58,12 @@ if ($errMsg != "") {
 				if ((in_array($key, $globalPlugins) && !in_array($key, $enabledPluginList)) || in_array($key, $disabledPluginList)) {
 					?>
 					<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" checked="checked" />
-					<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginsButton_<?php print $count; ?>', 'plugins_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginsButton_<?php print $count; ?>', 'plugins_<?php print $count; ?>', '');" />
 					<?php
 				} else {
 					?>
 					<input type="checkbox" class="pluginsList" id="plugins_<?php print $count; ?>" name="pluginsList[]" value="<?php print $key; ?>" />
-					<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginsButton_<?php print $count; ?>', 'plugins_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginsButton_<?php print $count; ?>', 'plugins_<?php print $count; ?>', '');" />
 					<?php
 				}
 				?>
@@ -72,12 +74,12 @@ if ($errMsg != "") {
 					if ((in_array($key, $globalMobilePlugins) && !in_array($key, $enabledMobilePluginList)) || in_array($key, $disabledMobilePluginList)) {
 						?>
 						<input type="checkbox" class="mobilePluginsList" id="mobilePlugins_<?php print $count; ?>" name="mobilePluginsList[]" value="<?php print $key; ?>" checked="checked" />
-						<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="mobilePluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginsButton_<?php print $count; ?>', 'mobilePlugins_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="mobilePluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginsButton_<?php print $count; ?>', 'mobilePlugins_<?php print $count; ?>', '');" />
 						<?php
 					} else {
 						?>
 						<input type="checkbox" class="mobilePluginsList" id="mobilePlugins_<?php print $count; ?>" name="mobilePluginsList[]" value="<?php print $key; ?>" />
-						<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="mobilePluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginsButton_<?php print $count; ?>', 'mobilePlugins_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="mobilePluginsButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginsButton_<?php print $count; ?>', 'mobilePlugins_<?php print $count; ?>', '');" />
 						<?php
 					}
 					?>
@@ -101,12 +103,14 @@ if ($errMsg != "") {
 	<div class="pluginWrap">
 		<div class="toggleContainer">
 			Standard<br />
-			<input type="checkbox" id="toggleAllPluginGroups" name="toggleAllPluginGroups" value="" onclick="PO_toggle_all('toggleAllPluginGroups', 'pluginGroupList', 'pluginGroupButton_', 'pluginGroup_');">Toggle
+			<input type="checkbox" id="toggleAllPluginGroups" name="toggleAllPluginGroups" value="">
+			<img src="<?php print $this->urlPath; ?>/image/toggle-on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="toggleAllPluginGroupsButton" onclick="PO_toggle_on_off('toggleAllPluginGroupsButton', 'toggleAllPluginGroups', 'toggle-');PO_toggle_all('toggleAllPluginGroups', 'pluginGroupList', 'pluginGroupButton_', 'pluginGroup_');" />
 		</div>
 		<?php if (get_option('PO_disable_mobile_plugins') == 1) { ?>
 			<div class="toggleContainer">
 				Mobile<br />
-				<input type="checkbox" id="toggleAllMobilePluginGroups" name="toggleAllMobilePluginGroups" value="" onclick="PO_toggle_all('toggleAllMobilePluginGroups', 'mobilePluginGroupList', 'mobilePluginGroupButton_', 'mobilePluginGroup_');">Toggle
+				<input type="checkbox" id="toggleAllMobilePluginGroups" name="toggleAllMobilePluginGroups" value="">
+				<img src="<?php print $this->urlPath; ?>/image/toggle-on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="toggleAllMobilePluginGroupsButton" onclick="PO_toggle_on_off('toggleAllMobilePluginGroupsButton', 'toggleAllMobilePluginGroups', 'toggle-');PO_toggle_all('toggleAllMobilePluginGroups', 'mobilePluginGroupList', 'mobilePluginGroupButton_', 'mobilePluginGroup_');" />
 			</div>
 		<?php } ?>
 		<div style="clear: both;"></div>
@@ -122,12 +126,12 @@ if ($errMsg != "") {
 				if ((in_array($group->ID, $globalGroups) && !in_array($group->ID, $enabledGroupList)) || in_array($group->ID, $disabledGroupList)) {
 					?>
 					<input type="checkbox" class="pluginGroupList" id="pluginGroup_<?php print $count; ?>" name="pluginGroupList[]" value="<?php print $group->ID; ?>" checked="checked" />
-					<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '');" />
 					<?php
 				} else {
 					?>
 					<input type="checkbox" class="pluginGroupList" id="pluginGroup_<?php print $count; ?>" name="pluginGroupList[]" value="<?php print $group->ID; ?>" />
-					<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+					<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="pluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('pluginGroupButton_<?php print $count; ?>', 'pluginGroup_<?php print $count; ?>', '');" />
 					<?php
 				}
 				?>
@@ -138,12 +142,12 @@ if ($errMsg != "") {
 					if ((in_array($group->ID, $globalMobileGroups) && !in_array($group->ID, $enabledMobileGroupList)) || in_array($group->ID, $disabledMobileGroupList)) {
 						?>
 						<input type="checkbox" class="mobilePluginGroupList" id="mobilePluginGroup_<?php print $count; ?>" name="mobilePluginGroupList[]" value="<?php print $group->ID; ?>" checked="checked" />
-						<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<img src="<?php print $this->urlPath; ?>/image/off-button.png" class="pluginsButton pluginsButtonOff" alt="Off" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '');" />
 						<?php
 					} else {
 						?>
 						<input type="checkbox" class="mobilePluginGroupList" id="mobilePluginGroup_<?php print $count; ?>" name="mobilePluginGroupList[]" value="<?php print $group->ID; ?>" />
-						<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '<?php print $count; ?>');" />
+						<img src="<?php print $this->urlPath; ?>/image/on-button.png" class="pluginsButton pluginsButtonOn" alt="On" id="mobilePluginGroupButton_<?php print $count; ?>" onclick="PO_toggle_on_off('mobilePluginGroupButton_<?php print $count; ?>', 'mobilePluginGroup_<?php print $count; ?>', '');" />
 						<?php
 					}
 					?>

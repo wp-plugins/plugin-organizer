@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.0.3") {
+		if (get_option("PO_version_num") != "5.1") {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.0.3") {
-			update_option("PO_version_num", "5.0.3");
+		if (get_option("PO_version_num") != "5.1") {
+			update_option("PO_version_num", "5.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -1136,11 +1136,7 @@ class PluginOrganizer {
 			$permalink = $_POST['permalinkFilter'];
 		}
 
-		if ( $wp_rewrite->use_trailing_slashes ) {
-			$permalink = trailingslashit($permalink);
-		} else {
-			$permalink = untrailingslashit($permalink);
-		}
+		$permalink = $this->fix_trailng_slash($permalink);
 
 		$secure=0;
 		if (preg_match('/^.{1,5}:\/\//', $permalink, $matches)) {
@@ -1188,6 +1184,18 @@ class PluginOrganizer {
 	
 	function redo_permalinks() {
 		global $wpdb;
+		if (!empty($_POST['old_site_address'])) {
+			$oldSiteAddress = preg_quote($this->fix_trailng_slash($_POST['old_site_address']), "/");
+		} else {
+			$oldSiteAddress = "";
+		}
+
+		if (!empty($_POST['new_site_address'])) {
+			$newSiteAddress = $this->fix_trailng_slash($_POST['new_site_address']);
+		} else {
+			$newSiteAddress = "";
+		}
+		
 		$failedCount = 0;
 		$updatedCount = 0;
 		$noUpdateCount = 0;
@@ -1195,7 +1203,6 @@ class PluginOrganizer {
 			print "You dont have permissions to access this page.";
 			die();
 		}
-		$posts = get_posts(array('posts_per_page'=>-1, 'post_type'=>get_option("PO_custom_post_type_support")));
 		$postIDsQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins WHERE post_type != 'plugin_filter'";
 		$postIDs = $wpdb->get_results($postIDsQuery, ARRAY_A);
 		foreach ($postIDs as $postID) {
@@ -1234,6 +1241,24 @@ class PluginOrganizer {
 			} else {
 				$failedCount++;
 			}
+		}
+
+		if ($oldSiteAddress != "" && $newSiteAddress != "") {
+			$filterQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE post_type = 'plugin_filter'";
+			$filters = $wpdb->get_results($filterQuery, ARRAY_A);
+			foreach ($filters as $filter) {
+				$filterObject = get_post($filter['post_id']);
+				if (!is_null($filterObject)) {
+					$permalink = preg_replace("/^".$oldSiteAddress."/", "".$newSiteAddress."", $filter['permalink']);
+					if ($wpdb->update($wpdb->prefix."PO_plugins", array('permalink'=>$permalink, 'permalink_hash'=>md5($permalink), 'permalink_hash_args'=>md5($permalink)), array("post_id"=>$filter['post_id']))) {
+						$updatedCount++;
+					} else {
+						$failedCount++;
+					}
+				}
+			}
+		} else {
+			print "Plugin Filters were not updated since the new or old address was blank.\n\n";
 		}
 
 		if ($failedCount > 0) {
@@ -1626,6 +1651,18 @@ class PluginOrganizer {
 	function update_post_status($newStatus, $oldStatus, $post) {
 		global $wpdb;
 		$wpdb->update($wpdb->prefix."PO_plugins", array("status"=>$newStatus), array("post_id"=>$post->ID));
+	}
+
+	function fix_trailng_slash($permalink) {
+		global $wp_rewrite;
+		if (strpos($permalink, "?") === FALSE) {
+			if ( $wp_rewrite->use_trailing_slashes ) {
+				$permalink = trailingslashit($permalink);
+			} else {
+				$permalink = untrailingslashit($permalink);
+			}
+		}
+		return $permalink;
 	}
 }
 ?>
