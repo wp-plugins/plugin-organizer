@@ -3,7 +3,7 @@ Contributors: foomagoo
 Donate link: 
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
-Tested up to: 3.9
+Tested up to: 3.9.1
 Stable tag: 5.1
 
 
