@@ -89,11 +89,10 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				alert('You must select at least one plugin to add to the group.');
 			} else {
 				load_element = jQuery('#the-list');
-				revertHtml = load_element.html();
 				load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 				jQuery.post(encodeURI(ajaxurl + '?action=PO_add_to_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
 					alert(result);
-					load_element.html(revertHtml);
+					location.reload(true);
 				});
 			}
 			return false;
@@ -118,11 +117,10 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				alert('You must select at least one plugin to add to the group.');
 			} else {
 				load_element = jQuery('#the-list');
-				revertHtml = load_element.html();
 				load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 				jQuery.post(encodeURI(ajaxurl + '?action=PO_save_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>', group_name: group_name }, function (result) {
 					alert(result);
-					load_element.html(revertHtml);
+					location.reload(true);
 				});
 			}
 			return false;
@@ -146,11 +144,10 @@ if ( current_user_can( 'activate_plugins' ) ) {
 				} else {
 					if (confirm('Are you sure you wish to remove the selected plugins from group "'+group_name+'"?')) {
 						load_element = jQuery('#the-list');
-						revertHtml = load_element.html();
 						load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 						jQuery.post(encodeURI(ajaxurl + '?action=PO_remove_plugins_from_group'), { 'groupList[]': groupList, PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 							alert(result);
-							load_element.html(revertHtml);
+							location.reload(true);
 						});
 					}
 				}
@@ -166,11 +163,10 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			} else {
 				if (confirm('Are you sure you wish to delete group "'+group_name+'"?')) {
 					load_element = jQuery('#the-list');
-					revertHtml = load_element.html();
 					load_element.html('<tr><td colspan=2 style="width: 100%;text-align: center;"><img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>"></td></tr>');
 					jQuery.post(encodeURI(ajaxurl + '?action=PO_delete_group'), { PO_group: group_id, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
 						alert(result);
-						load_element.html(revertHtml);
+						location.reload(true);
 					});
 				}
 			}

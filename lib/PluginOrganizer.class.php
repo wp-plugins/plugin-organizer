@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.1") {
+		if (get_option("PO_version_num") != "5.1.1") {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.1") {
-			update_option("PO_version_num", "5.1");
+		if (get_option("PO_version_num") != "5.1.1") {
+			update_option("PO_version_num", "5.1.1");
 		}
 
 		//Add capabilities to the administrator role
