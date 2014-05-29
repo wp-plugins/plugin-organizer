@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.1.1") {
+		if (get_option("PO_version_num") != "5.2") {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.1.1") {
-			update_option("PO_version_num", "5.1.1");
+		if (get_option("PO_version_num") != "5.2") {
+			update_option("PO_version_num", "5.2");
 		}
 
 		//Add capabilities to the administrator role
@@ -799,6 +799,25 @@ class PluginOrganizer {
 		print $returnStatus;
 		die();
 	}
+
+	function edit_plugin_group_name() {
+		if ( !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) ) || !current_user_can( 'activate_plugins' ) ) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		$returnStatus = "";
+		if (is_numeric($_POST['PO_group_id']) && $_POST['PO_new_group_name'] != '') {
+			$post_id = wp_update_post(array('ID'=>$_POST['PO_group_id'], 'post_title'=>$_POST['PO_new_group_name']));
+			if ($post_id > 0) {
+				$returnStatus = "The group was successfully updated.";
+			} else {
+				$returnStatus = "The group name was not updated.";
+			}
+		}
+		print $returnStatus;
+		die();
+	}
+
 
 	function delete_group() {
 		global $wpdb;
