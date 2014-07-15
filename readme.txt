@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 3.9.1
-Stable tag: 5.2
+Stable tag: 5.3
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,12 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.3 =
+Added css class for network activated plugins on the plugins page.
+Moved all of the menus under the Plugin Organizer menu item.
+Fixed bug where a trailing slash is added to the permalink when it is referencing a file.
+Added the admin css file to the plugins admin page.
 
 = 5.2 =
 Added ability to edit the plugin group names.
@@ -382,5 +388,8 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.2 =
-Added ability to edit the plugin group names.
+= 5.3 =
+Added css class for network activated plugins on the plugins page.
+Moved all of the menus under the Plugin Organizer menu item.
+Fixed bug where a trailing slash is added to the permalink when it is referencing a file.
+Added the admin css file to the plugins admin page.

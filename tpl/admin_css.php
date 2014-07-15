@@ -84,4 +84,7 @@
 		font-size: 18px !important;
 		border-bottom: 2px solid #000000;
 	}
+	.network-active {
+		background-color: #333333 !important;
+	}
 </style>

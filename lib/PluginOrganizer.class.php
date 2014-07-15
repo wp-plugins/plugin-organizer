@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.2") {
+		if (get_option("PO_version_num") != "5.3") {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.2") {
-			update_option("PO_version_num", "5.2");
+		if (get_option("PO_version_num") != "5.3") {
+			update_option("PO_version_num", "5.3");
 		}
 
 		//Add capabilities to the administrator role
@@ -324,21 +324,26 @@ class PluginOrganizer {
 		if ( current_user_can( 'activate_plugins' ) ) {
 			add_action('admin_head-plugins.php', array($this, 'plugin_page_js'));
 			add_action('admin_head-plugins.php', array($this, 'make_draggable'));
+			add_action('admin_head-plugins.php', array($this, 'admin_css'));
 			add_action('admin_head-post-new.php', array($this, 'admin_css'));
 			add_action('admin_head-post-new.php', array($this, 'common_js'));
 			
 			add_action('admin_head-post.php', array($this, 'admin_css'));
 			add_action('admin_head-post.php', array($this, 'common_js'));
 			
-			$plugin_page=add_submenu_page('options-general.php', 'Plugin Organizer Settings', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
-			add_action('admin_head-'.$plugin_page, array($this, 'admin_css'));
-			add_action('admin_head-'.$plugin_page, array($this, 'settings_page_js'));
-			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
+			$plugin_page=add_menu_page( 'Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'), $this->urlPath . '/image/po-icon-16x16.png');
 			
-			$plugin_page=add_submenu_page('edit.php?post_type=plugin_filter', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
+			add_submenu_page('Plugin_Organizer', 'Filter Groups', 'Filter Groups', 'activate_plugins', 'edit-tags.php?taxonomy=filter_group'); 
+
+			$plugin_page=add_submenu_page('Plugin_Organizer', 'Global Plugins', 'Global Plugins', 'activate_plugins', 'PO_global_plugins', array($this, 'global_plugins_page'));
 			add_action('admin_head-'.$plugin_page, array($this, 'admin_css'));
 			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
+
+			$settings_page=add_submenu_page('Plugin_Organizer', 'Settings', 'Settings', 'activate_plugins', 'Plugin_Organizer', array($this, 'settings_page'));
+			add_action('admin_head-'.$settings_page, array($this, 'admin_css'));
+			add_action('admin_head-'.$settings_page, array($this, 'settings_page_js'));
+			add_action('admin_head-'.$settings_page, array($this, 'common_js'));
 		}
 
 	}
@@ -1566,7 +1571,8 @@ class PluginOrganizer {
 			'hierarchical' => false,
 			'menu_position' => null,
 			'supports' => array('custom-fields'),
-			'capability_type' => 'plugin_filter'
+			'capability_type' => 'plugin_filter',
+			'show_in_menu' => 'Plugin_Organizer'
 		); 
 		register_post_type('plugin_filter',$args);
 		
@@ -1674,7 +1680,8 @@ class PluginOrganizer {
 
 	function fix_trailng_slash($permalink) {
 		global $wp_rewrite;
-		if (strpos($permalink, "?") === FALSE) {
+		$filePath = preg_replace('/https?:\/\/'.$_SERVER['HTTP_HOST'].'\/?/', '', $permalink);
+		if (!is_file(get_home_path() . $filePath) && strpos($permalink, "?") === FALSE) {
 			if ( $wp_rewrite->use_trailing_slashes ) {
 				$permalink = trailingslashit($permalink);
 			} else {
