@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.3") {
+		if (get_option("PO_version_num") != "5.4" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.3") {
-			update_option("PO_version_num", "5.3");
+		if (get_option("PO_version_num") != "5.4") {
+			update_option("PO_version_num", "5.4");
 		}
 
 		//Add capabilities to the administrator role
@@ -1157,10 +1157,10 @@ class PluginOrganizer {
 		if (get_post_type($post_id) != 'plugin_filter') {
 			$permalink = get_permalink($post_id);
 		} else {
-			$permalink = $_POST['permalinkFilter'];
+			$permalink = $this->fix_trailng_slash($_POST['permalinkFilter']);
 		}
 
-		$permalink = $this->fix_trailng_slash($permalink);
+		
 
 		$secure=0;
 		if (preg_match('/^.{1,5}:\/\//', $permalink, $matches)) {
@@ -1680,7 +1680,9 @@ class PluginOrganizer {
 
 	function fix_trailng_slash($permalink) {
 		global $wp_rewrite;
-		$filePath = preg_replace('/https?:\/\/'.$_SERVER['HTTP_HOST'].'\/?/', '', $permalink);
+		$wpDomain = preg_replace(array('/^https?:/', '/\//'), array('',''), get_bloginfo('url'));
+		
+		$filePath = preg_replace('/^https?:\/\/'.$wpDomain.'\/?/', '', $permalink);
 		if (!is_file(get_home_path() . $filePath) && strpos($permalink, "?") === FALSE) {
 			if ( $wp_rewrite->use_trailing_slashes ) {
 				$permalink = trailingslashit($permalink);

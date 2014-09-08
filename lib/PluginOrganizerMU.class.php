@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://wpmason.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.3
+Version: 5.4
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -32,7 +32,7 @@ class PluginOrganizerMU {
 			if (isset($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && is_array($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && $networkPlugin == 0) {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
-				if (get_option("PO_version_num") != "5.3" && !is_admin()) {
+				if (get_option("PO_version_num") != "5.4" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
@@ -333,7 +333,7 @@ class PluginOrganizerMU {
 		$this->mobile = false;
 
 		foreach ( $mobileAgents as $agent ) {
-			if ( $agent != "" && strpos($userAgent, $agent) !== FALSE ) {
+			if ( $agent != "" && stripos($userAgent, $agent) !== FALSE ) {
 				$this->mobile = true;
 				break;
 			}
