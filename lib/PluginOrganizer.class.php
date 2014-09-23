@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.6" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.6.1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.6") {
-			update_option("PO_version_num", "5.6");
+		if (get_option("PO_version_num") != "5.6.1") {
+			update_option("PO_version_num", "5.6.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -919,15 +919,15 @@ class PluginOrganizer {
 
 	function find_parent_plugins($permalink, $mobile) {
 		global $wpdb;
-		$fuzzyPlugins = [
+		$fuzzyPlugins = array(
 			'post_id'=>0,
-			'plugins'=>[
-				'disabled_plugins'=>[],
-				'enabled_plugins'=>[],
-				'disabled_groups'=>[],
-				'enabled_groups'=>[]
-			]
-		];
+			'plugins'=>array(
+				'disabled_plugins'=>array(),
+				'enabled_plugins'=>array(),
+				'disabled_groups'=>array(),
+				'enabled_groups'=>array()
+			)
+		);
 		
 		if (get_option('PO_ignore_arguments') == '1') {
 			$permalink = preg_replace('/\?.*$/', '', $permalink);
