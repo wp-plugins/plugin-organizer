@@ -1,4 +1,4 @@
-<div class="wrap" id="wrap">
+<div id="wrap">
     <div class="po-setting-icon" id="icon-po-global"> <br /> </div>
 
     <h2 class="po-setting-title">Global Plugins</h2>

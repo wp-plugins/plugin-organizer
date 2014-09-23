@@ -16,6 +16,11 @@
         <div id="post-body-content">
 	        <div id="PO-preserve-settings-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_preserve_settings">Preserve plugin settings when Plugin Organizer is deactivated?</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php $preserveSettings = get_option("PO_preserve_settings"); ?>
 				<input type="radio" name="PO_preserve_settings" class="PO-preserve-settings-radio" value="1" <?php print ($preserveSettings === "1" || $preserveSettings == '')? "checked='checked'":""; ?> />Yes<br />
@@ -26,6 +31,11 @@
 		  <br /><br />  
 		    <div id="PO-disable-settings-div" class="stuffbox" style="width: 98%">
               <h3><label for="PO_disable_plugins">Selective Plugin Loading</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
             	<strong>Selective Plugin Loading:</strong><br />
 				<?php $selectiveLoad = get_option("PO_disable_plugins"); ?>
@@ -54,6 +64,11 @@
 		  <br /><br />
 	        <div id="PO-fuzzy-url-matching-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_fuzzy_url_matching">Fuzzy URL matching</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php $fuzzyUrlMatching = get_option("PO_fuzzy_url_matching"); ?>
 				<input type="radio" name="PO_fuzzy_url_matching" class="PO-fuzzy-url-radio" value="1" <?php print ($fuzzyUrlMatching == "1")? "checked='checked'":""; ?>> Enable<br />
@@ -67,6 +82,11 @@
 		  <br /><br />
 		    <div id="PO-ignore-protocol-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_ignore_protocol">Ignore URL Protocol</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php $ignoreProtocol = get_option("PO_ignore_protocol"); ?>
 				<input type="radio" name="PO_ignore_protocol" class="PO-ignore-protocol-radio" value="1" <?php print ($ignoreProtocol == "1")? "checked='checked'":""; ?>> Enable<br />
@@ -80,6 +100,11 @@
 		  <br /><br />
 		    <div id="PO-ignore-arguments-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_ignore_arguments">Ignore URL Arguments</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php $ignoreArguments = get_option("PO_ignore_arguments"); ?>
 				<input type="radio" name="PO_ignore_arguments" class="PO-ignore-arguments-radio" value="1" <?php print ($ignoreArguments == "1")? "checked='checked'":""; ?>> Enable<br />
@@ -93,6 +118,11 @@
 		  <br /><br />
 		    <div id="PO-order-access-net-admin-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_order_access_net_admin">Only allow network admins to change plugin load order?</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php $orderAccessNetAdmin = get_option("PO_order_access_net_admin"); ?>
 				<input type="radio" name="PO_order_access_net_admin" class="PO-order-access-net-admin-radio" value="1" <?php print ($orderAccessNetAdmin === "1")? "checked='checked'":""; ?> />Yes<br />
@@ -103,6 +133,11 @@
 		  <br /><br />  
 		    <div id="redo-permalinks-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="redo-permalinks">Recreate Permalinks</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				Old site address (optional): <input type="text" name="PO_old_site_address" id="PO-old-site-address" /><br />
 				New site address (optional): <input type="text" name="PO_new_site_address" id="PO-new-site-address" value="<?php print preg_replace('/^.{1,5}:\/\//', '', get_site_url()); ?>" /><br />
@@ -115,6 +150,11 @@
 		  <br /><br />
 		    <div id="PO-custom-post-type-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_cutom_post_type">Custom Post Type Support</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<?php
 				$supportedPostTypes = get_option("PO_custom_post_type_support");
@@ -137,6 +177,11 @@
 		  <br /><br />
 		    <div id="PO-browser-string-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_mobile_user_agents">Mobile User Agents</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<textarea name="PO_mobile_user_agents" id="PO_mobile_user_agents" rows="7" cols="50" style="width: 100%;"><?php
 					$userAgents = get_option("PO_mobile_user_agents");
@@ -153,10 +198,34 @@
 		  <br /><br />
 		    <div id="PO-manage-mu-div" class="stuffbox" style="width: 98%">
 			  <h3><label for="PO_manage_mu">Manage MU plugin file</label></h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
 			  <div class="inside">
 				<input type="radio" name="PO_manage_mu" class="PO-manage-mu-radio" value="delete" />Delete<br />
 				<input type="radio" name="PO_manage_mu" class="PO-manage-mu-radio" value="move" />Move<br />
 				<input type=button name="manage-mu-plugin" value="Submit" onmousedown="PO_manage_mu_plugin_file();">
+			  </div>
+		    </div>
+		  <br /><br />
+		    <div id="PO-manage-css-div" class="stuffbox" style="width: 98%">
+			  <h3>Manage CSS settings</h3>
+			  <div class="PO-loading-container">
+				<div>
+			      <img src="<?php print $this->urlPath . "/image/ajax-loader.gif"; ?>">
+				</div>
+			  </div>
+			  <div class="inside">
+				<div class="PO-settings-left-column">
+				  Network plugins color:
+				</div>
+				<div class="PO-settings-right-column">
+				  <input type="text" id="PO_network_active_plugins_color" name="PO_network_active_plugins_color" value="<?php print get_option('PO_network_active_plugins_color'); ?>" />
+				</div>
+				<div style="clear: both;"></div>
+				<input type=button name="submit_admin_css_settings" value="Submit" onmousedown="PO_submit_admin_css_settings();">
 			  </div>
 		    </div>
 	    </div>

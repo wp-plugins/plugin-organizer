@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.4
+Version: 5.5
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -25,7 +25,7 @@ if (!is_network_admin()) {
 	add_action('init',  array($PluginOrganizer, 'setup_nonce'));
 	add_action('init',  array($PluginOrganizer, 'check_plugin_order_access'));
 	add_filter('views_plugins',  array($PluginOrganizer, 'add_group_views'));
-	add_action('admin_menu', array($PluginOrganizer, 'admin_menu'));
+	add_action('admin_menu', array($PluginOrganizer, 'admin_menu'), 9);
 	
 	if (!array_key_exists('plugin_status', $_REQUEST) || $_REQUEST['plugin_status'] == 'all' || $_REQUEST['plugin_status'] == 'active') {
 		add_filter("plugin_row_meta", array($PluginOrganizer, 'add_hidden_start_order'), 10, 2);
@@ -50,11 +50,11 @@ if (!is_network_admin()) {
 	add_action('wp_ajax_PO_reset_to_default_order',  array($PluginOrganizer, 'reset_plugin_order'));
 	add_action('wp_ajax_PO_submit_mobile_user_agents',  array($PluginOrganizer, 'save_mobile_user_agents'));
 	add_action('wp_ajax_PO_submit_order_access_net_admin',  array($PluginOrganizer, 'submit_order_access_net_admin'));
+	add_action('wp_ajax_PO_disable_admin_notices',  array($PluginOrganizer, 'disable_admin_notices'));
+	add_action('wp_ajax_PO_submit_admin_css_settings', array($PluginOrganizer, 'submit_admin_css_settings'));
 	
-	if (get_option("PO_disable_plugins") == "1") {
-		add_action('admin_menu', array($PluginOrganizer, 'disable_plugin_box'));
-		add_action('save_post', array($PluginOrganizer, 'save_post_meta_box'));
-	}
+	add_action('admin_menu', array($PluginOrganizer, 'disable_plugin_box'));
+	add_action('save_post', array($PluginOrganizer, 'save_post_meta_box'));
 	
 	add_action('delete_post', array($PluginOrganizer, 'delete_plugin_lists'));
 	add_action('pre_current_active_plugins', array($PluginOrganizer, 'recreate_plugin_order'));
@@ -70,6 +70,7 @@ if (!is_network_admin()) {
 	add_action('init', array($PluginOrganizer, 'register_taxonomy'));
 	add_filter('post_updated_messages', array($PluginOrganizer, 'custom_updated_messages'));
 	add_filter('transition_post_status', array($PluginOrganizer, 'update_post_status'), 10, 3);
+	
 }
 
 ?>

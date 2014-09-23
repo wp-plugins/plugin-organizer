@@ -3,7 +3,6 @@
 		background: url("<?php print $this->urlPath; ?>/image/po-icon-32x32.png") no-repeat scroll 0px 0px transparent;
 	}
 	#icon-po-global {
-		float: left;
 		background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
 	}
 
@@ -84,7 +83,28 @@
 		font-size: 18px !important;
 		border-bottom: 2px solid #000000;
 	}
-	.network-active {
-		background-color: #333333 !important;
+	.network-active th, .network-active td {
+		background-color: <?php print (get_option('PO_network_active_plugins_color') != '')? get_option('PO_network_active_plugins_color') : '#D7DF9E'; ?> !important;
+	}
+
+	.PO-settings-left-column {
+		width: 150px;
+		float: left;
+		line-height: 26px;
+		font-size: 13px;
+	}
+
+	.PO-settings-right-column {
+		width: 500px;
+		float: left;
+	}
+
+	.PO-loading-container {
+		display: none;
+	}
+
+	.PO-loading-container div {
+		width: 100%;
+		text-align: center;
 	}
 </style>

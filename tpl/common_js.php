@@ -1,5 +1,15 @@
 <script language="javascript" src="<?php print $this->urlPath; ?>/js/validation.js"></script>
 <script language="javascript" type="text/javascript">
+	function PO_toggle_loading(containerID) {
+		if (jQuery('#'+containerID+' .inside').css('display') == 'none') {
+			jQuery('#'+containerID+' .PO-loading-container').css('display', 'none');
+			jQuery('#'+containerID+' .inside').css('display', 'block');
+		} else {
+			jQuery('#'+containerID+' .inside').css('display', 'none');
+			jQuery('#'+containerID+' .PO-loading-container').css('display', 'block');
+		}
+	}
+	
 	function PO_toggle_all(toggleCheckbox, itemClass, buttonID, itemID) {
 		var toggle = jQuery("#"+toggleCheckbox).attr('checked');
 		jQuery("."+itemClass).each(function() {  

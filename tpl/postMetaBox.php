@@ -1,7 +1,7 @@
 <?php
 if ($errMsg != "") {
 	?>
-	<p style="color: #CC0066;"><?php print $errMsg; ?></p>
+	<h3 style="color: #CC0066;"><?php print $errMsg; ?></h3>
 	<?php
 }
 ?>
