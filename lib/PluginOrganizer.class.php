@@ -1348,8 +1348,6 @@ class PluginOrganizer {
 				}
 			}
 
-			print_r($enabledPlugins);
-			exit;
 			foreach ($enabledPlugins as $plugin) {
 				if (!in_array($plugin, $fuzzyPluginList['plugins']['enabled_plugins'])) {
 					$enabledPluginsAfterParent[] = $plugin;
