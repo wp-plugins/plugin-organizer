@@ -935,7 +935,7 @@ class PluginOrganizer {
 		} else {
 			$permalinkSearchField = 'permalink_hash_args';
 		}
-		$endChar = (preg_match('/\/$/', get_option('permalink_structure')) || preg_match('/^'.preg_quote(get_admin_url()).'/', $permalink))? '/':'';
+		$endChar = (preg_match('/\/$/', get_option('permalink_structure')) || preg_match('/^'.preg_quote(get_admin_url(), '/').'/', $permalink))? '/':'';
 		$lastUrl = $_SERVER['HTTP_HOST'].$endChar;
 		
 		//Dont allow an endless loop
