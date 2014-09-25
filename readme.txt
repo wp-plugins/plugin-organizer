@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 4.0
-Stable tag: 5.6.1
+Stable tag: 5.6.2
 
 
 This plugin allows you to do the following:
@@ -63,6 +63,9 @@ A.
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.6.2 =
+Added delimiter to preg_quote
 
 = 5.6.1 =
 Changed array creation to not use shorthand as that created problems for some users.
@@ -408,5 +411,5 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.6.1 =
-Changed array creation to not use shorthand as that created problems for some users.
+= 5.6.2 =
+Added delimiter to preg_quote
