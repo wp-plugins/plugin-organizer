@@ -28,6 +28,7 @@ This plugin allows you to do the following:
 
 IMPORTANT: To enable selective plugin loading you must move the /wp-content/plugins/plugin-organizer/lib/PluginOrganizerMU.class.php file to /wp-content/mu-plugins or wherever your mu-plugins folder is located.  If the mu-plugins directory does not exist you can create it.  The plugin will attempt to create this directory and move the file itself when activated.  Depending on your file permissions it may not be successful.
 
+Note: If you are having troubles you can view the documentation by going to http://www.jsterup.com/dev/wordpress/plugins/plugin-organizer/documentation/
 
 == Frequently Asked Questions ==
 Q. How do I enable the selective plugin loading functionality?
@@ -54,6 +55,8 @@ A.
   Example 1: If you have a large number of plugins and don't want them all to load for every page you can disable the unneeded plugins for each individual page.  Or you can globally disable them and enable them for each post or page you will need them on.
   Example 2: If you have plugins that conflict with eachother then you can disable the plugins that are conflicting for each indivdual post or page.
   Example 3: If you have plugins that conflict with eachother then you can disable the plugins globally and activate them only on posts or pages where they will be used.
+
+Note: If you are having troubles you can view the documentation by going to http://www.jsterup.com/dev/wordpress/plugins/plugin-organizer/documentation/
 
 == Screenshots ==
 
