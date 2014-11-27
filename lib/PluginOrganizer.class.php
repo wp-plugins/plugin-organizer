@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.6.3" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.6.4" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.6.3") {
-			update_option("PO_version_num", "5.6.3");
+		if (get_option("PO_version_num") != "5.6.4") {
+			update_option("PO_version_num", "5.6.4");
 		}
 
 		//Add capabilities to the administrator role
@@ -917,7 +917,7 @@ class PluginOrganizer {
 		}
 	}
 
-	function find_parent_plugins($currID, $permalink, $mobile) {
+	function find_parent_plugins($currID, $permalink, $mobile, $secure) {
 		global $wpdb;
 		$fuzzyPlugins = array(
 			'post_id'=>0,
@@ -949,7 +949,7 @@ class PluginOrganizer {
 			if (get_option('PO_ignore_protocol') == '1') {
 		
 				$fuzzyPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$permalinkSearchField." = %s AND status = 'publish' AND secure = %d AND children = 1 AND post_id != %d";
-				$fuzzyPost = $wpdb->get_results($wpdb->prepare($fuzzyPostQuery, $permalinkHash, $this->secure, $currID), ARRAY_A);
+				$fuzzyPost = $wpdb->get_results($wpdb->prepare($fuzzyPostQuery, $permalinkHash, $secure, $currID), ARRAY_A);
 				$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
 				
 			} else {
@@ -1014,6 +1014,7 @@ class PluginOrganizer {
 	
 	function get_post_meta_box($post) {
 		global $wpdb;
+		$errMsg = "";
 		if ($post->ID != "" && is_numeric($post->ID)) {
 			$filterName = $post->post_title;
 			$postSettingsQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
@@ -1095,7 +1096,7 @@ class PluginOrganizer {
 		
 		#Find and apply parent settings
 		if ($fuzzyPermalink != '' && get_option("PO_fuzzy_url_matching") == "1" && sizeof($disabledPluginList) == 0 && sizeof($enabledPluginList) == 0 && sizeof($disabledGroupList) == 0 && sizeof($enabledGroupList) == 0) {
-			$fuzzyPluginList = $this->find_parent_plugins($post->ID, $fuzzyPermalink, 0);
+			$fuzzyPluginList = $this->find_parent_plugins($post->ID, $fuzzyPermalink, 0, $secure);
 			$disabledPluginList = $fuzzyPluginList['plugins']['disabled_plugins'];
 			$enabledPluginList = $fuzzyPluginList['plugins']['enabled_plugins'];
 			$disabledGroupList = $fuzzyPluginList['plugins']['disabled_groups'];
@@ -1109,7 +1110,7 @@ class PluginOrganizer {
 
 		#Find and apply parent settings to mobile plugins
 		if ($fuzzyPermalink != '' && get_option('PO_disable_mobile_plugins') == '1' && get_option("PO_fuzzy_url_matching") == "1" && sizeof($disabledMobilePluginList) == 0 && sizeof($enabledMobilePluginList) == 0 && sizeof($disabledMobileGroupList) == 0 && sizeof($enabledMobileGroupList) == 0) {
-			$fuzzyPluginList = $this->find_parent_plugins($post->ID, $fuzzyPermalink, 1);
+			$fuzzyPluginList = $this->find_parent_plugins($post->ID, $fuzzyPermalink, 1, $secure);
 			$disabledMobilePluginList = $fuzzyPluginList['plugins']['disabled_plugins'];
 			$enabledMobilePluginList = $fuzzyPluginList['plugins']['enabled_plugins'];
 			$disabledMobileGroupList = $fuzzyPluginList['plugins']['disabled_groups'];
@@ -1341,7 +1342,7 @@ class PluginOrganizer {
 		$permalinkNoArgs = preg_replace('/\?.*$/', '', $permalink);
 		
 		if ($permalink != '' && get_option("PO_fuzzy_url_matching") == "1") {
-			$fuzzyPluginList = $this->find_parent_plugins($post_id, $permalink, 0);
+			$fuzzyPluginList = $this->find_parent_plugins($post_id, $permalink, 0, $secure);
 			foreach ($disabledPlugins as $plugin) {
 				if (!in_array($plugin, $fuzzyPluginList['plugins']['disabled_plugins'])) {
 					$disabledPluginsAfterParent[] = $plugin;
@@ -1373,7 +1374,7 @@ class PluginOrganizer {
 				$enabledGroups = array();
 			}
 
-			$fuzzyMobilePluginList = $this->find_parent_plugins($post_id, $permalink, 1);
+			$fuzzyMobilePluginList = $this->find_parent_plugins($post_id, $permalink, 1, $secure);
 			foreach ($disabledMobilePlugins as $plugin) {
 				if (!in_array($plugin, $fuzzyMobilePluginList['plugins']['disabled_plugins'])) {
 					$disabledMobilePluginsAfterParent[] = $plugin;

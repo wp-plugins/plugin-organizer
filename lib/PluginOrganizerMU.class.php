@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Plugin Organizer MU
-Plugin URI: http://wpmason.com
+Plugin URI: http://jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.6.3
+Version: 5.6.4
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -11,14 +11,14 @@ License: GPL2
 
 class PluginOrganizerMU {
 	var $ignoreProtocol, $ignoreArguments, $requestedPermalink, $postTypeSupport;
-	var $protocol, $mobile, $detectMobile, $requestedPermalinkHash, $permalinkSearchField;
+	var $protocol, $mobile, $detectMobile, $requestedPermalinkHash, $permalinkSearchField, $secure;
 	function __construct() {
 		$this->ignoreProtocol = get_option('PO_ignore_protocol');
 		$this->ignoreArguments = get_option('PO_ignore_arguments');
-		$this->set_requested_permalink();
 		$this->postTypeSupport = get_option('PO_custom_post_type_support');
 		$this->postTypeSupport[] = 'plugin_filter';
 		$this->detectMobile = get_option('PO_disable_mobile_plugins');
+		$this->secure=0;
 		if ($this->detectMobile == 1) {
 			$this->detect_mobile();
 		}
@@ -32,6 +32,7 @@ class PluginOrganizerMU {
 			if (isset($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && is_array($GLOBALS["PO_CACHED_PLUGIN_LIST"]) && $networkPlugin == 0) {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
+				$this->set_requested_permalink();
 				if (get_option("PO_version_num") != "5.6.3" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
