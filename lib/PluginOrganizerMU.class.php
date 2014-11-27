@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Plugin Organizer MU
-Plugin URI: http://jsterup.com
+Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.6.4
+Version: 5.6.5
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -33,7 +33,7 @@ class PluginOrganizerMU {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
 				$this->set_requested_permalink();
-				if (get_option("PO_version_num") != "5.6.3" && !is_admin()) {
+				if (get_option("PO_version_num") != "5.6.5" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
