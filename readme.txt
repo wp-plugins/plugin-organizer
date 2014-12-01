@@ -4,7 +4,7 @@ Donate link:
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 4.0.1
-Stable tag: 5.6.5
+Stable tag: 5.6.6
 
 
 This plugin allows you to do the following:
@@ -66,6 +66,10 @@ Note: If you are having troubles you can view the documentation by going to http
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.6.6 =
+Fixed plugin filter permalink slash correction for admin urls.  The admin url should not be corrected since it doesn't rely on permalink structure.
+Changed PO meta box code to be normal priority instead of high priority.  Having high priority caused problems with a woo theme and there was no reason to have it as high priority.
 
 = 5.6.5 =
 Corrected version check that disabled selective plugin loading from version 5.6.4
@@ -424,5 +428,6 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.6.5 =
-Corrected version check that disabled selective plugin loading from version 5.6.4
+= 5.6.6 =
+Fixed plugin filter permalink slash correction for admin urls.  The admin url should not be corrected since it doesn't rely on permalink structure.
+Changed PO meta box code to be normal priority instead of high priority.  Having high priority caused problems with a woo theme and there was no reason to have it as high priority.
