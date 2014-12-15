@@ -1,10 +1,10 @@
 === Plugin Organizer ===
 Contributors: foomagoo
-Donate link: 
+Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 4.0.1
-Stable tag: 5.6.6
+Stable tag: 5.7
 
 
 This plugin allows you to do the following:
@@ -66,6 +66,12 @@ Note: If you are having troubles you can view the documentation by going to http
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.7 =
+Added ability to target the search page.
+Added ability to remove all settings from a post/page
+Fixed some undefined variable notices
+Added organization features for plugin filters using the plugin filter groups.  Can now view all plugins in a group and sort the list by group and permalink.
 
 = 5.6.6 =
 Fixed plugin filter permalink slash correction for admin urls.  The admin url should not be corrected since it doesn't rely on permalink structure.
@@ -428,6 +434,8 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.6.6 =
-Fixed plugin filter permalink slash correction for admin urls.  The admin url should not be corrected since it doesn't rely on permalink structure.
-Changed PO meta box code to be normal priority instead of high priority.  Having high priority caused problems with a woo theme and there was no reason to have it as high priority.
+= 5.7 =
+Added ability to target the search page.
+Added ability to remove all settings from a post/page
+Fixed some undefined variable notices
+Added organization features for plugin filters using the plugin filter groups.  Can now view all plugins in a group and sort the list by group and permalink.

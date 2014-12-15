@@ -6,6 +6,10 @@
 		background: url("<?php print $this->urlPath; ?>/image/po-global-32x32.png") no-repeat scroll 0px 0px transparent;
 	}
 
+	#icon-po-search {
+		background: url("<?php print $this->urlPath; ?>/image/po-search-32x32.png") no-repeat scroll 0px 0px transparent;
+	}
+
 	.po-setting-icon {
 		float: left;
 		width: 32px;

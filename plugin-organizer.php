@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.6.6
+Version: 5.7
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -39,6 +39,7 @@ if (!is_network_admin()) {
 	add_action('wp_ajax_PO_add_to_group',  array($PluginOrganizer, 'add_to_group'));
 	add_action('wp_ajax_PO_edit_plugin_group_name',  array($PluginOrganizer, 'edit_plugin_group_name'));
 	add_action('wp_ajax_PO_save_global_plugins',  array($PluginOrganizer, 'save_global_plugins'));
+	add_action('wp_ajax_PO_save_search_plugins',  array($PluginOrganizer, 'save_search_plugins'));
 	add_action('wp_ajax_PO_redo_permalinks',  array($PluginOrganizer, 'redo_permalinks'));
 	add_action('wp_ajax_PO_post_type_support',  array($PluginOrganizer, 'add_custom_post_type_support'));
 	add_action('wp_ajax_PO_manage_mu_plugin',  array($PluginOrganizer, 'manage_mu_plugin'));
@@ -52,7 +53,8 @@ if (!is_network_admin()) {
 	add_action('wp_ajax_PO_submit_order_access_net_admin',  array($PluginOrganizer, 'submit_order_access_net_admin'));
 	add_action('wp_ajax_PO_disable_admin_notices',  array($PluginOrganizer, 'disable_admin_notices'));
 	add_action('wp_ajax_PO_submit_admin_css_settings', array($PluginOrganizer, 'submit_admin_css_settings'));
-	
+	add_action('wp_ajax_PO_reset_post_settings', array($PluginOrganizer, 'reset_post_settings'));
+
 	add_action('admin_menu', array($PluginOrganizer, 'disable_plugin_box'));
 	add_action('save_post', array($PluginOrganizer, 'save_post_meta_box'));
 	
@@ -70,6 +72,8 @@ if (!is_network_admin()) {
 	add_action('init', array($PluginOrganizer, 'register_taxonomy'));
 	add_filter('post_updated_messages', array($PluginOrganizer, 'custom_updated_messages'));
 	add_filter('transition_post_status', array($PluginOrganizer, 'update_post_status'), 10, 3);
+	
+	add_filter("manage_edit-plugin_filter_sortable_columns", array($PluginOrganizer, 'plugin_filter_sort'));
 	
 }
 

@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.6.6" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.6.6") {
-			update_option("PO_version_num", "5.6.6");
+		if (get_option("PO_version_num") != "5.7") {
+			update_option("PO_version_num", "5.7");
 		}
 
 		//Add capabilities to the administrator role
@@ -235,6 +235,8 @@ class PluginOrganizer {
 			delete_option("PO_mobile_user_agents");
 			delete_option("PO_disabled_plugins");
 			delete_option("PO_disabled_mobile_plugins");
+			delete_option("PO_disabled_groups");
+			delete_option("PO_disabled_mobile_groups");
 			delete_option("PO_ignore_arguments");
 			delete_option("PO_ignore_protocol");
 			delete_option("PO_plugin_order");
@@ -247,6 +249,15 @@ class PluginOrganizer {
 			delete_option("PO_disable_plugins");
 			delete_option("PO_disable_mobile_plugins");
 			delete_option("PO_admin_disable_plugins");
+			
+			delete_option("PO_enabled_search_plugins");
+			delete_option("PO_disabled_search_plugins");
+			delete_option("PO_enabled_mobile_search_plugins");
+			delete_option("PO_disabled_mobile_search_plugins");
+			delete_option("PO_enabled_search_groups");
+			delete_option("PO_disabled_search_groups");
+			delete_option("PO_enabled_mobile_search_groups");
+			delete_option("PO_disabled_mobile_search_groups");
 			
 			$customPosts = get_posts(array('post_type'=>array('plugin_filter', 'plugin_group'), 'posts_per_page'=>-1));
 			foreach($customPosts as $customPost) {
@@ -341,6 +352,11 @@ class PluginOrganizer {
 			add_action('admin_head-'.$plugin_page, array($this, 'global_plugins_js'));
 			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
 			
+			$plugin_page=add_submenu_page('Plugin_Organizer', 'Search Plugins', 'Search Plugins', 'activate_plugins', 'PO_search_plugins', array($this, 'search_plugins_page'));
+			add_action('admin_head-'.$plugin_page, array($this, 'admin_css'));
+			add_action('admin_head-'.$plugin_page, array($this, 'search_plugins_js'));
+			add_action('admin_head-'.$plugin_page, array($this, 'common_js'));
+
 			add_submenu_page('Plugin_Organizer', 'Filter Groups', 'Filter Groups', 'activate_plugins', 'edit-tags.php?taxonomy=filter_group&post_type=plugin_filter');
 		}
 
@@ -354,6 +370,10 @@ class PluginOrganizer {
 		require_once($this->absPath . "/tpl/plugin_page_js.php");
 	}
 
+	function search_plugins_js() {
+		require_once($this->absPath . "/tpl/search_plugins_js.php");
+	}
+	
 	function global_plugins_js() {
 		require_once($this->absPath . "/tpl/global_plugins_js.php");
 	}
@@ -416,6 +436,70 @@ class PluginOrganizer {
 			require_once($this->absPath . "/tpl/settings.php");
 		} else {
 			wp_die("You dont have permissions to access this page.");
+		}
+	}
+	
+	function search_plugins_page($post_id) {
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$plugins = $this->reorder_plugins(get_plugins());
+			$enabledPluginList = get_option('PO_enabled_search_plugins');
+			$disabledPluginList = get_option('PO_disabled_search_plugins');
+			$enabledMobilePluginList = get_option('PO_enabled_mobile_search_plugins');
+			$disabledMobilePluginList = get_option('PO_disabled_mobile_search_plugins');
+			$enabledGroupList = get_option('PO_enabled_search_groups');
+			$disabledGroupList = get_option('PO_disabled_search_groups');
+			$enabledMobileGroupList = get_option('PO_enabled_mobile_search_groups');
+			$disabledMobileGroupList = get_option('PO_disabled_mobile_search_groups');
+			$activePlugins = $this->get_active_plugins();
+			$activeSitewidePlugins = array_keys((array) get_site_option('active_sitewide_plugins', array()));
+			$groupList = get_posts(array('posts_per_page'=>-1, 'post_type'=>'plugin_group'));
+			if (!is_array($enabledPluginList)) {
+				$enabledPluginList = array();
+			}
+			if (!is_array($disabledPluginList)) {
+				$disabledPluginList = array();
+			}
+			if (!is_array($enabledMobilePluginList)) {
+				$enabledMobilePluginList = array();
+			}
+			if (!is_array($disabledMobilePluginList)) {
+				$disabledMobilePluginList = array();
+			}
+			if (!is_array($enabledGroupList)) {
+				$enabledGroupList = array();
+			}
+			if (!is_array($disabledGroupList)) {
+				$disabledGroupList = array();
+			}
+			if (!is_array($enabledMobileGroupList)) {
+				$enabledMobileGroupList = array();
+			}
+			if (!is_array($disabledMobileGroupList)) {
+				$disabledMobileGroupList = array();
+			}
+			
+			
+			$globalPlugins = get_option('PO_disabled_plugins');
+			if (!is_array($globalPlugins)) {
+				$globalPlugins = array();
+			}
+
+			$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
+			if (!is_array($globalMobilePlugins)) {
+				$globalMobilePlugins = array();
+			}
+
+			$globalGroups = get_option('PO_disabled_groups');
+			if (!is_array($globalGroups)) {
+				$globalGroups = array();
+			}
+
+			$globalMobileGroups = get_option('PO_disabled_mobile_groups');
+			if (!is_array($globalMobileGroups)) {
+				$globalMobileGroups = array();
+			}
+
+			require_once($this->absPath . "/tpl/searchPlugins.php");
 		}
 	}
 	
@@ -514,6 +598,103 @@ class PluginOrganizer {
 	}
 	
 
+	function create_plugin_lists($pluginList, $pluginExludeList) {
+		$returnArray = array(array(), array());
+		if (is_array($pluginList)) {
+			foreach ($pluginList as $plugin) {
+				if (!in_array($plugin, $pluginExludeList)) {
+					$returnArray[0][] = $plugin;
+				}
+			}
+
+			foreach ($pluginExludeList as $plugin) {
+				if (!in_array($plugin, $pluginList)) {
+					$returnArray[1][] = $plugin;
+				}
+			}
+		} else {
+			foreach ($pluginExludeList as $plugin) {
+				$returnArray[1][] = $plugin;
+			}
+		}
+		return $returnArray;
+	}
+	
+	function save_search_plugins() {
+		if ( !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+		
+		$globalPlugins = get_option('PO_disabled_plugins');
+		if (!is_array($globalPlugins)) {
+			$globalPlugins = array();
+		}
+		$checkPluginList = (isset($_POST['disabledList'])) ? $_POST['disabledList'] : '';
+		
+		$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalPlugins);
+		$disabledPlugins = $tempPluginList[0];
+		$enabledPlugins = $tempPluginList[1];
+		
+
+		### Mobile plugins
+		if (get_option('PO_disable_mobile_plugins') == 1) {
+			$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
+			if (!is_array($globalMobilePlugins)) {
+				$globalMobilePlugins = array();
+			}
+			$checkPluginList = (isset($_POST['disabledMobileList'])) ? $_POST['disabledMobileList'] : '';
+			$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalMobilePlugins);
+			$disabledMobilePlugins = $tempPluginList[0];
+			$enabledMobilePlugins = $tempPluginList[1];
+		} else {
+			$disabledMobilePlugins = array();
+			$enabledMobilePlugins = array();
+		}
+
+
+		
+		##Groups
+		$globalGroups = get_option('PO_disabled_groups');
+		if (!is_array($globalGroups)) {
+			$globalGroups = array();
+		}
+		$checkPluginList = (isset($_POST['disabledGroupList'])) ? $_POST['disabledGroupList'] : '';
+		
+		$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalGroups);
+		$disabledGroups = $tempPluginList[0];
+		$enabledGroups = $tempPluginList[1];
+
+
+		##Mobile Groups
+		if (get_option('PO_disable_mobile_plugins') == 1) {
+			$globalMobileGroups = get_option('PO_disable_mobile_groups');
+			if (!is_array($globalMobileGroups)) {
+				$globalMobileGroups = array();
+			}
+			$checkPluginList = (isset($_POST['disabledMobileGroupList'])) ? $_POST['disabledMobileGroupList'] : '';
+		
+			$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalMobileGroups);
+			$disabledMobileGroups = $tempPluginList[0];
+			$enabledMobileGroups = $tempPluginList[1];
+		} else {
+			$disabledMobileGroups = array();
+			$enabledMobileGroups = array();
+		}
+		
+		update_option('PO_enabled_search_plugins', $enabledPlugins);
+		update_option('PO_disabled_search_plugins', $disabledPlugins);
+		update_option('PO_enabled_mobile_search_plugins', $enabledMobilePlugins);
+		update_option('PO_disabled_mobile_search_plugins', $disabledMobilePlugins);
+		update_option('PO_enabled_search_groups', $enabledGroups);
+		update_option('PO_disabled_search_groups', $disabledGroups);
+		update_option('PO_enabled_mobile_search_groups', $enabledMobileGroups);
+		update_option('PO_disabled_mobile_search_groups', $disabledMobileGroups);
+		
+		print "Search plugins updated!";
+		die();
+	}
+	
 	function save_global_plugins() {
 		if ( !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
 			print "You dont have permissions to access this page.";
@@ -1191,13 +1372,7 @@ class PluginOrganizer {
 			return $post_id;
 		}
 
-		$postSettingsQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
-		$postSettings = $wpdb->get_row($wpdb->prepare($postSettingsQuery, $post_id), ARRAY_A);
-		
-		$postExists = 0;
-		if ($wpdb->num_rows > 0) {
-			$postExists = 1;
-		}
+		$postExists = ($wpdb->get_var($wpdb->prepare("SELECT count(*) FROM ".$wpdb->prefix."PO_plugins WHERE post_id=%d", $post_id)) > 0) ? 1 : 0;
 		
 		if (isset($_POST['affectChildren'])) {
 			$affectChildren = 1;
@@ -1340,6 +1515,10 @@ class PluginOrganizer {
 		
 		$permalinkNoArgs = preg_replace('/\?.*$/', '', $permalink);
 		
+		$disabledPluginsAfterParent = array();
+		$enabledPluginsAfterParent = array();
+		$disabledGroupsAfterParent = array();
+		$enabledGroupsAfterParent = array();
 		if ($permalink != '' && get_option("PO_fuzzy_url_matching") == "1") {
 			$fuzzyPluginList = $this->find_parent_plugins($post_id, $permalink, 0, $secure);
 			foreach ($disabledPlugins as $plugin) {
@@ -1373,6 +1552,10 @@ class PluginOrganizer {
 				$enabledGroups = array();
 			}
 
+			$disabledMobilePluginsAfterParent = array();
+			$enabledMobilePluginsAfterParent = array();
+			$disabledMobileGroupsAfterParent = array();
+			$enabledMobileGroupsAfterParent = array();
 			$fuzzyMobilePluginList = $this->find_parent_plugins($post_id, $permalink, 1, $secure);
 			foreach ($disabledMobilePlugins as $plugin) {
 				if (!in_array($plugin, $fuzzyMobilePluginList['plugins']['disabled_plugins'])) {
@@ -1760,6 +1943,32 @@ class PluginOrganizer {
 		die();
 	}
 		
+	function reset_post_settings() {
+		global $wpdb;
+		if ( !current_user_can( 'activate_plugins' ) || !wp_verify_nonce( $_POST['PO_nonce'], plugin_basename(__FILE__) )) {
+			print "You dont have permissions to access this page.";
+			die();
+		}
+
+		if (is_numeric($_POST['postID'])) {
+			if ($wpdb->get_var($wpdb->prepare("SELECT count(*) FROM ".$wpdb->prefix."PO_plugins WHERE post_id=%d", $_POST['postID'])) > 0) {
+				$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
+				print $wpdb->query($wpdb->prepare($deletePluginQuery, $_POST['postID']));
+			} else {
+				print -1;
+			}
+		}
+		die();
+	}
+	
+	function plugin_filter_sort($columns) {
+		$custom = array(
+			'taxonomy-filter_group' => 'taxonomy-filter_group',
+			'PO_PF_permalink' => 'PO_PF_permalink'
+		);
+		return wp_parse_args($custom, $columns);
+	}
+
 	function register_taxonomy() {
 		$labels = array(
 			'name' => _x( 'Filter Groups', 'taxonomy general name' ),
@@ -1776,8 +1985,9 @@ class PluginOrganizer {
 
 		$settings = array(
 			'hierarchical' => true,
-			'public' => true,
+			'public' => false,
 			'capability_type' => 'filter_group',
+			'show_admin_column' => true,
 			'labels' => $labels,
 			'show_ui' => true,
 			'capabilities' => array('assign_terms'=>'edit_filter_group','manage_terms' => 'manage_filter_groups','edit_terms' => 'manage_filter_groups','delete_terms' => 'manage_filter_groups'),

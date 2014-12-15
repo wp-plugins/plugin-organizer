@@ -46,6 +46,20 @@
 		}
 	}
 	
+	function PO_reset_post_settings(postID) {
+		jQuery.post(encodeURI(ajaxurl + '?action=PO_reset_post_settings'), { 'postID': postID, PO_nonce: '<?php print $this->nonce; ?>' }, function (result) {
+			if (result == '1') {
+				alert('The settings were successfully reset.');
+				location.reload(true);
+			} else if (result == '-1') {
+				alert('There were no settings found in the database.');
+			} else {
+				alert('There was an issue removing the settings.');
+			}
+		});
+	}
+	
+	
 	<?php
 	print "var regex = new Array();\n";
 	foreach ($this->regex as $key=>$val) {

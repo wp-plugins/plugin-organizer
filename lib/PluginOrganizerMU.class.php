@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.6.6
+Version: 5.7
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -33,7 +33,7 @@ class PluginOrganizerMU {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
 				$this->set_requested_permalink();
-				if (get_option("PO_version_num") != "5.6.6" && !is_admin()) {
+				if (get_option("PO_version_num") != "5.7" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
@@ -46,55 +46,69 @@ class PluginOrganizerMU {
 						$globalGroups = get_option("PO_disabled_groups");
 					}
 
-					if ($this->ignoreProtocol == '1') {
-						$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish' AND secure = %d";
-						$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash, $this->secure), ARRAY_A);
-					} else {
-						$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish'";
-						$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash), ARRAY_A);
-					}
-					if (!is_array($requestedPost)) {
-						$requestedPost = array();
-					} else if (sizeOf($requestedPost) > 1) {
-						usort($requestedPost, array($this, 'sort_posts'));
-					}
-					
-					$disabledPlugins = array();
-					$enabledPlugins = array();
-					$disabledGroups = array();
-					$enabledGroups = array();
-					foreach($requestedPost as $currPost) {
+					##Search page
+					if (isset($_REQUEST['s'])) {
 						if ($this->detectMobile == 1 && $this->mobile) {
-							$disabledPlugins = @unserialize($currPost['disabled_mobile_plugins']);
-							$enabledPlugins = @unserialize($currPost['enabled_mobile_plugins']);
-							$disabledGroups = @unserialize($currPost['disabled_mobile_groups']);
-							$enabledGroups = @unserialize($currPost['enabled_mobile_groups']);
+							$disabledPlugins = get_option('PO_disabled_mobile_search_plugins');
+							$enabledPlugins = get_option('PO_enabled_mobile_search_plugins');
+							$disabledGroups = get_option('PO_disabled_mobile_search_groups');
+							$enabledGroups = get_option('PO_enabled_mobile_search_groups');
 						} else {
-							$disabledPlugins = @unserialize($currPost['disabled_plugins']);
-							$enabledPlugins = @unserialize($currPost['enabled_plugins']);
-							$disabledGroups = @unserialize($currPost['disabled_groups']);
-							$enabledGroups = @unserialize($currPost['enabled_groups']);
+							$disabledPlugins = get_option('PO_disabled_search_plugins');
+							$enabledPlugins = get_option('PO_enabled_search_plugins');
+							$disabledGroups = get_option('PO_disabled_search_groups');
+							$enabledGroups = get_option('PO_enabled_search_groups');
 						}
-						if ((is_array($disabledPlugins) && sizeof($disabledPlugins) > 0) || (is_array($enabledPlugins) && sizeof($enabledPlugins) > 0) || (is_array($disabledGroups) && sizeof($disabledGroups) > 0) || (is_array($enabledGroups) && sizeof($enabledGroups) > 0)) {
-							break;
+							
+					}
+
+					$disabledPlugins = (isset($disabledPlugins) && is_array($disabledPlugins))? $disabledPlugins : array();
+					$enabledPlugins = (isset($enabledPlugins) && is_array($enabledPlugins))? $enabledPlugins : array();
+					$disabledGroups = (isset($disabledGroups) && is_array($disabledGroups))? $disabledGroups : array();
+					$enabledGroups = (isset($enabledGroups) && is_array($enabledGroups))? $enabledGroups : array();
+					
+					if (sizeof($disabledPlugins) == 0 && sizeof($enabledPlugins) == 0 && sizeof($disabledGroups) == 0 && sizeof($enabledGroups) == 0) {
+						
+						if ($this->ignoreProtocol == '1') {
+							$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish' AND secure = %d";
+							$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash, $this->secure), ARRAY_A);
+						} else {
+							$requestedPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$this->permalinkSearchField." = %s AND status = 'publish'";
+							$requestedPost = $wpdb->get_results($wpdb->prepare($requestedPostQuery, $this->requestedPermalinkHash), ARRAY_A);
+						}
+						if (!is_array($requestedPost)) {
+							$requestedPost = array();
+						} else if (sizeOf($requestedPost) > 1) {
+							usort($requestedPost, array($this, 'sort_posts'));
+						}
+						
+						$disabledPlugins = array();
+						$enabledPlugins = array();
+						$disabledGroups = array();
+						$enabledGroups = array();
+						foreach($requestedPost as $currPost) {
+							if ($this->detectMobile == 1 && $this->mobile) {
+								$disabledPlugins = @unserialize($currPost['disabled_mobile_plugins']);
+								$enabledPlugins = @unserialize($currPost['enabled_mobile_plugins']);
+								$disabledGroups = @unserialize($currPost['disabled_mobile_groups']);
+								$enabledGroups = @unserialize($currPost['enabled_mobile_groups']);
+							} else {
+								$disabledPlugins = @unserialize($currPost['disabled_plugins']);
+								$enabledPlugins = @unserialize($currPost['enabled_plugins']);
+								$disabledGroups = @unserialize($currPost['disabled_groups']);
+								$enabledGroups = @unserialize($currPost['enabled_groups']);
+							}
+							if ((is_array($disabledPlugins) && sizeof($disabledPlugins) > 0) || (is_array($enabledPlugins) && sizeof($enabledPlugins) > 0) || (is_array($disabledGroups) && sizeof($disabledGroups) > 0) || (is_array($enabledGroups) && sizeof($enabledGroups) > 0)) {
+								break;
+							}
 						}
 					}
 					
-					if (!is_array($disabledPlugins)) {
-						$disabledPlugins = array();
-					}
-
-					if (!is_array($enabledPlugins)) {
-						$enabledPlugins = array();
-					}
-
-					if (!is_array($disabledGroups)) {
-						$disabledGroups = array();
-					}
-
-					if (!is_array($enabledGroups)) {
-						$enabledGroups = array();
-					}
+					$disabledPlugins = (!is_array($disabledPlugins))? array() : $disabledPlugins;
+					$enabledPlugins = (!is_array($enabledPlugins))? array() : $enabledPlugins;
+					$disabledGroups = (!is_array($disabledGroups))? array() : $disabledGroups;
+					$enabledGroups = (!is_array($enabledGroups))? array() : $enabledGroups;
+					
 
 					if (get_option("PO_fuzzy_url_matching") == "1" && sizeof($disabledPlugins) == 0 && sizeof($enabledPlugins) == 0 && sizeof($disabledGroups) == 0 && sizeof($enabledGroups) == 0) {
 						$endChar = (preg_match('/\/$/', get_option('permalink_structure')) || is_admin())? '/':'';

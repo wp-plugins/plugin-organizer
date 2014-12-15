@@ -5,29 +5,33 @@ if ($errMsg != "") {
 	<?php
 }
 ?>
-<?php if(get_post_type($post->ID) == 'plugin_filter') { ?>
+<?php if (!isset($_GET['page']) || $_GET['page'] != 'PO_search_plugins') { ?>
+	<?php if(get_post_type($post->ID) == 'plugin_filter') { ?>
+		<div class="metaBoxLabel">
+			Name
+		</div>
+		<div class="metaBoxContent">
+			<input type="text" class="poFilterNameInput" size="25" name="filterName" value="<?php print $filterName; ?>">
+		</div>
+		<div class="metaBoxLabel">
+			Permalink
+		</div>
+		<div class="metaBoxContent">
+			<input type="text" class="poPermalinkInput" size="25" name="permalinkFilter" value="<?php print ($permalinkFilter != "") ? (($secure == 1)? "https://":"http://") . $permalinkFilter : ""; ?>">
+		</div>
+	<?php } ?>
+
 	<div class="metaBoxLabel">
-		Name
+		Settings
 	</div>
 	<div class="metaBoxContent">
-		<input type="text" class="poFilterNameInput" size="25" name="filterName" value="<?php print $filterName; ?>">
-	</div>
-	<div class="metaBoxLabel">
-		Permalink
-	</div>
-	<div class="metaBoxContent">
-		<input type="text" class="poPermalinkInput" size="25" name="permalinkFilter" value="<?php print ($permalinkFilter != "") ? (($secure == 1)? "https://":"http://") . $permalinkFilter : ""; ?>">
+		NOTE:  By checking this box the plugins disabled or enabled for this page will be used for its children if they have nothing set.
+		<hr>
+		<input type="checkbox" id="affectChildren" name="affectChildren" value="1" <?php print ($affectChildren == "1")? 'checked="checked"':''; ?>>Also Affect Children
+		<hr>
+		<input type="button" class="button" style="margin: 5px;" id="resetPostSettings" value="Reset settings for this post" onclick="PO_reset_post_settings(<?php print $post->ID; ?>);">
 	</div>
 <?php } ?>
-
-<div class="metaBoxLabel">
-	Settings
-</div>
-<div class="metaBoxContent">
-	NOTE:  By checking this box the plugins disabled or enabled for this page will be used for its children if they have nothing set.
-	<hr>
-	<input type="checkbox" id="affectChildren" name="affectChildren" value="1" <?php print ($affectChildren == "1")? 'checked="checked"':''; ?>>Also Affect Children
-</div>
 <div class="metaBoxLabel">
 	Plugins
 </div>
