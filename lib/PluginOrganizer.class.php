@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.7" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7.1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.7") {
-			update_option("PO_version_num", "5.7");
+		if (get_option("PO_version_num") != "5.7.1") {
+			update_option("PO_version_num", "5.7.1");
 		}
 
 		//Add capabilities to the administrator role
@@ -1126,7 +1126,7 @@ class PluginOrganizer {
 		while ($loopCount < 25 && $matchFound == 0 && strlen($permalink) > strlen($lastUrl) && ($loopCount == 0 || $permalink = preg_replace('/\/[^\/]+\/?$/', $endChar, $permalink))) {
 			$loopCount++;
 			$permalinkHash = md5($permalink);
-			if (get_option('PO_ignore_protocol') == '1') {
+			if (get_option('PO_ignore_protocol') == '0') {
 		
 				$fuzzyPostQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE ".$permalinkSearchField." = %s AND status = 'publish' AND secure = %d AND children = 1 AND post_id != %d";
 				$fuzzyPost = $wpdb->get_results($wpdb->prepare($fuzzyPostQuery, $permalinkHash, $secure, $currID), ARRAY_A);

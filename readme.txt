@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
-Tested up to: 4.0.1
-Stable tag: 5.7
+Tested up to: 4.1
+Stable tag: 5.7.1
 
 
 This plugin allows you to do the following:
@@ -66,6 +66,10 @@ Note: If you are having troubles you can view the documentation by going to http
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.7.1 =
+Fixed queries in PluginOrganizerMU.class.php to properly use enabled post types.
+Fixed check for secure protocol in PluginOrganizerMU.class.php
 
 = 5.7 =
 Added ability to target the search page.
@@ -434,8 +438,6 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.7 =
-Added ability to target the search page.
-Added ability to remove all settings from a post/page
-Fixed some undefined variable notices
-Added organization features for plugin filters using the plugin filter groups.  Can now view all plugins in a group and sort the list by group and permalink.
+= 5.7.1 =
+Fixed queries in PluginOrganizerMU.class.php to properly use enabled post types.
+Fixed check for secure protocol in PluginOrganizerMU.class.php
