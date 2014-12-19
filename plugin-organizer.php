@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.7.1
+Version: 5.7.2
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2

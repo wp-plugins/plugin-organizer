@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.7.1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7.2" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.7.1") {
-			update_option("PO_version_num", "5.7.1");
+		if (get_option("PO_version_num") != "5.7.2") {
+			update_option("PO_version_num", "5.7.2");
 		}
 
 		//Add capabilities to the administrator role
@@ -548,7 +548,7 @@ class PluginOrganizer {
 		$groups = get_posts(array('post_type'=>'plugin_group', 'posts_per_page'=>-1));
 		if (!array_key_exists('all', $views)) {
 			$views = array_reverse($views, true);
-			$views['all'] = '<a href="'.$_SERVER['PHP_SELF'].'?plugin_status=all">All <span class="count">('.count(get_plugins()).')</span></a>';
+			$views['all'] = '<a href="'.get_admin_url().'plugins.php?plugin_status=all">All <span class="count">('.count(get_plugins()).')</span></a>';
 			$views = array_reverse($views, true);
 		}
 		foreach ($groups as $group) {
@@ -564,7 +564,7 @@ class PluginOrganizer {
 				$groupName = $group->post_title.$loopCount;
 				$loopCount++;
 			}
-			$views[$groupName] = '<a href="'.$_SERVER['PHP_SELF'].'?PO_group_view='.$group->ID.'">'.$group->post_title.' <span class="count">('.$groupCount.')</span></a> ';
+			$views[$groupName] = '<a href="'.get_admin_url().'plugins.php?PO_group_view='.$group->ID.'">'.$group->post_title.' <span class="count">('.$groupCount.')</span></a> ';
 		}
 		return $views;
 	}
@@ -1138,59 +1138,73 @@ class PluginOrganizer {
 				
 				$matchFound = (sizeof($fuzzyPost) > 0)? 1:$matchFound;
 			}
-		}
 		
 		
-		if ($matchFound > 0) {
-			$matchFound = 0;
-			if (!is_array($fuzzyPost)) {
-				$fuzzyPost = array();
-			} else if (sizeOf($fuzzyPost) > 0) {
-				usort($fuzzyPost, array($this, 'sort_posts'));
-			}
-
-			foreach($fuzzyPost as $currPost) {
-				if ($mobile == 0) {
-					$disabledFuzzyPlugins = @unserialize($currPost['disabled_plugins']);
-					$enabledFuzzyPlugins = @unserialize($currPost['enabled_plugins']);
-					$disabledFuzzyGroups = @unserialize($currPost['disabled_groups']);
-					$enabledFuzzyGroups = @unserialize($currPost['enabled_groups']);
-				} else {
-					$disabledFuzzyPlugins = @unserialize($currPost['disabled_mobile_plugins']);
-					$enabledFuzzyPlugins = @unserialize($currPost['enabled_mobile_plugins']);
-					$disabledFuzzyGroups = @unserialize($currPost['disabled_mobile_groups']);
-					$enabledFuzzyGroups = @unserialize($currPost['enabled_mobile_groups']);
+			if ($matchFound > 0) {
+				$matchFound = 0;
+				if (!is_array($fuzzyPost)) {
+					$fuzzyPost = array();
+				} else if (sizeOf($fuzzyPost) > 0) {
+					usort($fuzzyPost, array($this, 'sort_posts'));
 				}
-				
-				if ((is_array($disabledFuzzyPlugins) && sizeof($disabledFuzzyPlugins) > 0) || (is_array($enabledFuzzyPlugins) && sizeof($enabledFuzzyPlugins) > 0) || (is_array($disabledFuzzyGroups) && sizeof($disabledFuzzyGroups) > 0) || (is_array($enabledFuzzyGroups) && sizeof($enabledFuzzyGroups) > 0)) {
-					if (!is_array($disabledFuzzyPlugins)) {
-						$disabledFuzzyPlugins = array();
+
+				foreach($fuzzyPost as $currPost) {
+					if ($mobile == 0) {
+						$disabledFuzzyPlugins = @unserialize($currPost['disabled_plugins']);
+						$enabledFuzzyPlugins = @unserialize($currPost['enabled_plugins']);
+						$disabledFuzzyGroups = @unserialize($currPost['disabled_groups']);
+						$enabledFuzzyGroups = @unserialize($currPost['enabled_groups']);
+					} else {
+						$disabledFuzzyPlugins = @unserialize($currPost['disabled_mobile_plugins']);
+						$enabledFuzzyPlugins = @unserialize($currPost['enabled_mobile_plugins']);
+						$disabledFuzzyGroups = @unserialize($currPost['disabled_mobile_groups']);
+						$enabledFuzzyGroups = @unserialize($currPost['enabled_mobile_groups']);
 					}
+					
+					if ((is_array($disabledFuzzyPlugins) && sizeof($disabledFuzzyPlugins) > 0) || (is_array($enabledFuzzyPlugins) && sizeof($enabledFuzzyPlugins) > 0) || (is_array($disabledFuzzyGroups) && sizeof($disabledFuzzyGroups) > 0) || (is_array($enabledFuzzyGroups) && sizeof($enabledFuzzyGroups) > 0)) {
+						$matchFound = 1;
+						if (!is_array($disabledFuzzyPlugins)) {
+							$disabledFuzzyPlugins = array();
+						}
 
-					if (!is_array($enabledFuzzyPlugins)) {
-						$enabledFuzzyPlugins = array();
+						if (!is_array($enabledFuzzyPlugins)) {
+							$enabledFuzzyPlugins = array();
+						}
+
+						if (!is_array($disabledFuzzyGroups)) {
+							$disabledFuzzyGroups = array();
+						}
+
+						if (!is_array($enabledFuzzyGroups)) {
+							$enabledFuzzyGroups = array();
+						}
+
+						$fuzzyPlugins['plugins']['disabled_plugins'] = $disabledFuzzyPlugins;
+						$fuzzyPlugins['plugins']['enabled_plugins'] = $enabledFuzzyPlugins;
+						$fuzzyPlugins['plugins']['disabled_groups'] = $disabledFuzzyGroups;
+						$fuzzyPlugins['plugins']['enabled_groups'] = $enabledFuzzyGroups;
+
+						$fuzzyPlugins['post_id'] = $currPost['post_id'];
 					}
-
-					if (!is_array($disabledFuzzyGroups)) {
-						$disabledFuzzyGroups = array();
-					}
-
-					if (!is_array($enabledFuzzyGroups)) {
-						$enabledFuzzyGroups = array();
-					}
-
-					$fuzzyPlugins['plugins']['disabled_plugins'] = $disabledFuzzyPlugins;
-					$fuzzyPlugins['plugins']['enabled_plugins'] = $enabledFuzzyPlugins;
-					$fuzzyPlugins['plugins']['disabled_groups'] = $disabledFuzzyGroups;
-					$fuzzyPlugins['plugins']['enabled_groups'] = $enabledFuzzyGroups;
-
-					$fuzzyPlugins['post_id'] = $currPost['post_id'];
 				}
 			}
 		}
 		return $fuzzyPlugins;
 	}
 	
+	
+	function find_duplicate_permalinks($postID, $permalink) {
+		global $wpdb;
+		$returnDup = array();
+		$dupPostQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins WHERE permalink = %s and post_id != %d and post_type='plugin_filter'";
+		$dupPosts = $wpdb->get_results($wpdb->prepare($dupPostQuery, $permalink, $postID), ARRAY_A);
+		if (sizeOf($dupPosts) > 0) {
+			foreach ($dupPosts as $dup) {
+				$returnDup[] = $dup['post_id'];
+			}
+		}
+		return $returnDup;
+	}
 	
 	function get_post_meta_box($post) {
 		global $wpdb;
@@ -1252,6 +1266,13 @@ class PluginOrganizer {
 			} else {
 				$postTypeName = 'Post';
 			}
+
+			$duplicates = $this->find_duplicate_permalinks($post->ID, $postSettings['permalink']);
+			if (sizeOf($duplicates) > 0) {
+				foreach($duplicates as $dup) {
+					$errMsg .= 'There is another Plugin Filter with the same permalink.  <a href="' . get_admin_url() . 'post.php?post=' . $dup . '&action=edit">Edit Duplicate</a><br />';
+				}
+			}
 		} else {
 			$filterName = "";
 			$affectChildren = 0;
@@ -1282,7 +1303,7 @@ class PluginOrganizer {
 			$disabledGroupList = $fuzzyPluginList['plugins']['disabled_groups'];
 			$enabledGroupList = $fuzzyPluginList['plugins']['enabled_groups'];
 			if ($fuzzyPluginList['post_id'] > 0) {
-				$errMsg .= 'There is a parent affecting the standard plugins on this '. $postTypeName . '.  To edit it click <a href="/wp-admin/post.php?post=' . $fuzzyPluginList['post_id'] . '&action=edit">here</a>.<br />';
+				$errMsg .= 'There is a parent affecting the standard plugins on this '. $postTypeName . '.  To edit it click <a href="' . get_admin_url() . 'post.php?post=' . $fuzzyPluginList['post_id'] . '&action=edit">here</a>.<br />';
 			}
 		}
 
@@ -1296,7 +1317,7 @@ class PluginOrganizer {
 			$disabledMobileGroupList = $fuzzyPluginList['plugins']['disabled_groups'];
 			$enabledMobileGroupList = $fuzzyPluginList['plugins']['enabled_groups'];
 			if ($fuzzyPluginList['post_id'] > 0) {
-				$errMsg .= 'There is a parent affecting the mobile plugins on this '. $postTypeName . '.  To edit it click <a href="/wp-admin/post.php?post=' . $fuzzyPluginList['post_id'] . '&action=edit">here</a>.<br />';
+				$errMsg .= 'There is a parent affecting the mobile plugins on this '. $postTypeName . '.  To edit it click <a href="' . get_admin_url() . 'post.php?post=' . $fuzzyPluginList['post_id'] . '&action=edit">here</a>.<br />';
 			}
 		}
 
@@ -1332,7 +1353,7 @@ class PluginOrganizer {
 		
 		$groupList = get_posts(array('posts_per_page'=>-1, 'post_type'=>'plugin_group'));
 		if (get_option("PO_disable_plugins") != 1) {
-			$errMsg .= 'You currently have Selective Plugin Loading disabled.  None of the changes you make here will have any affect on what plugins are loaded until you enable it.  You can enable it by going to the <a href="/wp-admin/admin.php?page=Plugin_Organizer">settings page</a> and clicking enable under Selective Plugin Loading.';
+			$errMsg .= 'You currently have Selective Plugin Loading disabled.  None of the changes you make here will have any affect on what plugins are loaded until you enable it.  You can enable it by going to the <a href="' . get_admin_url() . 'admin.php?page=Plugin_Organizer">settings page</a> and clicking enable under Selective Plugin Loading.';
 		}
 		
 		require_once($this->absPath . "/tpl/postMetaBox.php");
