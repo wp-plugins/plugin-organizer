@@ -3,7 +3,7 @@
 Plugin Name: Plugin Organizer MU
 Plugin URI: http://www.jsterup.com
 Description: A plugin for specifying the load order of your plugins.
-Version: 5.7.2
+Version: 5.7.3
 Author: Jeff Sterup
 Author URI: http://www.jsterup.com
 License: GPL2
@@ -33,7 +33,7 @@ class PluginOrganizerMU {
 				$newPluginList = $GLOBALS["PO_CACHED_PLUGIN_LIST"];
 			} else {
 				$this->set_requested_permalink();
-				if (get_option("PO_version_num") != "5.7.2" && !is_admin()) {
+				if (get_option("PO_version_num") != "5.7.3" && !is_admin()) {
 					$newPluginList = $pluginList;
 					update_option("PO_disable_plugins", "0");
 					update_option("PO_admin_disable_plugins", "0");
@@ -47,7 +47,7 @@ class PluginOrganizerMU {
 					}
 
 					##Search page
-					if (isset($_REQUEST['s'])) {
+					if (!is_admin() && isset($_REQUEST['s'])) {
 						if ($this->detectMobile == 1 && $this->mobile) {
 							$disabledPlugins = get_option('PO_disabled_mobile_search_plugins');
 							$enabledPlugins = get_option('PO_enabled_mobile_search_plugins');
