@@ -179,8 +179,11 @@
 				<textarea name="PO_mobile_user_agents" id="PO_mobile_user_agents" rows="7" cols="50" style="width: 100%;"><?php
 					$userAgents = get_option("PO_mobile_user_agents");
 					if (is_array($userAgents)) {
-						foreach ($userAgents as $agent) {
-							print $agent . "\n";
+						foreach ($userAgents as $key=>$agent) {
+							if ($key > 0) {
+								print "\n";
+							}
+							print $agent;
 						}
 					}
 				?></textarea>

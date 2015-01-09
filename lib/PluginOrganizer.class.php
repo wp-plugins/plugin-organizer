@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.7.3" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7.4" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,12 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.7.3") {
-			update_option("PO_version_num", "5.7.3");
+		if (get_option("PO_version_num") != "5.7.4") {
+			update_option("PO_version_num", "5.7.4");
+		}
+
+		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {
+			update_option('PO_mobile_user_agents', array('mobile', 'bolt', 'palm', 'series60', 'symbian', 'fennec', 'nokia', 'kindle', 'minimo', 'netfront', 'opera mini', 'opera mobi', 'semc-browser', 'skyfire', 'teashark', 'uzard', 'android', 'blackberry', 'iphone', 'ipad'));
 		}
 
 		//Add capabilities to the administrator role
@@ -1925,6 +1929,11 @@ class PluginOrganizer {
 		if (!is_array($userAgents)) {
 			$userAgents = array();
 		}
+		foreach ($userAgents as $key=>$agent) {
+			if ($agent == '') {
+				unset($userAgents[$key]);
+			}
+		}
 		
 		if (update_option('PO_mobile_user_agents', $userAgents)) {
 			print "The user agents were saved.";
@@ -2150,17 +2159,31 @@ class PluginOrganizer {
 	}
 
 	function fix_trailng_slash($permalink) {
-		global $wp_rewrite;
-		$wpDomain = preg_replace(array('/^https?:/', '/\//'), array('',''), get_bloginfo('url'));
+		global $wpdb;
+		$wpDomain = preg_replace(array('/^(https?:\/\/)?/', '/\/$/'), array('',''), get_bloginfo('url'));
 		$wpAdminURL = preg_replace('/^(https?:\/\/)?/', '', admin_url());
 		
 		$permalinkNoProtocol = preg_replace('/^(https?:\/\/)?/', '', $permalink);
-		$filePath = preg_replace('/^(https?:\/\/)?'.$wpDomain.'\/?/', '', $permalink);
+		$filePath = preg_replace('/^(https?:\/\/)?'.preg_quote($wpDomain, '/').'\/?/', '', $permalink);
+		
+		##get unfiltered siteurl value directly from database since wordpress won't let you have it any other way.  This includes the trailing slash if set in the options.
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", 'siteurl' ) );
+		$realSiteUrl = '';
+		if (is_object($row)) {
+			$realSiteUrl = preg_replace('/^(https?:\/\/)?/', '', $row->option_value);
+			if ($_SERVER['HTTP_HOST'] == preg_replace('/\/$/', '', $realSiteUrl)) {
+				$realSiteUrl = trailingslashit($realSiteUrl);
+			}
+		}
 		if (!is_file(get_home_path() . $filePath) && !preg_match('/^'.preg_quote($wpAdminURL, '/').'/', $permalinkNoProtocol) && strpos($permalink, "?") === FALSE) {
-			if ( $wp_rewrite->use_trailing_slashes ) {
-				$permalink = trailingslashit($permalink);
+			if (preg_replace('/\/$/', '', $realSiteUrl) == preg_replace('/\/$/', '', $permalinkNoProtocol)) {
+				if (preg_match('/\/$/', $realSiteUrl)) {
+					$permalink = trailingslashit($permalink);
+				} else {
+					$permalink = untrailingslashit($permalink);
+				}
 			} else {
-				$permalink = untrailingslashit($permalink);
+				$permalink = user_trailingslashit($permalink);
 			}
 		}
 		return $permalink;

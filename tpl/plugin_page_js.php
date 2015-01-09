@@ -252,7 +252,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 			<?php
 			foreach ($groups as $group) {
 				?>
-				pluginGroups += '<option value="<?php print $group->ID; ?>"><?php print $group->post_title; ?></option>';
+				pluginGroups += '<option value="<?php print $group->ID; ?>"><?php print preg_replace("/'/", "\'", $group->post_title); ?></option>';
 				<?php
 			}
 			?>
@@ -314,8 +314,7 @@ if ( current_user_can( 'activate_plugins' ) ) {
 					});
 				}
 			});
-			
-			
+
 			jQuery('.tablenav.top .actions select[name=PO_group_name_select], .tablenav.bottom .actions select[name=PO_group_name_select2]').change(function() {
 				var selectedVal = jQuery(this).val();
 				jQuery('.tablenav.top .actions select[name=PO_group_name_select], .tablenav.bottom .actions select[name=PO_group_name_select2]').each(function() {
