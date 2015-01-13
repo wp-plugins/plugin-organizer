@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.7.4" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7.5" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.7.4") {
-			update_option("PO_version_num", "5.7.4");
+		if (get_option("PO_version_num") != "5.7.5") {
+			update_option("PO_version_num", "5.7.5");
 		}
 
 		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {
@@ -1200,7 +1200,7 @@ class PluginOrganizer {
 	function find_duplicate_permalinks($postID, $permalink) {
 		global $wpdb;
 		$returnDup = array();
-		$dupPostQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins WHERE permalink = %s and post_id != %d and post_type='plugin_filter'";
+		$dupPostQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins WHERE permalink = %s and post_id != %d and post_type='plugin_filter' and status != 'trash'";
 		$dupPosts = $wpdb->get_results($wpdb->prepare($dupPostQuery, $permalink, $postID), ARRAY_A);
 		if (sizeOf($dupPosts) > 0) {
 			foreach ($dupPosts as $dup) {
@@ -2189,6 +2189,21 @@ class PluginOrganizer {
 		return $permalink;
 	}
 
+	function check_for_missing_posts() {
+		global $wpdb;
+		if (false === get_site_transient('PO_delete_missing_posts')) {
+			$allPostsQuery = "SELECT post_id FROM ".$wpdb->prefix."PO_plugins";
+			$allPosts = $wpdb->get_results($allPostsQuery, ARRAY_A);
+			foreach ($allPosts as $post) {
+				if (false === get_post_status($post['post_id'])) {
+					$deletePluginQuery = "DELETE FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
+					$wpdb->query($wpdb->prepare($deletePluginQuery, $post['post_id']));
+				}
+			}
+			set_site_transient('PO_delete_missing_posts', 1, 604800);
+		}
+	}
+	
 	function sort_posts($a, $b) {
 		if ($a['post_type'] == 'plugin_filter' && $b['post_type'] != 'plugin_filter') {
 			return 1;
