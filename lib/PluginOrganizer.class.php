@@ -14,7 +14,7 @@ class PluginOrganizer {
 			"new_group_name" => "/^[A-Za-z0-9_\-]+$/",
 			"default" => "/^(.|\\n)*$/"
 		);
-		if (get_option("PO_version_num") != "5.7.5" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "5.7.6" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 	}
@@ -170,8 +170,8 @@ class PluginOrganizer {
 			update_option('PO_preserve_settings', "1");
 		}
 		
-		if (get_option("PO_version_num") != "5.7.5") {
-			update_option("PO_version_num", "5.7.5");
+		if (get_option("PO_version_num") != "5.7.6") {
+			update_option("PO_version_num", "5.7.6");
 		}
 
 		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {
@@ -672,7 +672,7 @@ class PluginOrganizer {
 
 		##Mobile Groups
 		if (get_option('PO_disable_mobile_plugins') == 1) {
-			$globalMobileGroups = get_option('PO_disable_mobile_groups');
+			$globalMobileGroups = get_option('PO_disabled_mobile_groups');
 			if (!is_array($globalMobileGroups)) {
 				$globalMobileGroups = array();
 			}
@@ -1409,55 +1409,27 @@ class PluginOrganizer {
 		if (!is_array($globalPlugins)) {
 			$globalPlugins = array();
 		}
-		$disabledPlugins = array();
-		$enabledPlugins = array();
-			
-		if (isset($_POST['pluginsList']) && is_array($_POST['pluginsList'])) {
-			foreach ($_POST['pluginsList'] as $plugin) {
-				if (!in_array($plugin, $globalPlugins)) {
-					$disabledPlugins[] = $plugin;
-				}
-			}
-
-			foreach ($globalPlugins as $plugin) {
-				if (!in_array($plugin, $_POST['pluginsList'])) {
-					$enabledPlugins[] = $plugin;
-				}
-			}
-		} else {
-			foreach ($globalPlugins as $plugin) {
-				$enabledPlugins[] = $plugin;
-			}
-		}
+		$checkPluginList = (isset($_POST['pluginsList'])) ? $_POST['pluginsList'] : '';
+		
+		$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalPlugins);
+		$disabledPlugins = $tempPluginList[0];
+		$enabledPlugins = $tempPluginList[1];
+		
 
 		### Mobile plugins
-		$disabledMobilePlugins = array();
-		$enabledMobilePlugins = array();
 		if (get_option('PO_disable_mobile_plugins') == 1) {
 			$globalMobilePlugins = get_option('PO_disabled_mobile_plugins');
 			if (!is_array($globalMobilePlugins)) {
 				$globalMobilePlugins = array();
 			}
-				
-			if (isset($_POST['mobilePluginsList']) && is_array($_POST['mobilePluginsList'])) {
-				foreach ($_POST['mobilePluginsList'] as $plugin) {
-					if (!in_array($plugin, $globalMobilePlugins)) {
-						$disabledMobilePlugins[] = $plugin;
-					}
-				}
-
-				foreach ($globalMobilePlugins as $plugin) {
-					if (!in_array($plugin, $_POST['mobilePluginsList'])) {
-						$enabledMobilePlugins[] = $plugin;
-					}
-				}
-			} else {
-				foreach ($globalMobilePlugins as $plugin) {
-					$enabledMobilePlugins[] = $plugin;
-				}
-			}
+			$checkPluginList = (isset($_POST['mobilePluginsList'])) ? $_POST['mobilePluginsList'] : '';
+			$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalMobilePlugins);
+			$disabledMobilePlugins = $tempPluginList[0];
+			$enabledMobilePlugins = $tempPluginList[1];
+		} else {
+			$disabledMobilePlugins = array();
+			$enabledMobilePlugins = array();
 		}
-
 
 		
 		##Groups
@@ -1465,54 +1437,29 @@ class PluginOrganizer {
 		if (!is_array($globalGroups)) {
 			$globalGroups = array();
 		}
-		$disabledGroups = array();
-		$enabledGroups = array();
-			
-		if (isset($_POST['pluginGroupList']) && is_array($_POST['pluginGroupList'])) {
-			foreach ($_POST['pluginGroupList'] as $group) {
-				if (!in_array($group, $globalGroups)) {
-					$disabledGroups[] = $group;
-				}
-			}
-
-			foreach ($globalGroups as $group) {
-				if (!in_array($group, $_POST['pluginGroupList'])) {
-					$enabledGroups[] = $group;
-				}
-			}
-		} else {
-			foreach ($globalGroups as $group) {
-				$enabledGroups[] = $group;
-			}
-		}
+		$checkPluginList = (isset($_POST['pluginGroupList'])) ? $_POST['pluginGroupList'] : '';
+		
+		$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalGroups);
+		$disabledGroups = $tempPluginList[0];
+		$enabledGroups = $tempPluginList[1];
 
 
-		$disabledMobileGroups = array();
-		$enabledMobileGroups = array();
+		##Mobile Groups
 		if (get_option('PO_disable_mobile_plugins') == 1) {
-			$globalMobileGroups = get_option('PO_disable_mobile_groups');
+			$globalMobileGroups = get_option('PO_disabled_mobile_groups');
 			if (!is_array($globalMobileGroups)) {
 				$globalMobileGroups = array();
 			}
-				
-			if (isset($_POST['mobilePluginGroupList']) && is_array($_POST['mobilePluginGroupList'])) {
-				foreach ($_POST['mobilePluginGroupList'] as $group) {
-					if (!in_array($group, $globalMobileGroups)) {
-						$disabledMobileGroups[] = $group;
-					}
-				}
-
-				foreach ($globalMobileGroups as $group) {
-					if (!in_array($group, $_POST['mobilePluginGroupList'])) {
-						$enabledMobileGroups[] = $group;
-					}
-				}
-			} else {
-				foreach ($globalMobileGroups as $group) {
-					$enabledMobileGroups[] = $group;
-				}
-			}
+			$checkPluginList = (isset($_POST['mobilePluginGroupList'])) ? $_POST['mobilePluginGroupList'] : '';
+		
+			$tempPluginList = $this->create_plugin_lists($checkPluginList, $globalMobileGroups);
+			$disabledMobileGroups = $tempPluginList[0];
+			$enabledMobileGroups = $tempPluginList[1];
+		} else {
+			$disabledMobileGroups = array();
+			$enabledMobileGroups = array();
 		}
+		
 		
 		$postStatus = get_post_status($post_id);
 		if (!$postStatus) {
@@ -2160,6 +2107,8 @@ class PluginOrganizer {
 
 	function fix_trailng_slash($permalink) {
 		global $wpdb;
+		if ($permalink == '') { return $permalink; }
+		
 		$wpDomain = preg_replace(array('/^(https?:\/\/)?/', '/\/$/'), array('',''), get_bloginfo('url'));
 		$wpAdminURL = preg_replace('/^(https?:\/\/)?/', '', admin_url());
 		

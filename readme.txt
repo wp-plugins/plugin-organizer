@@ -4,7 +4,7 @@ Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 4.1
-Stable tag: 5.7.5
+Stable tag: 5.7.6
 
 
 This plugin allows you to do the following:
@@ -66,6 +66,11 @@ Note: If you are having troubles you can view the documentation by going to http
 4. Page edit screen.
 
 == Changelog ==
+
+= 5.7.6 =
+Fixed a typo that prevented globally disabled mobile groups from being enabled on a post or page.
+Streamlined plugin matching functionality when saving enabled/disabled during meta box save so it all uses a single function instead of multiple if statements.
+Fixed the MU plugin so PO can't be disabled on the admin side which locks the user out of all plugin organizer settings.
 
 = 5.7.5 =
 Fixed problem with wordpress not deleting rows from the PO_plugins table upon auto emptying trash.
@@ -457,6 +462,7 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 5.7.5 =
-Fixed problem with wordpress not deleting rows from the PO_plugins table upon auto emptying trash.
-Fixed problem where plugin filters would show up as duplicate permalinks when the plugin filter was in the trash.
+= 5.7.6 =
+Fixed a typo that prevented globally disabled mobile groups from being enabled on a post or page.
+Streamlined plugin matching functionality when saving enabled/disabled during meta box save so it all uses a single function instead of multiple if statements.
+Fixed the MU plugin so PO can't be disabled on the admin side which locks the user out of all plugin organizer settings.
