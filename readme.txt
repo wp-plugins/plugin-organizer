@@ -4,7 +4,7 @@ Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
 Tested up to: 4.1
-Stable tag: 6.0
+Stable tag: 6.0.1
 
 
 This plugin allows you to do the following:
@@ -68,6 +68,10 @@ Note: If you are having troubles you can view the documentation by going to http
 6. Page edit screen.
 
 == Changelog ==
+
+= 6.0.1 =
+Fixed undefined variable warning on multisite activation.
+Added check to prevent save buttons from appearing in post metabox on post edit screen.
 
 = 6.0 =
 Added ability to set plugins for all posts matching a post type.
@@ -474,12 +478,6 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 6.0 =
-Added ability to set plugins for all posts matching a post type.
-Moved the plugin ordering and grouping to it's own page.
-Changed the interface to make it more user friendly.
-Added uninstall.php to remove all data from the database when the plugin is deleted through the admin.
-Fixed ordering of network activated plugins.  They are now displayed on the ordering page at the beginning of the list where they are loaded and can be reordered seperately.
-Added functionality to change the color of on/off buttons and rows on the ordering page.
-Cleaned up old code.
-Changed icons to use Font Awesome and the built in Dashicons.
+= 6.0.1 =
+Fixed undefined variable warning on multisite activation.
+Added check to prevent save buttons from appearing in post metabox on post edit screen.
