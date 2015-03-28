@@ -25,10 +25,7 @@
 			jQuery('#PO-new-group-name-container').slideDown(300);
 		} else if (jQuery('#PO-plugin-action').val() == 'edit_plugin_group_name') {
 			if (jQuery('#PO-group-name').prop('multiple')) {
-				jQuery('#PO-group-select').slideUp();
-			}
-			var checkDisplay = function () {
-				if (jQuery('#PO-group-select').css('display') == 'none') {
+				jQuery('#PO-group-select').slideUp(function() {
 					jQuery('#PO-group-name').prop('multiple',false);
 					jQuery('#PO-group-select').slideDown(300);
 					jQuery('#PO-new-group-name-container').slideDown(300);
@@ -40,11 +37,11 @@
 							jQuery('#PO-group-select option:first').prop('selected', 'selected');
 						}
 					}
-				} else {
-					setTimeout(checkDisplay, 100);
-				}
+				});
+			} else {
+				jQuery('#PO-group-select').slideDown(300);
+				jQuery('#PO-new-group-name-container').slideDown(300);
 			}
-			setTimeout(checkDisplay, 100);
 		} else {
 			jQuery('#PO-group-select').slideUp();
 			jQuery('#PO-new-group-name-container').slideUp();

@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
-Tested up to: 4.1
-Stable tag: 6.0.1
+Tested up to: 4.1.1
+Stable tag: 6.0.2
 
 
 This plugin allows you to do the following:
@@ -68,6 +68,10 @@ Note: If you are having troubles you can view the documentation by going to http
 6. Page edit screen.
 
 == Changelog ==
+
+= 6.0.2 =
+Fixed display of plugin groups on the plugins page.
+Changed group and order js to use anonymous function sent to slideup instead of settimeout.
 
 = 6.0.1 =
 Fixed undefined variable warning on multisite activation.
@@ -478,6 +482,6 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 6.0.1 =
-Fixed undefined variable warning on multisite activation.
-Added check to prevent save buttons from appearing in post metabox on post edit screen.
+= 6.0.2 =
+Fixed display of plugin groups on the plugins page.
+Changed group and order js to use anonymous function sent to slideup instead of settimeout.

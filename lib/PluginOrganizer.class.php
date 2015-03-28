@@ -35,9 +35,7 @@ class PluginOrganizer {
 			add_filter('views_plugins', array($this, 'add_group_views'));
 			add_action('admin_menu', array($this, 'admin_menu'), 9);
 			
-			#if (array_key_exists('plugin_status', $_REQUEST) && $_REQUEST['plugin_status'] == 'load_order') {
-			#	add_action('all_plugins', array($this, 'reorder_plugins'));
-			#}
+			add_action('all_plugins', array($this, 'get_requested_group'));
 			
 			add_action('admin_menu', array($this, 'disable_plugin_box'));
 			add_action('save_post', array($this, 'save_post_meta_box'));
@@ -92,7 +90,7 @@ class PluginOrganizer {
 		$this->nonce = wp_create_nonce(plugin_basename(__FILE__));
 		
 		##Check version and activate if needed.
-		if (get_option("PO_version_num") != "6.0.1" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "6.0.2" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 
@@ -273,8 +271,8 @@ class PluginOrganizer {
 			update_option('PO_disable_plugins', 1);
 		}
 		
-		if (get_option("PO_version_num") != "6.0.1") {
-			update_option("PO_version_num", "6.0.1");
+		if (get_option("PO_version_num") != "6.0.2") {
+			update_option("PO_version_num", "6.0.2");
 		}
 
 		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {
@@ -568,17 +566,46 @@ class PluginOrganizer {
 		return $plugins;
 	}
 	
+	function get_requested_group($allPluginList) {
+		if (isset($_REQUEST['PO_group_view']) && is_numeric($_REQUEST['PO_group_view'])) {
+			$plugins = $this->get_active_plugins();
+		
+			$activePlugins = Array();
+			$inactivePlugins = Array();
+			$newPluginList = Array();
+			$activePluginOrder = Array();
+			
+			$globalPlugins = get_option('PO_disabled_plugins');
+			if (!is_array($globalPlugins)) {
+				$globalPlugins = array();
+			}
+			$members = get_post_meta($_REQUEST['PO_group_view'], '_PO_group_members', $single=true);
+			$members = stripslashes_deep($members);
+			foreach ($allPluginList as $key=>$val) {
+				if (is_array($members) && in_array($key, $members)) {
+					$activePlugins[$key] = $val;
+					$activePluginOrder[] = array_search($key, $plugins);
+				}
+			}
+			array_multisort($activePluginOrder, $activePlugins);
+			$newPluginList = array_merge($activePlugins, $inactivePlugins);
+		} else {
+			$newPluginList = $allPluginList;
+		}
+		return $newPluginList;
+	}
+	
 	function reorder_plugins($allPluginList) {
+		global $pagenow;
 		$plugins = $this->get_active_plugins();
 		
 		
-		if (is_admin() && $this->pluginPageActions == 1 && (!isset($_REQUEST['PO_group_view']) || !is_numeric($_REQUEST['PO_group_view']))) {
+		if (is_admin() && $this->pluginPageActions == 1 && in_array($pagenow, array("plugins.php"))) {
 			$perPage = get_user_option("plugins_per_page");
 			if (!is_numeric($perPage)) {
 				$perPage = 999;
 			}
 			if (sizeOf($plugins) > $perPage) {
-				remove_action('all_plugins',  array($this, 'reorder_plugins'));
 				$this->pluginPageActions = 0;
 				return $allPluginList;
 			}
@@ -593,23 +620,12 @@ class PluginOrganizer {
 			$globalPlugins = array();
 		}
 		
-		if (isset($_REQUEST['PO_group_view']) && is_numeric($_REQUEST['PO_group_view'])) {
-			$members = get_post_meta($_REQUEST['PO_group_view'], '_PO_group_members', $single=true);
-			$members = stripslashes_deep($members);
-			foreach ($allPluginList as $key=>$val) {
-				if (is_array($members) && in_array($key, $members)) {
-					$activePlugins[$key] = $val;
-					$activePluginOrder[] = array_search($key, $plugins);
-				}
-			}
-		} else {
-			foreach ($allPluginList as $key=>$val) {
-				if (in_array($key, $plugins)) {
-					$activePlugins[$key] = $val;
-					$activePluginOrder[] = array_search($key, $plugins);
-				} else {
-					$inactivePlugins[$key] = $val;
-				}
+		foreach ($allPluginList as $key=>$val) {
+			if (in_array($key, $plugins)) {
+				$activePlugins[$key] = $val;
+				$activePluginOrder[] = array_search($key, $plugins);
+			} else {
+				$inactivePlugins[$key] = $val;
 			}
 		}
 		array_multisort($activePluginOrder, $activePlugins);
