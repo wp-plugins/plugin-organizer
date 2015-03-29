@@ -48,7 +48,7 @@ if (isset($post) && $ptOverride == 0 && is_array(get_option('PO_disabled_pt_plug
 		<?php } ?>
 
 		<div id="settingsMetaBox" class="metaBoxContent">
-			<div class="pluginListHead">Settings<?php if(!isset($post)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
+			<div class="pluginListHead">Settings<?php if(isset($ajaxSaveFunction)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
 			<?php if ($adminPage == 'PO_pt_plugins') { ?>
 				<div style="padding-left: 10px;">
 				Post Type: <select id="PO-selected-post-type" name="PO_selected_post_type">
@@ -113,7 +113,7 @@ if (isset($post) && $ptOverride == 0 && is_array(get_option('PO_disabled_pt_plug
 		</div>
 	<?php } ?>
 	<div id="pluginContainer" class="metaBoxContent">
-		<div class="pluginListHead">Plugins<?php if(!isset($post)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
+		<div class="pluginListHead">Plugins<?php if(isset($ajaxSaveFunction)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
 		<div class="pluginWrap">
 			<div class="PO-toggle-container">
 				Standard<br />
@@ -180,7 +180,7 @@ if (isset($post) && $ptOverride == 0 && is_array(get_option('PO_disabled_pt_plug
 
 	<?php if (sizeOf($groupList) > 0) { ?>
 	  <div id="pluginGroupContainer" class="metaBoxContent">
-		<div class="pluginListHead">Plugin Groups<?php if(!isset($post)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
+		<div class="pluginListHead">Plugin Groups<?php if(isset($ajaxSaveFunction)) { ?><input type=button name=submit value="Save" onmousedown="<?php print $ajaxSaveFunction; ?>" class="PO-ajax-save-btn"><?php } ?></div>
 		<div class="pluginWrap">
 			<div class="PO-toggle-container">
 				Standard<br />

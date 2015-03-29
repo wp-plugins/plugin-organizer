@@ -90,7 +90,7 @@ class PluginOrganizer {
 		$this->nonce = wp_create_nonce(plugin_basename(__FILE__));
 		
 		##Check version and activate if needed.
-		if (get_option("PO_version_num") != "6.0.2" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "6.0.3" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 
@@ -271,8 +271,8 @@ class PluginOrganizer {
 			update_option('PO_disable_plugins', 1);
 		}
 		
-		if (get_option("PO_version_num") != "6.0.2") {
-			update_option("PO_version_num", "6.0.2");
+		if (get_option("PO_version_num") != "6.0.3") {
+			update_option("PO_version_num", "6.0.3");
 		}
 
 		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {

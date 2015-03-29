@@ -17,7 +17,7 @@
 			</div>
 		  </div>
 		  <div id="pluginListdiv" class="stuffbox inside" style="width: 98%">
-              <? 
+              <?php
 			  $ajaxSaveFunction = "PO_submit_global_plugins();";
 			  require_once('postMetaBox.php');
 			  ?>
