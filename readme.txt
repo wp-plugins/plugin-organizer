@@ -70,7 +70,7 @@ Note: If you are having troubles you can view the documentation by going to http
 == Changelog ==
 
 = 6.0.3 =
-Removed shortcodes from 3 template files.
+Removed short tags from 3 template files.
 Changed check to make sure $ajaxSaveFunction is set in postMetabox.php.
 
 = 6.0.2 =
@@ -487,5 +487,5 @@ Initial version.
 == Upgrade Notice ==
 
 = 6.0.3 =
-Removed shortcodes from 3 template files.
+Removed short tags from 3 template files.
 Changed check to make sure $ajaxSaveFunction is set in postMetabox.php.
