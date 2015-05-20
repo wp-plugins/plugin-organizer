@@ -303,8 +303,8 @@ class PO_Ajax {
 				$postStatus = 'publish';
 			}
 
-			$postExists = ($wpdb->get_var($wpdb->prepare("SELECT count(*) FROM ".$wpdb->prefix."PO_plugins WHERE post_id=%d AND pt_override=0", $post->ID)) > 0) ? 1 : 0;
-			
+			$ptOverride = $wpdb->get_var($wpdb->prepare("SELECT pt_override FROM ".$wpdb->prefix."PO_plugins WHERE post_id=%d", $post->ID));
+
 			$secure=0;
 			if (preg_match('/^.{1,5}:\/\//', get_permalink($post->ID), $matches)) {
 				switch ($matches[0]) {
@@ -319,9 +319,9 @@ class PO_Ajax {
 				
 			$permalinkNoArgs = preg_replace('/\?.*$/', '', $permalink);
 		
-			if ($postExists == 1) {
+			if ($ptOverride == '0') {
 				$wpdb->update($wpdb->prefix."PO_plugins", array("permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "enabled_plugins"=>serialize($submittedPlugins[1]), "disabled_plugins"=>serialize($submittedPlugins[0]), "enabled_mobile_plugins"=>serialize($submittedPlugins[3]), "disabled_mobile_plugins"=>serialize($submittedPlugins[2]), "enabled_groups"=>serialize($submittedPlugins[5]), "disabled_groups"=>serialize($submittedPlugins[4]), "enabled_mobile_groups"=>serialize($submittedPlugins[7]), "disabled_mobile_groups"=>serialize($submittedPlugins[6]), "secure"=>$secure, "post_type"=>get_post_type($post->ID), "status"=>$postStatus), array("post_id"=>$post->ID));
-			} else {
+			} else if ($ptOverride == '') {
 				$wpdb->insert($wpdb->prefix."PO_plugins", array("post_id"=>$post->ID, "permalink"=>$permalink, "permalink_hash"=>md5($permalinkNoArgs), "permalink_hash_args"=>md5($permalink), "enabled_plugins"=>serialize($submittedPlugins[1]), "disabled_plugins"=>serialize($submittedPlugins[0]), "enabled_mobile_plugins"=>serialize($submittedPlugins[3]), "disabled_mobile_plugins"=>serialize($submittedPlugins[2]), "enabled_groups"=>serialize($submittedPlugins[5]), "disabled_groups"=>serialize($submittedPlugins[4]), "enabled_mobile_groups"=>serialize($submittedPlugins[7]), "disabled_mobile_groups"=>serialize($submittedPlugins[6]), "secure"=>$secure, "post_type"=>get_post_type($post->ID), "status"=>$postStatus));
 			}
 		}
@@ -391,7 +391,10 @@ class PO_Ajax {
 		if (isset($_POST['PO_reset_all_pt']) && $_POST['PO_reset_all_pt'] == "1") {
 			$allPosts = get_posts(array('post_type'=>$postType, 'posts_per_page'=>-1));
 			foreach($allPosts as $post) {
-				$wpdb->delete($wpdb->prefix."PO_plugins", array("post_id"=>$post->ID));
+				$ptOverride = $wpdb->get_var($wpdb->prepare("SELECT pt_override FROM ".$wpdb->prefix."PO_plugins WHERE post_id=%d", $post->ID));
+				if ($ptOverride == '0') {
+					$wpdb->delete($wpdb->prefix."PO_plugins", array("post_id"=>$post->ID));
+				}
 			}
 			print "<br />Plugin settings were also reset on each " . $postType . ".<br />";
 		}

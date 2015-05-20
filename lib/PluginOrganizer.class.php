@@ -90,7 +90,7 @@ class PluginOrganizer {
 		$this->nonce = wp_create_nonce(plugin_basename(__FILE__));
 		
 		##Check version and activate if needed.
-		if (get_option("PO_version_num") != "6.0.3" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
+		if (get_option("PO_version_num") != "6.0.4" && !in_array($pagenow, array("plugins.php", "update-core.php", "update.php"))) {
 			$this->activate();
 		}
 
@@ -210,7 +210,7 @@ class PluginOrganizer {
 		$showColumnSql = "SHOW COLUMNS FROM ".$wpdb->prefix."PO_plugins";
 		$showColumnResults = $wpdb->get_results($showColumnSql);
 		$newColumns = array(
-			'pt_override' => array(0, 'int(1) NOT NULL'),
+			'pt_override' => array(0, 'int(1) NOT NULL default 0'),
 			'disabled_groups' => array(0, 'longtext NOT NULL'),
 			'enabled_groups' => array(0, 'longtext NOT NULL'),
 			'disabled_mobile_groups' => array(0, 'longtext NOT NULL'),
@@ -229,6 +229,20 @@ class PluginOrganizer {
 			}
 		}
 
+		$newIndex = array(
+			'PO_permalink_hash' => 'permalink_hash',
+			'PO_permalink_hash_args' => 'permalink_hash_args'
+		);
+		
+		foreach ($newIndex as $index=>$value) {
+			$checkIndexSql = "SHOW INDEX FROM ".$wpdb->prefix."PO_plugins WHERE key_name = '".$index."';";
+			$checkIndexResult = $wpdb->query($checkIndexSql);
+			if ($checkIndexResult == '0') {
+				$addIndexSql = "ALTER TABLE ".$wpdb->prefix."PO_plugins ADD INDEX ".$index." (".$value.");";
+				$addIndexResult = $wpdb->query($addIndexSql);
+			}
+		}
+		
 		##Cleanup from previous versions
 		delete_option('PO_old_posts_moved');
 		delete_option('PO_old_urls_moved');
@@ -271,8 +285,8 @@ class PluginOrganizer {
 			update_option('PO_disable_plugins', 1);
 		}
 		
-		if (get_option("PO_version_num") != "6.0.3") {
-			update_option("PO_version_num", "6.0.3");
+		if (get_option("PO_version_num") != "6.0.4") {
+			update_option("PO_version_num", "6.0.4");
 		}
 
 		if (get_option('PO_mobile_user_agents') == '' || (is_array(get_option('PO_mobile_user_agents')) && sizeof(get_option('PO_mobile_user_agents')) == 0)) {
@@ -390,11 +404,6 @@ class PluginOrganizer {
 		$this->correct_group_members();
 		if ( current_user_can( 'activate_plugins' ) ) {
 			$this->tpl = new PO_Template($this);
-			add_action('admin_head-post-new.php', array($this->tpl, 'admin_css'));
-			add_action('admin_head-post-new.php', array($this->tpl, 'common_js'));
-			
-			add_action('admin_head-post.php', array($this->tpl, 'admin_css'));
-			add_action('admin_head-post.php', array($this->tpl, 'common_js'));
 			
 			$plugin_page=add_menu_page( 'Plugin Organizer', 'Plugin Organizer', 'activate_plugins', 'Plugin_Organizer', array($this->tpl, 'settings_page'), 'dashicons-PO-icon-puzzle-piece');
 			

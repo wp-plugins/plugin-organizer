@@ -3,8 +3,8 @@ Contributors: foomagoo
 Donate link: http://www.jsterup.com/donate
 Tags: plugin organizer, load order, organize plugins, plugin order, sort plugin, group plugin, disable plugins by post, disable plugins by page, disable plugins by custom post type, turn off plugins for post, turn off plugins for page, turn off plugins for custom post type
 Requires at least: 3.8
-Tested up to: 4.1.1
-Stable tag: 6.0.3
+Tested up to: 4.2.2
+Stable tag: 6.0.4
 
 
 This plugin allows you to do the following:
@@ -68,6 +68,11 @@ Note: If you are having troubles you can view the documentation by going to http
 6. Page edit screen.
 
 == Changelog ==
+
+= 6.0.4 = 
+Fixed issue with missing css and javascript on certain custom post types.
+Fixed issue with saving post type plugins.  An error was encountered some times when saving the plugins.
+Added code to ensure the sql indexes exist to improve query times.
 
 = 6.0.3 =
 Removed short tags from 3 template files.
@@ -486,6 +491,7 @@ Initial version.
 
 == Upgrade Notice ==
 
-= 6.0.3 =
-Removed short tags from 3 template files.
-Changed check to make sure $ajaxSaveFunction is set in postMetabox.php.
+= 6.0.4 = 
+Fixed issue with missing css and javascript on certain custom post types.
+Fixed issue with saving post type plugins.  An error was encountered some times when saving the plugins.
+Added code to ensure the sql indexes exist to improve query times.

@@ -1,6 +1,3 @@
-<script type="text/javascript" language="javascript">
-	PO_reverse_toggle_buttons();
-</script>
 <div id="wrap">
     <div class="po-setting-icon fa fa-globe" id="icon-po-global"> <br /> </div>
 

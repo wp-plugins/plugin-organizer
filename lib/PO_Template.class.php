@@ -225,6 +225,8 @@ class PO_Template {
 	function get_post_meta_box($post) {
 		global $wpdb;
 		$errMsg = "";
+		$this->admin_css();
+		$this->common_js();
 		if ($post->ID != "" && is_numeric($post->ID)) {
 			$filterName = $post->post_title;
 			$postSettingsQuery = "SELECT * FROM ".$wpdb->prefix."PO_plugins WHERE post_id = %d";
